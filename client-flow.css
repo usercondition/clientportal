@@ -192,10 +192,12 @@
 
 .flow-slide-inner--form {
   width: min(100%, 440px);
+  margin-inline: auto;
 }
 
 .flow-slide-inner--form-wide {
   width: min(100%, 620px);
+  margin-inline: auto;
   padding: clamp(1rem, 2vw, 1.35rem);
   border-radius: calc(var(--radius-lg) + 2px);
   border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
@@ -205,6 +207,23 @@
     color-mix(in srgb, var(--bg-elevated) 86%, var(--accent-soft)) 100%
   );
   box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
+}
+
+#slide-welcome .flow-slide-inner {
+  width: min(100%, 540px);
+}
+
+#slide-welcome .flow-lede {
+  max-width: 34ch;
+}
+
+#slide-welcome .flow-actions-stack {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+#slide-welcome .flow-actions-stack .btn {
+  min-height: 3.35rem;
 }
 
 .flow-eyebrow {
