@@ -1,18 +1,18 @@
 /* Theme — tweak these variables to re-skin quickly */
 :root {
-  --bg: #f3ece3;
-  --bg-elevated: #fbf6ef;
-  --text: #3c342b;
-  --text-muted: #776b5e;
-  --accent: #8a745d;
-  --accent-soft: rgba(138, 116, 93, 0.14);
-  --border: rgba(60, 52, 43, 0.14);
+  --bg: #f3e8dd;
+  --bg-elevated: #fbf3eb;
+  --text: #3d2f2f;
+  --text-muted: #7b6767;
+  --accent: #d14aa7;
+  --accent-soft: rgba(209, 74, 167, 0.14);
+  --border: rgba(61, 47, 47, 0.16);
   --radius: 12px;
   --radius-lg: 20px;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Manrope", "Inter", system-ui, sans-serif;
-  --shadow: 0 20px 48px rgba(58, 46, 33, 0.12);
-  --shadow-sm: 0 8px 24px rgba(58, 46, 33, 0.1);
+  --shadow: 0 22px 54px rgba(80, 47, 63, 0.15);
+  --shadow-sm: 0 10px 26px rgba(80, 47, 63, 0.11);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.18s;
@@ -23,15 +23,15 @@
 }
 
 [data-theme="dark"] {
-  --bg: #121617;
-  --bg-elevated: #1a2021;
-  --text: #e8e2d9;
-  --text-muted: #a89f95;
-  --accent: #b99a7d;
-  --accent-soft: rgba(185, 154, 125, 0.16);
-  --border: rgba(232, 226, 217, 0.1);
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
-  --shadow-sm: 0 10px 28px rgba(0, 0, 0, 0.32);
+  --bg: #12061f;
+  --bg-elevated: #1a0d2d;
+  --text: #f4e9ff;
+  --text-muted: #b9a2d2;
+  --accent: #ff5fcf;
+  --accent-soft: rgba(255, 95, 207, 0.16);
+  --border: rgba(210, 165, 255, 0.2);
+  --shadow: 0 24px 68px rgba(12, 3, 24, 0.5);
+  --shadow-sm: 0 10px 26px rgba(10, 2, 20, 0.34);
 }
 
 *,
@@ -58,8 +58,9 @@ body {
   color: var(--text);
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse 120% 85% at 50% -30%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 55%),
-    radial-gradient(ellipse 55% 40% at 100% 0%, color-mix(in srgb, var(--accent-soft) 70%, transparent), transparent 55%);
+    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(82, 241, 255, 0.16), transparent 60%),
+    radial-gradient(ellipse 65% 45% at 0% 85%, rgba(143, 78, 255, 0.22), transparent 62%);
   min-height: 100vh;
 }
 
@@ -521,6 +522,98 @@ code {
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
+}
+
+.synth-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 760px) {
+  .synth-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.synth-tile {
+  position: relative;
+  min-height: 250px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  overflow: hidden;
+  background: linear-gradient(140deg, #3f0f67 0%, #0f1238 45%, #2c0e4c 100%);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--dur-med) var(--ease-fluid),
+    box-shadow var(--dur-med) var(--ease-fluid),
+    border-color var(--dur-med) var(--ease-fluid);
+}
+
+.synth-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 95, 207, 0.52), transparent 35%),
+    radial-gradient(circle at 85% 85%, rgba(82, 241, 255, 0.38), transparent 38%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06), transparent 56%);
+}
+
+.synth-tile:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 22px 40px rgba(31, 4, 49, 0.45);
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
+}
+
+.synth-tile-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.synth-badge {
+  align-self: flex-start;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(22, 8, 34, 0.45);
+}
+
+.synth-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.synth-note {
+  margin: 0;
+  color: color-mix(in srgb, var(--text) 84%, var(--text-muted));
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.synth-tile--02 {
+  background: linear-gradient(140deg, #2d0a53 0%, #151742 55%, #5b1e5f 100%);
+}
+
+.synth-tile--03 {
+  background: linear-gradient(155deg, #4c0c59 0%, #171543 48%, #211d6c 100%);
+}
+
+.synth-tile--04 {
+  background: linear-gradient(145deg, #25184f 0%, #3a1256 44%, #0f294f 100%);
 }
 
 .contact-list {

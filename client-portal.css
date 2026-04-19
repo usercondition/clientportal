@@ -78,11 +78,14 @@
 }
 
 .portal-layout {
-  max-width: var(--max);
+  max-width: 980px;
   margin-inline: auto;
 }
 
 .portal-welcome {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
   margin-bottom: 2rem;
   animation: portal-rise var(--dur-slow, 0.55s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)) 0.04s both;
 }
@@ -142,6 +145,9 @@
 }
 
 .portal-section {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
   margin-bottom: 2rem;
   scroll-margin-top: 5rem;
 }
@@ -209,6 +215,9 @@
 }
 
 .portal-two-col {
+  width: 100%;
+  max-width: 980px;
+  margin-inline: auto;
   display: grid;
   gap: 2rem;
 }
@@ -217,6 +226,11 @@
   .portal-two-col {
     grid-template-columns: 1fr 1fr;
     align-items: start;
+  }
+
+  .portal-two-col .portal-section {
+    max-width: none;
+    margin-inline: 0;
   }
 }
 
