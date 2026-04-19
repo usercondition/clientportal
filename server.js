@@ -4,6 +4,8 @@ const nodemailer = require("nodemailer");
 const { Pool } = require("pg");
 require("dotenv").config();
 
+const emailTemplates = require("./lib/email-templates");
+
 const ADMIN_NOTIFY_EMAIL_DEFAULT = "m.e.mercado@proton.me";
 
 function resolveAdminNotifyEmail() {
@@ -38,6 +40,34 @@ function queueNotifyEmail(to, subject, text) {
       .then(() => console.log("[notify] sent:", subject, "→", to))
       .catch((err) => console.error("[notify] send failed:", err && err.message));
   });
+}
+
+/**
+ * When order status is updated in the API, call this so the client (and optionally staff) get email.
+ * Wire your future PATCH / order flow to: await notifyOrderStatusChange(pool, { clientId, orderNumber, title, status, previousStatus })
+ */
+async function notifyOrderStatusChange(pool, { clientId, orderNumber, title, status, previousStatus }) {
+  if (!pool || !clientId || !status) return;
+  const { rows } = await pool.query("select email, first_name from clients where id = $1 limit 1", [clientId]);
+  const row = rows[0];
+  if (!row || !row.email) return;
+  const { subject, text } = emailTemplates.clientOrderStatusChange({
+    firstName: row.first_name,
+    orderNumber: orderNumber || "",
+    title: title || "",
+    status,
+    previousStatus: previousStatus || "",
+  });
+  queueNotifyEmail(String(row.email).trim(), subject, text);
+  if (String(process.env.NOTIFY_ADMIN_ON_ORDER_STATUS || "").toLowerCase() === "true") {
+    queueNotifyEmail(
+      resolveAdminNotifyEmail(),
+      `[Order ${orderNumber || "?"}] ${emailTemplates.humanStatus(status)}`,
+      [`Client: ${row.first_name || ""} <${row.email}>`, `Order: ${title || orderNumber || "—"}`, emailTemplates.portalLinkLine()]
+        .filter(Boolean)
+        .join("\n")
+    );
+  }
 }
 
 const app = express();
@@ -125,16 +155,23 @@ function formatMoney(cents) {
 
 /** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
 app.get("/api/health", async (_req, res) => {
+  const smtpConfigured = Boolean(createMailTransport());
   if (!DATABASE_URL) {
     return res.status(200).json({
       ok: true,
       database: "not_configured",
+      smtp: smtpConfigured ? "configured" : "missing",
       hint: "Set DATABASE_URL on the Web service (reference from Postgres).",
     });
   }
   try {
     await pool.query("select 1 as health_check");
-    return res.status(200).json({ ok: true, database: "connected", env: DATABASE_SOURCE_KEY });
+    return res.status(200).json({
+      ok: true,
+      database: "connected",
+      env: DATABASE_SOURCE_KEY,
+      smtp: smtpConfigured ? "configured" : "missing",
+    });
   } catch (e) {
     const err = /** @type {{ message?: string; code?: string }} */ (e);
     return res.status(200).json({
@@ -142,6 +179,7 @@ app.get("/api/health", async (_req, res) => {
       database: "unreachable",
       message: err.message,
       postgresCode: err.code,
+      smtp: smtpConfigured ? "configured" : "missing",
     });
   }
 });
@@ -368,11 +406,11 @@ app.post("/api/client/:clientId/messages", async (req, res) => {
   );
   const who = infoRes.rows[0];
   const label = who ? `${who.first_name || ""} ${who.last_name || ""}`.trim() || "Client" : "Client";
-  queueNotifyEmail(
-    resolveAdminNotifyEmail(),
-    `New client message — ${label}`,
-    `${label} wrote in the client portal:\n\n${body}\n\nReply in the admin inbox.`
-  );
+  const { subject, text } = emailTemplates.staffNewClientMessage({
+    clientLabel: label,
+    bodySnippet: body,
+  });
+  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text);
   res.status(201).json({
     message: { id: msgRes.rows[0].id, from: "client", body, at: msgRes.rows[0].created_at },
   });
@@ -465,11 +503,11 @@ app.post("/api/admin/threads/:threadId/messages", async (req, res) => {
   );
   const cRow = clientRes.rows[0];
   if (cRow && cRow.email) {
-    queueNotifyEmail(
-      String(cRow.email).trim(),
-      "New message from the team",
-      `Hi ${cRow.first_name || "there"},\n\nYou have a new message in your client portal:\n\n${body}\n\nOpen your portal to reply.`
-    );
+    const { subject, text } = emailTemplates.clientNewStaffMessage({
+      firstName: cRow.first_name,
+      bodySnippet: body,
+    });
+    queueNotifyEmail(String(cRow.email).trim(), subject, text);
   }
   res.status(201).json({
     message: { id: msgRes.rows[0].id, from: "admin", body, at: msgRes.rows[0].created_at },
@@ -506,6 +544,14 @@ async function start() {
   }
 
   app.listen(PORT, () => {
+    const smtpOk = Boolean(createMailTransport());
+    if (!smtpOk) {
+      console.warn(
+        "[notify] SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS (and MAIL_FROM) for email notifications."
+      );
+    } else {
+      console.log("[notify] SMTP configured; emails will send for new messages" + (emailTemplates.baseUrl() ? " (PUBLIC_SITE_URL set for links)" : " (set PUBLIC_SITE_URL for portal links in emails)"));
+    }
     console.log(`Client portal server listening on port ${PORT} (GET /health, GET /api/health)`);
   });
 }

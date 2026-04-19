@@ -505,6 +505,11 @@
     padding-top: 0.65rem;
     border-top: 1px solid var(--border);
   }
+
+  /* Pull welcome hero up so its top border sits just below the header (less dead space). */
+  #slide-welcome.flow-slide {
+    padding-top: 0.5rem;
+  }
 }
 
 @media (max-width: 400px) {
