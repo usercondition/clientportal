@@ -11,9 +11,10 @@
 const path = require("path");
 const { Client } = require("pg");
 const { getAllMigrationStatements, runMigrationStatements } = require("../lib/apply-initial-schema");
+const { resolveDatabaseUrlWithSource, sslOptionForUrl } = require("../lib/pg-connection");
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
-function resolveDatabaseUrl() {
+function resolveDatabaseUrlForMigrate() {
   const argv = process.argv.slice(2).filter((a) => a !== "--");
   const cli = argv[0];
   if (
@@ -23,26 +24,12 @@ function resolveDatabaseUrl() {
     return { url: String(cli).trim(), source: "CLI" };
   }
 
-  const keys = ["DATABASE_URL", "DATABASE_PRIVATE_URL", "POSTGRES_URL", "DATABASE_PUBLIC_URL"];
-  for (const key of keys) {
-    const raw = process.env[key];
-    const trimmed = typeof raw === "string" ? raw.trim() : "";
-    if (trimmed) return { url: trimmed, source: key };
-  }
-  return { url: "", source: "" };
-}
-
-function sslOption(url) {
-  const pgssl = String(process.env.PGSSL || "").toLowerCase();
-  if (pgssl === "true") return { rejectUnauthorized: false };
-  if (pgssl === "false") return false;
-  if (/\.proxy\.rlwy\.net/i.test(url)) return { rejectUnauthorized: false };
-  if (/\.railway\.internal/i.test(url)) return false;
-  return false;
+  const { url, sourceKey } = resolveDatabaseUrlWithSource();
+  return { url, source: sourceKey };
 }
 
 async function main() {
-  const { url, source } = resolveDatabaseUrl();
+  const { url, source } = resolveDatabaseUrlForMigrate();
   if (!url) {
     console.error(
       "No database URL. Either set DATABASE_URL in .env, or pass the URL after --:\n" +
@@ -53,9 +40,10 @@ async function main() {
   console.log("Connecting using:", source);
 
   const statements = getAllMigrationStatements();
+  const ssl = sslOptionForUrl(url);
   const client = new Client({
     connectionString: url,
-    ssl: sslOption(url) || undefined,
+    ...(ssl ? { ssl } : {}),
   });
   await client.connect();
 

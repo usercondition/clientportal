@@ -1,0 +1,8 @@
+# Railway deploy — ensures the Node server (not a static root) is the process that runs.
+# https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm start"

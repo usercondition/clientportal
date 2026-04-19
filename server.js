@@ -43,47 +43,41 @@ function queueNotifyEmail(to, subject, text) {
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 
-/** Railway / hosts may expose the connection under different env names on the web service. */
-function resolveDatabaseUrl() {
-  const keys = ["DATABASE_URL", "DATABASE_PRIVATE_URL", "POSTGRES_URL", "DATABASE_PUBLIC_URL"];
-  for (const key of keys) {
-    const raw = process.env[key];
-    const trimmed = typeof raw === "string" ? raw.trim() : "";
-    if (!trimmed) continue;
-    if (key === "DATABASE_PUBLIC_URL") {
-      console.warn(
-        "[db] Using DATABASE_PUBLIC_URL (public TCP proxy). Prefer DATABASE_URL or DATABASE_PRIVATE_URL " +
-          "from Postgres on the same Railway project to avoid egress. See database/README.md (Railway section)."
-      );
-    }
-    return trimmed;
-  }
-  return "";
-}
+const {
+  resolveDatabaseUrlWithSource,
+  postgresHostname,
+  sslOptionForUrl,
+} = require("./lib/pg-connection");
 
-const DATABASE_URL = resolveDatabaseUrl();
+const { url: DATABASE_URL, sourceKey: DATABASE_SOURCE_KEY } = resolveDatabaseUrlWithSource();
 
 if (!DATABASE_URL) {
   console.warn(
-    "[db] No database URL found. Set DATABASE_URL (or DATABASE_PRIVATE_URL / POSTGRES_URL) on this service. " +
-      "On Railway: Web service → Variables → Reference variable from your Postgres service."
+    "[db] No database URL found. Set DATABASE_URL exactly (no space in the name) on the service that runs " +
+      "server.js — e.g. Web service → Variables → reference your Postgres DATABASE_URL. " +
+      "Also remove stale POSTGRES_* variables that pointed at a deleted database."
   );
-} else if (/\.proxy\.rlwy\.net/i.test(DATABASE_URL)) {
-  console.warn(
-    "[railway] Connection host looks like the public TCP proxy (*.proxy.rlwy.net). That can incur egress fees. " +
-      "Prefer postgres.railway.internal (private DATABASE_URL) on the web service. See database/README.md."
-  );
+} else {
+  const host = postgresHostname(DATABASE_URL);
+  const sslOn = Boolean(sslOptionForUrl(DATABASE_URL));
+  console.log(`[db] Using env ${DATABASE_SOURCE_KEY} → host=${host || "?"} ssl=${sslOn ? "on" : "off"}`);
+  if (DATABASE_SOURCE_KEY === "DATABASE_PUBLIC_URL") {
+    console.warn(
+      "[db] Using DATABASE_PUBLIC_URL (public TCP proxy). Prefer DATABASE_URL or DATABASE_PRIVATE_URL " +
+        "from Postgres on the same Railway project to avoid egress. See database/README.md (Railway section)."
+    );
+  } else if (host && /\.proxy\.rlwy\.net$/i.test(host)) {
+    console.warn(
+      "[railway] Host looks like the public TCP proxy (*.proxy.rlwy.net). That can incur egress fees. " +
+        "Prefer postgres.railway.internal (private DATABASE_URL) on the web service. See database/README.md."
+    );
+  }
 }
 
-const pgssl = String(process.env.PGSSL || "").toLowerCase();
-const useSsl =
-  !!DATABASE_URL &&
-  (pgssl === "true" ||
-    (pgssl !== "false" && /\.proxy\.rlwy\.net/i.test(DATABASE_URL)));
-
+const sslOpt = DATABASE_URL ? sslOptionForUrl(DATABASE_URL) : false;
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+  ...(DATABASE_URL && sslOpt ? { ssl: sslOpt } : {}),
 });
 
 const { applyInitialSchemaIfNeeded, applySchemaCompat } = require("./lib/apply-initial-schema");
@@ -124,8 +118,22 @@ function formatMoney(cents) {
   return n > 0 ? `$${n.toFixed(2)}` : "—";
 }
 
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true });
+app.get("/api/health", async (_req, res) => {
+  if (!DATABASE_URL) {
+    return res.json({ ok: true, database: "not_configured", hint: "Set DATABASE_URL on this service." });
+  }
+  try {
+    await pool.query("select 1 as health_check");
+    return res.json({ ok: true, database: "connected", env: DATABASE_SOURCE_KEY });
+  } catch (e) {
+    const err = /** @type {{ message?: string; code?: string }} */ (e);
+    return res.status(503).json({
+      ok: false,
+      database: "unreachable",
+      message: err.message,
+      postgresCode: err.code,
+    });
+  }
 });
 
 app.post("/api/client/login", async (req, res) => {
