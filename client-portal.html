@@ -37,77 +37,104 @@
 
     <main id="portal-main" class="portal-main">
       <div class="container portal-layout">
-        <header class="portal-welcome">
-          <p class="portal-eyebrow">Signed in</p>
-          <h1 class="portal-title" id="portal-greeting">Welcome</h1>
-          <p class="portal-sub" id="portal-subline">
-            Your profile, orders, and messages — stay in sync with the team below.
-          </p>
+        <!-- Welcome strip -->
+        <header class="portal-panel portal-panel--welcome" aria-labelledby="portal-greeting">
+          <div class="portal-panel__welcome-inner">
+            <p class="portal-eyebrow">Signed in</p>
+            <div class="portal-panel__welcome-text">
+              <h1 class="portal-title" id="portal-greeting">Welcome</h1>
+              <p class="portal-sub" id="portal-subline">
+                Your hub for orders and team messages — everything in one place.
+              </p>
+            </div>
+          </div>
         </header>
 
-        <section class="portal-section portal-section--profile" aria-labelledby="info-heading">
-          <h2 id="info-heading" class="portal-h2">Your information</h2>
-          <div class="portal-card portal-card-info">
-            <dl class="portal-dl" id="portal-info-dl"></dl>
-          </div>
-        </section>
-
-        <div class="portal-two-col">
-          <section class="portal-section" aria-labelledby="orders-heading">
-            <h2 id="orders-heading" class="portal-h2">Orders</h2>
-            <div class="portal-subsection">
-              <h3 class="portal-h3">Current</h3>
-              <ul class="portal-order-list" id="portal-orders-current"></ul>
-              <p class="portal-empty" id="portal-orders-current-empty" hidden>No active orders right now.</p>
+        <div class="portal-dashboard">
+          <!-- Primary: messaging -->
+          <section
+            class="portal-panel portal-panel--messages"
+            aria-labelledby="msg-heading"
+          >
+            <div class="portal-panel__header">
+              <div class="portal-panel__title-row">
+                <h2 id="msg-heading" class="portal-h2">Messages</h2>
+                <p class="portal-panel__meta">Synced with our team inbox</p>
+              </div>
+              <p class="portal-msg-intro">
+                Replies appear here in real time. Turn on desktop alerts if you’d like a ping when we respond.
+              </p>
+              <div class="portal-panel__tools">
+                <button type="button" class="portal-inline-btn" id="portal-enable-notify">
+                  Enable desktop notifications
+                </button>
+              </div>
             </div>
-            <div class="portal-subsection">
-              <h3 class="portal-h3">Past</h3>
-              <ul class="portal-order-list" id="portal-orders-past"></ul>
-              <p class="portal-empty" id="portal-orders-past-empty" hidden>No past orders yet.</p>
-            </div>
-          </section>
-
-          <section class="portal-section portal-section-messages" aria-labelledby="msg-heading">
-            <h2 id="msg-heading" class="portal-h2">Message center</h2>
-            <p class="portal-msg-intro">
-              Messages sync with our inbox. You’ll see new replies here; with email configured you also get notified by
-              email.
-            </p>
-            <p class="portal-notify-tools">
-              <button type="button" class="portal-inline-btn" id="portal-enable-notify">
-                Enable desktop notifications
-              </button>
-            </p>
-            <div class="portal-card portal-card-messages">
-              <div class="portal-thread" id="portal-thread" role="log" aria-live="polite"></div>
-              <form class="portal-compose" id="portal-compose" novalidate>
-                <label class="portal-sr-only" for="portal-msg-input">Write a message</label>
-                <textarea
-                  id="portal-msg-input"
-                  name="message"
-                  rows="3"
-                  maxlength="2000"
-                  placeholder="Write your message… (optional if you attach a file)"
-                ></textarea>
-                <div class="portal-compose-toolbar">
-                  <input
-                    type="file"
-                    id="portal-msg-files"
-                    name="files"
-                    class="portal-msg-file-input"
-                    multiple
-                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                    aria-label="Attach images or PDF"
-                  />
-                  <label class="portal-msg-file-label" for="portal-msg-files">Attach</label>
-                  <span class="portal-msg-file-hint" id="portal-msg-file-hint" aria-live="polite"></span>
-                </div>
-                <div class="portal-compose-actions">
-                  <button type="submit" class="btn btn-primary">Send</button>
-                </div>
-              </form>
+            <div class="portal-panel__body portal-panel__body--flush">
+              <div class="portal-card portal-card-messages">
+                <div class="portal-thread" id="portal-thread" role="log" aria-live="polite"></div>
+                <form class="portal-compose" id="portal-compose" novalidate>
+                  <label class="portal-sr-only" for="portal-msg-input">Write a message</label>
+                  <textarea
+                    id="portal-msg-input"
+                    name="message"
+                    rows="3"
+                    maxlength="2000"
+                    placeholder="Write your message… (optional if you attach a file)"
+                  ></textarea>
+                  <div class="portal-compose-toolbar">
+                    <input
+                      type="file"
+                      id="portal-msg-files"
+                      name="files"
+                      class="portal-msg-file-input"
+                      multiple
+                      accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                      aria-label="Attach images or PDF"
+                    />
+                    <label class="portal-msg-file-label" for="portal-msg-files">Attach</label>
+                    <span class="portal-msg-file-hint" id="portal-msg-file-hint" aria-live="polite"></span>
+                  </div>
+                  <div class="portal-compose-actions">
+                    <button type="submit" class="btn btn-primary">Send</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </section>
+
+          <!-- Sidebar stack: orders, then profile (mobile: messages → orders → profile) -->
+          <aside class="portal-dashboard__aside" aria-label="Orders and account">
+            <section class="portal-panel portal-panel--orders" aria-labelledby="orders-heading">
+              <div class="portal-panel__header">
+                <h2 id="orders-heading" class="portal-h2">Orders</h2>
+              </div>
+              <div class="portal-panel__body">
+                <div class="portal-stack-block">
+                  <h3 class="portal-h3">Current</h3>
+                  <ul class="portal-order-list" id="portal-orders-current"></ul>
+                  <p class="portal-empty" id="portal-orders-current-empty" hidden>No active orders right now.</p>
+                </div>
+                <div class="portal-stack-block portal-stack-block--spaced">
+                  <h3 class="portal-h3">Past</h3>
+                  <ul class="portal-order-list" id="portal-orders-past"></ul>
+                  <p class="portal-empty" id="portal-orders-past-empty" hidden>No past orders yet.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="portal-panel portal-panel--profile" aria-labelledby="info-heading">
+              <div class="portal-panel__header">
+                <h2 id="info-heading" class="portal-h2">Account</h2>
+                <p class="portal-panel__meta">On file for this portal</p>
+              </div>
+              <div class="portal-panel__body">
+                <div class="portal-card portal-card-info">
+                  <dl class="portal-dl" id="portal-info-dl"></dl>
+                </div>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
     </main>
