@@ -125,6 +125,39 @@ code {
   gap: 0.65rem;
 }
 
+.client-portal-entry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 18%, #ffffff);
+  color: color-mix(in srgb, var(--accent) 88%, #18382c);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 20%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-fluid),
+    background var(--dur-med) var(--ease-fluid),
+    border-color var(--dur-med) var(--ease-fluid),
+    box-shadow var(--dur-med) var(--ease-fluid);
+}
+
+.client-portal-entry:hover {
+  background: color-mix(in srgb, var(--accent) 26%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.client-portal-entry:active {
+  transform: scale(0.97);
+}
+
 .admin-entry {
   display: inline-flex;
   align-items: center;
@@ -210,6 +243,11 @@ code {
 }
 
 @media (max-width: 720px) {
+  .client-portal-entry {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.74rem;
+  }
+
   .nav-toggle {
     display: flex;
   }
