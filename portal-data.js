@@ -42,7 +42,7 @@
         (res.status === 404
           ? "Not found. Open this site through the Node server (npm start), not as a local file."
           : res.status === 503
-            ? "Service unavailable. Check that DATABASE_URL is set and PostgreSQL is running."
+            ? "Service unavailable. Ensure the server has DATABASE_URL (or DATABASE_PRIVATE_URL) set — on Railway, reference it from the Web service variables."
             : "Request failed (" + res.status + ").");
       throw new Error(msg);
     }

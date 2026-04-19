@@ -57,10 +57,12 @@ Railway exposes a **public** Postgres endpoint as **`DATABASE_PUBLIC_URL`** (TCP
 
 For **your Node web service talking to Postgres in the same Railway project**:
 
-1. Open your **Web** service → **Variables**.
-2. Add **`DATABASE_URL`** as a **variable reference** to the **Postgres** service.
-3. Choose the Postgres variable that is the **private** connection — typically the main **`DATABASE_URL`** (or **`DATABASE_PRIVATE_URL`** if Railway shows that name on the database service). **Do not** reference **`DATABASE_PUBLIC_URL`** for app-to-DB traffic.
+1. Open your **Web** service (the one running `server.js`) → **Variables** — not only the Postgres service.
+2. Add **`DATABASE_URL`** (or the app will also read **`DATABASE_PRIVATE_URL`** / **`POSTGRES_URL`** in that order) as a **variable reference** pointing at your **Postgres** service’s private connection (`postgres.railway.internal`, not `junction.proxy.rlwy.net`).
+3. **Do not** rely on variables existing only on the Postgres service: the web service must **reference** them so they appear in **its** environment.
 4. Redeploy the web service.
+
+This repo’s server resolves the connection string from the first non-empty value among: `DATABASE_URL`, `DATABASE_PRIVATE_URL`, `POSTGRES_URL`, `DATABASE_PUBLIC_URL`.
 
 Use **`DATABASE_PUBLIC_URL`** only when something **outside** Railway’s private network must reach Postgres (e.g. a GUI on your laptop, or a build step that cannot use private networking).
 

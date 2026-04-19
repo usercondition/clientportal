@@ -42,21 +42,44 @@ function queueNotifyEmail(to, subject, text) {
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
-const DATABASE_URL = process.env.DATABASE_URL;
+
+/** Railway / hosts may expose the connection under different env names on the web service. */
+function resolveDatabaseUrl() {
+  const keys = ["DATABASE_URL", "DATABASE_PRIVATE_URL", "POSTGRES_URL", "DATABASE_PUBLIC_URL"];
+  for (const key of keys) {
+    const raw = process.env[key];
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) continue;
+    if (key === "DATABASE_PUBLIC_URL") {
+      console.warn(
+        "[db] Using DATABASE_PUBLIC_URL (public TCP proxy). Prefer DATABASE_URL or DATABASE_PRIVATE_URL " +
+          "from Postgres on the same Railway project to avoid egress. See database/README.md (Railway section)."
+      );
+    }
+    return trimmed;
+  }
+  return "";
+}
+
+const DATABASE_URL = resolveDatabaseUrl();
 
 if (!DATABASE_URL) {
-  console.warn("DATABASE_URL not set. API routes will fail until configured.");
-} else if (/\.proxy\.rlwy\.net/i.test(String(DATABASE_URL))) {
   console.warn(
-    "[railway] DATABASE_URL uses the public TCP proxy host (*.proxy.rlwy.net). That can incur egress fees. " +
-      "For your Node service, reference Postgres's private connection (same-project networking), not DATABASE_PUBLIC_URL. " +
-      "See database/README.md (Railway section)."
+    "[db] No database URL found. Set DATABASE_URL (or DATABASE_PRIVATE_URL / POSTGRES_URL) on this service. " +
+      "On Railway: Web service → Variables → Reference variable from your Postgres service."
+  );
+} else if (/\.proxy\.rlwy\.net/i.test(DATABASE_URL)) {
+  console.warn(
+    "[railway] Connection host looks like the public TCP proxy (*.proxy.rlwy.net). That can incur egress fees. " +
+      "Prefer postgres.railway.internal (private DATABASE_URL) on the web service. See database/README.md."
   );
 }
 
+const pgssl = String(process.env.PGSSL || "").toLowerCase();
 const useSsl =
   !!DATABASE_URL &&
-  (String(DATABASE_URL).includes("railway") || String(process.env.PGSSL || "").toLowerCase() === "true");
+  (pgssl === "true" ||
+    (pgssl !== "false" && /\.proxy\.rlwy\.net/i.test(DATABASE_URL)));
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -143,7 +166,9 @@ app.post("/api/client/register", async (req, res) => {
 
   if (!DATABASE_URL) {
     return res.status(503).json({
-      error: "Database is not configured on this server (set DATABASE_URL).",
+      error:
+        "Database is not configured. On Railway, open your Web service → Variables and add DATABASE_URL " +
+        "as a reference to your Postgres service’s DATABASE_URL (or DATABASE_PRIVATE_URL).",
     });
   }
 
