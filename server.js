@@ -592,7 +592,7 @@ async function start() {
     }
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     const smtpOk = Boolean(createMailTransport());
     if (!smtpOk) {
       console.warn(
@@ -603,6 +603,20 @@ async function start() {
     }
     console.log(`Client portal server listening on port ${PORT} (GET /health, GET /api/health)`);
   });
+
+  /** Railway / Docker send SIGTERM when replacing or stopping the container — not an app failure. */
+  function shutdown(signal) {
+    console.log(`[server] ${signal} received, shutting down gracefully…`);
+    server.close(() => {
+      pool
+        .end()
+        .catch(() => {})
+        .finally(() => process.exit(0));
+    });
+    setTimeout(() => process.exit(0), 10_000).unref();
+  }
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 start();
