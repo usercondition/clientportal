@@ -22,9 +22,12 @@ create table if not exists clients (
   phone text,
   sign_in_zip text not null check (sign_in_zip ~ '^[0-9]{5}$'),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (lower(first_name), lower(last_name), sign_in_zip)
+  updated_at timestamptz not null default now()
 );
+
+-- Expression unique constraints inline in CREATE TABLE require newer Postgres; use an index instead (works on PG 10+).
+create unique index if not exists clients_name_zip_unique
+  on clients (lower(first_name), lower(last_name), sign_in_zip);
 
 create table if not exists client_addresses (
   id uuid primary key default gen_random_uuid(),
