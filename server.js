@@ -3,7 +3,7 @@ const path = require("path");
 const express = require("express");
 const nodemailer = require("nodemailer");
 const { Pool } = require("pg");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const emailTemplates = require("./lib/email-templates");
 const chatAttachments = require("./lib/chat-attachments");
@@ -73,7 +73,12 @@ async function notifyOrderStatusChange(pool, { clientId, orderNumber, title, sta
 }
 
 const app = express();
+/** Behind Railway / reverse proxies (correct IPs, secure cookies if you add sessions later). */
+app.set("trust proxy", 1);
+
 const PORT = Number(process.env.PORT || 3000);
+/** Bind all interfaces so the container accepts traffic from the platform router. */
+const LISTEN_HOST = process.env.LISTEN_HOST || "0.0.0.0";
 
 const uploadsRoot = path.join(__dirname, "uploads");
 const uploadsChatDir = path.join(uploadsRoot, "chat");
@@ -592,7 +597,7 @@ async function start() {
     }
   }
 
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT, LISTEN_HOST, () => {
     const smtpOk = Boolean(createMailTransport());
     if (!smtpOk) {
       console.warn(
@@ -601,7 +606,9 @@ async function start() {
     } else {
       console.log("[notify] SMTP configured; emails will send for new messages" + (emailTemplates.baseUrl() ? " (PUBLIC_SITE_URL set for links)" : " (set PUBLIC_SITE_URL for portal links in emails)"));
     }
-    console.log(`Client portal server listening on port ${PORT} (GET /health, GET /api/health)`);
+    console.log(
+      `Client portal server listening on http://${LISTEN_HOST}:${PORT} (GET /health, GET /api/health)`
+    );
   });
 
   /** Railway / Docker send SIGTERM when replacing or stopping the container — not an app failure. */

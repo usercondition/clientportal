@@ -13,7 +13,7 @@ const path = require("path");
 const { Client } = require("pg");
 const { getAllMigrationStatements, runMigrationStatements } = require("../lib/apply-initial-schema");
 const { resolveDatabaseUrlWithSource, sslOptionForUrl } = require("../lib/pg-connection");
-require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env"), quiet: true });
 
 function resolveDatabaseUrlForMigrate() {
   const argv = process.argv.slice(2).filter((a) => a !== "--");

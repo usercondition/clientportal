@@ -1,11 +1,11 @@
-# Railway deploy — ensures the Node server (not a static root) is the process that runs.
+# Railway deploy — Node listens on PORT; run node directly (avoids npm "production / omit=dev" noise).
 # https://docs.railway.app/reference/config-as-code
 
 [build]
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npm start"
+startCommand = "node server.js"
 # Liveness only — does not require Postgres (use /api/health to verify DB).
 healthcheckPath = "/health"
 healthcheckTimeout = 30
