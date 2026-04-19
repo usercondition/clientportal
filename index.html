@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="Personal site — projects, notes, and contact." />
     <title>Your Name — Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +28,14 @@
               <li><a href="#contact">Contact</a></li>
             </ul>
           </nav>
-          <a class="client-portal-entry" href="client-flow.html">Client Portal Login</a>
+          <a
+            class="client-portal-entry"
+            href="client-flow.html"
+            aria-label="Client portal login"
+          >
+            <span class="client-portal-entry__full">Client Portal Login</span>
+            <span class="client-portal-entry__short">Portal</span>
+          </a>
           <button
             type="button"
             class="nav-toggle"

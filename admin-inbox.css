@@ -10,7 +10,8 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 1rem min(1.5rem, 4vw);
+  padding: 1rem max(min(1.5rem, 4vw), env(safe-area-inset-left, 0px))
+    1rem max(min(1.5rem, 4vw), env(safe-area-inset-right, 0px));
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(10px);

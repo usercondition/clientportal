@@ -441,3 +441,39 @@
 .flow-back {
   margin-left: 0;
 }
+
+@media (max-width: 560px) {
+  .flow-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.85rem min(1.25rem, 4vw);
+  }
+
+  .flow-header-start {
+    justify-content: space-between;
+  }
+
+  .flow-brand {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .flow-home {
+    font-size: 0.82rem;
+    padding: 0.4rem 0.7rem;
+  }
+
+  .flow-progress {
+    text-align: center;
+    font-size: 0.78rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 400px) {
+  .flow-slide-inner--form-wide {
+    padding: 0.85rem 0.75rem;
+  }
+}

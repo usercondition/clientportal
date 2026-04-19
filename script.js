@@ -28,4 +28,14 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") setOpen(false);
   });
+
+  document.addEventListener("click", function (e) {
+    if (!nav.classList.contains("is-open")) return;
+    if (nav.contains(e.target) || toggle.contains(e.target)) return;
+    setOpen(false);
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.matchMedia("(min-width: 721px)").matches) setOpen(false);
+  });
 })();
