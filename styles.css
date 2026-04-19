@@ -125,13 +125,6 @@ code {
   min-height: 4rem;
 }
 
-.site-mark {
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text);
-  font-size: 0.95rem;
-}
-
 .header-actions {
   display: flex;
   align-items: center;
