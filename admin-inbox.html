@@ -29,67 +29,103 @@
     </script>
   </head>
   <body class="admin-inbox-shell">
-    <header class="admin-inbox-bar">
-      <h1>Inbox</h1>
-      <div class="admin-inbox-bar-actions">
-        <button type="button" class="admin-inbox-notify-btn" id="admin-enable-notify">
-          Desktop notifications
-        </button>
-        <a href="admin.html">← Admin home</a>
-        <a href="index.html">Public site</a>
-        <button type="button" class="admin-logout" id="admin-inbox-logout">Log out</button>
+    <a class="skip-link" href="#admin-inbox-main">Skip to inbox</a>
+
+    <header class="admin-topbar">
+      <div class="container admin-topbar-inner">
+        <div class="admin-topbar-brand">
+          <span class="admin-topbar-title">Staff inbox</span>
+          <span class="admin-topbar-tagline">Client threads · replies by email when SMTP is configured</span>
+        </div>
+        <div class="admin-topbar-actions">
+          <button type="button" class="admin-topbar-btn" id="admin-enable-notify">
+            Desktop alerts
+          </button>
+          <a class="admin-topbar-link" href="admin.html">Admin home</a>
+          <a class="admin-topbar-link" href="index.html">Public site</a>
+          <button type="button" class="admin-topbar-link admin-topbar-link--btn" id="admin-inbox-logout">
+            Log out
+          </button>
+        </div>
       </div>
     </header>
 
-    <main class="admin-inbox-main">
-      <div class="admin-inbox-grid">
-        <div class="admin-inbox-list-wrap">
-          <div class="admin-inbox-list-head">Conversations</div>
-          <ul class="admin-inbox-list" id="admin-inbox-list" aria-label="Client threads"></ul>
-        </div>
-        <div class="admin-inbox-detail" id="admin-inbox-detail">
-          <div class="admin-inbox-detail-empty" id="admin-inbox-empty">
-            Select a conversation to read and reply.
-          </div>
-          <div id="admin-inbox-chat" hidden>
-            <div class="admin-inbox-chat-head">
-              <h2 id="admin-inbox-client-name">—</h2>
-              <p id="admin-inbox-client-email"></p>
+    <main id="admin-inbox-main" class="admin-inbox-main">
+      <div class="container admin-page">
+        <p class="admin-page-lede">
+          Conversations update every few seconds. New client messages also trigger an email to your admin address when the
+          server has SMTP set — independent of this page being open.
+        </p>
+
+        <div class="admin-dashboard">
+          <aside class="admin-panel admin-panel--threads" aria-label="Conversation list">
+            <div class="admin-panel__head">
+              <h2 class="admin-panel__h">Conversations</h2>
+              <p class="admin-panel__meta">Newest activity first</p>
             </div>
-            <div class="admin-inbox-thread" id="admin-inbox-thread" role="log"></div>
-            <form class="admin-inbox-compose" id="admin-inbox-form" novalidate>
-              <label class="admin-sr-only" for="admin-inbox-reply">Reply</label>
-              <textarea
-                id="admin-inbox-reply"
-                name="reply"
-                rows="3"
-                maxlength="2000"
-                placeholder="Type your reply… (optional if you attach a file)"
-              ></textarea>
-              <div class="admin-inbox-compose-toolbar">
-                <input
-                  type="file"
-                  id="admin-inbox-files"
-                  name="files"
-                  class="admin-inbox-file-input"
-                  multiple
-                  accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                  aria-label="Attach images or PDF"
-                />
-                <label class="admin-inbox-file-label" for="admin-inbox-files">Attach</label>
-                <span class="admin-inbox-file-hint" id="admin-inbox-file-hint" aria-live="polite"></span>
+            <div class="admin-panel__body admin-panel__body--scroll">
+              <ul class="admin-inbox-list" id="admin-inbox-list"></ul>
+            </div>
+          </aside>
+
+          <section class="admin-panel admin-panel--chat" aria-label="Selected conversation">
+            <div class="admin-empty-state" id="admin-inbox-empty">
+              <p class="admin-empty-state__title">Select a conversation</p>
+              <p class="admin-empty-state__text">Choose a client on the left to read messages and send a reply.</p>
+            </div>
+
+            <div id="admin-inbox-chat" class="admin-chat-workspace" hidden>
+              <header class="admin-peer-header">
+                <div class="admin-peer-header__text">
+                  <h2 class="admin-peer-header__name" id="admin-inbox-client-name">—</h2>
+                  <p class="admin-peer-header__email" id="admin-inbox-client-email"></p>
+                </div>
+                <span class="admin-peer-header__badge">Client</span>
+              </header>
+
+              <div class="admin-thread-panel">
+                <div class="admin-inbox-thread" id="admin-inbox-thread" role="log" aria-live="polite"></div>
               </div>
-              <div class="admin-inbox-compose-actions">
-                <button type="submit" class="btn btn-primary">Send reply</button>
-              </div>
-            </form>
-          </div>
+
+              <form class="admin-compose" id="admin-inbox-form" novalidate>
+                <div class="admin-compose__head">
+                  <span class="admin-compose__label">Your reply</span>
+                  <span class="admin-compose__hint">Email copy sent to the client when SMTP is configured</span>
+                </div>
+                <label class="admin-sr-only" for="admin-inbox-reply">Reply message</label>
+                <textarea
+                  id="admin-inbox-reply"
+                  name="reply"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="Type your reply… (optional if you attach a file)"
+                ></textarea>
+                <div class="admin-compose-toolbar">
+                  <input
+                    type="file"
+                    id="admin-inbox-files"
+                    name="files"
+                    class="admin-inbox-file-input"
+                    multiple
+                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                    aria-label="Attach images or PDF"
+                  />
+                  <label class="admin-inbox-file-label" for="admin-inbox-files">Attach</label>
+                  <span class="admin-inbox-file-hint" id="admin-inbox-file-hint" aria-live="polite"></span>
+                </div>
+                <div class="admin-compose-actions">
+                  <button type="submit" class="btn btn-primary">Send reply</button>
+                </div>
+              </form>
+            </div>
+          </section>
         </div>
+
+        <p class="admin-page-footnote">
+          Tip: Set <code>ADMIN_NOTIFY_EMAIL</code>, <code>SMTP_*</code>, and <code>MAIL_FROM</code> on the server so staff
+          and clients receive real emails for new messages and replies.
+        </p>
       </div>
-      <p class="admin-inbox-note">
-        New client messages appear here on refresh/poll. Configure SMTP on the server to receive email alerts at your
-        admin address.
-      </p>
     </main>
 
     <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>

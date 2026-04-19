@@ -44,11 +44,62 @@
     }, 5200);
   }
 
+  var ADMIN_NOTIFY_STORAGE = "admin_notify_ui_enabled";
+
+  function isInAppNotifyEnabled() {
+    try {
+      var v = localStorage.getItem(ADMIN_NOTIFY_STORAGE);
+      if (v === null || v === undefined) return true;
+      return v === "1" || v === "true";
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function setInAppNotifyEnabled(on) {
+    try {
+      localStorage.setItem(ADMIN_NOTIFY_STORAGE, on ? "1" : "0");
+    } catch (e) {}
+  }
+
   function maybeBrowserNotify(title, body) {
     if (typeof Notification !== "function" || Notification.permission !== "granted") return;
+    if (!isInAppNotifyEnabled()) return;
     try {
       new Notification(title, { body: body });
     } catch (e) {}
+  }
+
+  function syncAdminNotifyButton(btn) {
+    if (!btn) return;
+    btn.classList.remove("admin-topbar-btn--muted");
+    btn.removeAttribute("aria-pressed");
+    btn.removeAttribute("title");
+    if (typeof Notification === "undefined") {
+      btn.textContent = "Alerts not supported";
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    var perm = Notification.permission;
+    if (perm === "denied") {
+      btn.textContent = "Alerts blocked";
+      btn.title = "Allow notifications for this site in your browser settings.";
+      btn.classList.add("admin-topbar-btn--muted");
+      return;
+    }
+    if (perm === "default") {
+      btn.textContent = "Desktop alerts";
+      btn.setAttribute("aria-pressed", "false");
+      return;
+    }
+    if (isInAppNotifyEnabled()) {
+      btn.textContent = "Turn off alerts";
+      btn.setAttribute("aria-pressed", "true");
+    } else {
+      btn.textContent = "Desktop alerts";
+      btn.setAttribute("aria-pressed", "false");
+    }
   }
 
   function esc(s) {
@@ -219,7 +270,7 @@
 
     if (rows.length === 0) {
       listEl.innerHTML =
-        '<li><p style="padding:0.75rem 1rem;color:var(--text-muted);font-size:0.9rem;margin:0">No conversations yet. Client messages will appear here.</p></li>';
+        '<li><p class="admin-list-placeholder">No conversations yet. Client messages will appear here.</p></li>';
     }
 
     listEl.querySelectorAll(".admin-inbox-item").forEach(function (btn) {
@@ -353,19 +404,42 @@
   }
 
   if (notifyPermBtn) {
+    syncAdminNotifyButton(notifyPermBtn);
     notifyPermBtn.addEventListener("click", function () {
       if (typeof Notification === "undefined") {
         showAppToast("This browser does not support notifications.");
         return;
       }
-      Notification.requestPermission()
-        .then(function (perm) {
-          if (perm === "granted") showAppToast("Desktop notifications enabled.");
-          else showAppToast("Notifications were not enabled.");
-        })
-        .catch(function () {
-          showAppToast("Could not request notification permission.");
-        });
+      var perm = Notification.permission;
+      if (perm === "denied") {
+        showAppToast("Unblock notifications for this site in your browser settings.");
+        return;
+      }
+      if (perm === "default") {
+        Notification.requestPermission()
+          .then(function (p) {
+            if (p === "granted") {
+              setInAppNotifyEnabled(true);
+              showAppToast("Desktop alerts enabled.");
+            } else {
+              showAppToast("Alerts were not enabled.");
+            }
+            syncAdminNotifyButton(notifyPermBtn);
+          })
+          .catch(function () {
+            showAppToast("Could not request notification permission.");
+            syncAdminNotifyButton(notifyPermBtn);
+          });
+        return;
+      }
+      if (isInAppNotifyEnabled()) {
+        setInAppNotifyEnabled(false);
+        showAppToast("Desktop alerts are off. Turn them back on here anytime.");
+      } else {
+        setInAppNotifyEnabled(true);
+        showAppToast("Desktop alerts are on.");
+      }
+      syncAdminNotifyButton(notifyPermBtn);
     });
   }
 })();

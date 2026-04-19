@@ -16,30 +16,53 @@ function resolveAdminNotifyEmail() {
   return ADMIN_NOTIFY_EMAIL_DEFAULT;
 }
 
+/** Reply-To on emails *to clients* (staff replies). Defaults to ADMIN_NOTIFY_EMAIL so client can hit Reply in their mail app. */
+function resolveAdminReplyEmail() {
+  const v = process.env.ADMIN_REPLY_EMAIL;
+  if (v && String(v).trim()) return String(v).trim();
+  return resolveAdminNotifyEmail();
+}
+
 function createMailTransport() {
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
   if (!host || !user) return null;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true";
   return nodemailer.createTransport({
     host,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: String(process.env.SMTP_SECURE || "").toLowerCase() === "true",
+    port,
+    secure,
     auth: { user, pass: process.env.SMTP_PASS || "" },
+    tls: { rejectUnauthorized: true },
   });
 }
 
-function queueNotifyEmail(to, subject, text) {
+/**
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} text
+ * @param {{ replyTo?: string }} [options] — e.g. Reply-To client when emailing staff, or support address when emailing client
+ */
+function queueNotifyEmail(to, subject, text, options) {
   if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return;
+  const opts = options && typeof options === "object" ? options : {};
   setImmediate(() => {
     const transport = createMailTransport();
     if (!transport) {
-      console.warn("[notify] SMTP not configured; set SMTP_HOST and SMTP_USER to send mail to", to);
+      console.warn("[notify] SMTP not configured; set SMTP_HOST, SMTP_USER, SMTP_PASS — cannot email", to);
       return;
     }
     const from = process.env.MAIL_FROM || process.env.SMTP_USER;
+    /** @type {{ from: string; to: string; subject: string; text: string; replyTo?: string }} */
+    const mail = { from, to, subject, text };
+    const rt = opts.replyTo && String(opts.replyTo).trim();
+    if (rt && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rt)) {
+      mail.replyTo = rt;
+    }
     transport
-      .sendMail({ from, to, subject, text })
-      .then(() => console.log("[notify] sent:", subject, "→", to))
+      .sendMail(mail)
+      .then(() => console.log("[notify] email sent:", subject, "→", to, opts.replyTo ? `(Reply-To ${opts.replyTo})` : ""))
       .catch((err) => console.error("[notify] send failed:", err && err.message));
   });
 }
@@ -60,7 +83,7 @@ async function notifyOrderStatusChange(pool, { clientId, orderNumber, title, sta
     status,
     previousStatus: previousStatus || "",
   });
-  queueNotifyEmail(String(row.email).trim(), subject, text);
+  queueNotifyEmail(String(row.email).trim(), subject, text, { replyTo: resolveAdminReplyEmail() });
   if (String(process.env.NOTIFY_ADMIN_ON_ORDER_STATUS || "").toLowerCase() === "true") {
     queueNotifyEmail(
       resolveAdminNotifyEmail(),
@@ -439,17 +462,18 @@ app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, r
   );
   await pool.query("update message_threads set last_message_at = now(), updated_at = now() where id = $1", [threadId]);
   const infoRes = await pool.query(
-    "select first_name, last_name from clients where id = $1 limit 1",
+    "select first_name, last_name, email from clients where id = $1 limit 1",
     [clientId]
   );
   const who = infoRes.rows[0];
   const label = who ? `${who.first_name || ""} ${who.last_name || ""}`.trim() || "Client" : "Client";
+  const clientEmail = who && who.email ? String(who.email).trim() : "";
   const snippet = chatAttachments.snippetWithAttachments(bodyText, uploaded);
   const { subject, text } = emailTemplates.staffNewClientMessage({
     clientLabel: label,
     bodySnippet: snippet,
   });
-  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text);
+  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, clientEmail ? { replyTo: clientEmail } : undefined);
   res.status(201).json({
     message: {
       id: msgRes.rows[0].id,
@@ -553,7 +577,10 @@ app.post("/api/admin/threads/:threadId/messages", messageMultipartUpload, async 
       firstName: cRow.first_name,
       bodySnippet: snippet,
     });
-    queueNotifyEmail(String(cRow.email).trim(), subject, text);
+    const replyTo = resolveAdminReplyEmail();
+    queueNotifyEmail(String(cRow.email).trim(), subject, text, { replyTo });
+  } else {
+    console.warn("[notify] Client has no email on file; skipping email for admin reply (thread " + threadId + ")");
   }
   res.status(201).json({
     message: {

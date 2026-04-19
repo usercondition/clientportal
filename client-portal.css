@@ -287,6 +287,17 @@
   color: var(--text);
 }
 
+.portal-inline-btn--muted,
+.portal-inline-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.portal-inline-btn:disabled:hover {
+  color: var(--text-muted);
+}
+
 /* Inner cards (orders list items, profile dl) */
 .portal-card {
   border: 1px solid var(--border);

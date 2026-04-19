@@ -502,13 +502,8 @@
   .flow-progress {
     text-align: center;
     font-size: 0.78rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--border);
-  }
-
-  /* Pull welcome hero up so its top border sits just below the header (less dead space). */
-  #slide-welcome.flow-slide {
     padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
   }
 }
 
@@ -537,5 +532,48 @@
   .flow-form-block:hover {
     transform: none;
     box-shadow: none;
+  }
+}
+
+/* Small screens: align steps to the top (default flex centering left empty space above the hero). */
+@media (max-width: 699px) {
+  .flow-slide {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 0.3rem min(1rem, 4vw) max(1rem, calc(0.5rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .flow-header {
+    padding: max(0.35rem, env(safe-area-inset-top, 0px)) min(1rem, 4vw) 0.55rem;
+  }
+
+  #slide-welcome .flow-slide-inner--welcome {
+    gap: 0.45rem;
+  }
+
+  .flow-welcome-hero img {
+    aspect-ratio: 2 / 1;
+    max-height: min(30vh, 190px);
+    width: 100%;
+    object-fit: cover;
+  }
+
+  #slide-welcome .flow-eyebrow {
+    margin-bottom: 0.2rem;
+    font-size: 0.72rem;
+  }
+
+  #slide-welcome .flow-title {
+    margin-bottom: 0.3rem;
+  }
+
+  #slide-welcome .flow-lede {
+    margin-bottom: 0.55rem;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  #slide-welcome .flow-actions-stack .btn {
+    min-height: 2.95rem;
   }
 }

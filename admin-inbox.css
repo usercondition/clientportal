@@ -1,51 +1,91 @@
+/* Admin inbox — panel layout aligned with client portal */
+
 .admin-inbox-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
-.admin-inbox-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: max(1rem, env(safe-area-inset-top, 0px)) min(1.5rem, 4vw) 1rem;
+/* ——— Top bar ——— */
+.admin-topbar {
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
+  padding-top: max(0px, env(safe-area-inset-top, 0px));
 }
 
-.admin-inbox-bar h1 {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.admin-inbox-bar-actions {
+.admin-topbar-inner {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 0.85rem 0 0.95rem;
+  min-height: 3.35rem;
 }
 
-.admin-inbox-bar a,
-.admin-inbox-bar .admin-logout {
-  font-size: 0.88rem;
+.admin-topbar-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.admin-topbar-title {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.admin-topbar-tagline {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  max-width: 42ch;
+  line-height: 1.35;
+}
+
+.admin-topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  flex-shrink: 0;
+}
+
+.admin-topbar-link {
+  font-size: 0.84rem;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
+  padding: 0.38rem 0.65rem;
+  border-radius: 8px;
+  transition: color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
-.admin-inbox-bar a:hover {
+.admin-topbar-link:hover {
   color: var(--accent);
 }
 
-.admin-inbox-notify-btn {
+.admin-topbar-link--btn {
+  font: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.admin-topbar-link--btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+}
+
+.admin-topbar-btn {
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -53,7 +93,7 @@
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 0.4rem 0.65rem;
+  padding: 0.38rem 0.7rem;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
@@ -61,71 +101,157 @@
     color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
-.admin-inbox-notify-btn:hover {
+.admin-topbar-btn:hover {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   color: var(--accent);
 }
 
+.admin-topbar-btn--muted,
+.admin-topbar-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.admin-topbar-btn:disabled:hover {
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+/* ——— Page ——— */
 .admin-inbox-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding: clamp(0.75rem, 2vw, 1.15rem) 0 clamp(1.25rem, 3vw, 2rem);
 }
 
-.admin-inbox-grid {
-  flex: 1;
+.admin-page {
+  max-width: 1120px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-page-lede {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 72ch;
+}
+
+.admin-page-footnote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 70ch;
+}
+
+.admin-page-footnote code {
+  font-size: 0.78em;
+}
+
+/* ——— Dashboard grid ——— */
+.admin-dashboard {
   display: grid;
-  grid-template-columns: minmax(240px, 300px) 1fr;
-  min-height: min(70vh, 720px);
-  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+  align-items: stretch;
+  min-height: min(72vh, 760px);
 }
 
-@media (max-width: 800px) {
-  .admin-inbox-grid {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-  .admin-inbox-list-wrap {
-    max-height: min(40dvh, 260px);
-    border-bottom: 1px solid var(--border);
+@media (min-width: 880px) {
+  .admin-dashboard {
+    grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+    gap: 1.15rem;
   }
 }
 
-.admin-inbox-list-wrap {
-  border-right: 1px solid var(--border);
+/* ——— Panel shell ——— */
+.admin-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 20px);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.22));
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: color-mix(in srgb, var(--bg-elevated) 40%, var(--bg));
 }
 
-.admin-inbox-list-head {
-  padding: 0.75rem 1rem;
-  font-size: 0.72rem;
+.admin-panel__head {
+  padding: 0.95rem 1.1rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.admin-panel__h {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
+  letter-spacing: -0.02em;
 }
 
+.admin-panel__meta {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.admin-panel__body {
+  padding: 0.75rem 0.85rem 0.9rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-panel__body--scroll {
+  padding: 0.5rem 0.5rem 0.65rem;
+  overflow-y: auto;
+}
+
+.admin-panel--threads {
+  max-height: min(55vh, 520px);
+}
+
+@media (min-width: 880px) {
+  .admin-panel--threads {
+    max-height: none;
+  }
+}
+
+.admin-panel--chat {
+  flex: 1;
+  min-height: min(60vh, 640px);
+}
+
+/* ——— Thread list ——— */
 .admin-inbox-list {
   list-style: none;
   margin: 0;
-  padding: 0.5rem;
-  overflow-y: auto;
-  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-list-placeholder {
+  padding: 0.85rem 0.75rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .admin-inbox-item {
   width: 100%;
   text-align: left;
-  padding: 0.75rem 0.85rem;
-  margin-bottom: 0.35rem;
+  padding: 0.7rem 0.75rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  background: transparent;
+  background: color-mix(in srgb, var(--bg) 50%, transparent);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -135,22 +261,22 @@
 }
 
 .admin-inbox-item:hover {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
 }
 
 .admin-inbox-item.is-active {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
   background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
 }
 
 .admin-inbox-item-name {
   font-weight: 600;
-  font-size: 0.92rem;
-  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  margin: 0 0 0.2rem;
 }
 
 .admin-inbox-item-preview {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   margin: 0;
   line-height: 1.35;
@@ -161,63 +287,112 @@
 }
 
 .admin-inbox-item-meta {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin: 0.4rem 0 0;
+  margin: 0.35rem 0 0;
 }
 
-.admin-inbox-detail {
+/* ——— Empty / active chat ——— */
+.admin-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem;
+  min-height: 12rem;
+}
+
+.admin-empty-state__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-empty-state__text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 32ch;
+  line-height: 1.45;
+}
+
+.admin-chat-workspace {
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  min-height: 320px;
 }
 
-.admin-inbox-detail-empty {
-  flex: 1;
+.admin-peer-header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  text-align: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
 }
 
-.admin-inbox-chat-head {
-  padding: 0.85rem 1.1rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-elevated);
+.admin-peer-header__text {
+  min-width: 0;
 }
 
-.admin-inbox-chat-head h2 {
+.admin-peer-header__name {
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
   margin: 0 0 0.2rem;
+  letter-spacing: -0.02em;
 }
 
-.admin-inbox-chat-head p {
+.admin-peer-header__email {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
+  word-break: break-all;
+}
+
+.admin-peer-header__badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0.35rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.admin-thread-panel {
+  flex: 1;
+  min-height: 10rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-inbox-thread {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 1.1rem;
+  padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.65rem;
   scroll-behavior: smooth;
 }
 
+/* ——— Bubbles ——— */
 .admin-inbox-bubble {
   max-width: 88%;
-  padding: 0.65rem 0.85rem;
+  padding: 0.6rem 0.8rem;
   border-radius: 10px;
-  font-size: 0.92rem;
+  font-size: 0.91rem;
   line-height: 1.45;
 }
 
@@ -229,15 +404,15 @@
 
 .admin-inbox-bubble--admin {
   align-self: flex-end;
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
 }
 
 .admin-inbox-bubble time {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
 }
 
 .admin-inbox-bubble-text {
@@ -249,13 +424,13 @@
 .admin-inbox-attachments {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  margin-top: 0.25rem;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
 }
 
 .admin-inbox-img-wrap {
   display: block;
-  max-width: min(100%, 280px);
+  max-width: min(100%, 260px);
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
@@ -269,7 +444,7 @@
 }
 
 .admin-inbox-file-link {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 500;
   color: var(--accent);
   text-decoration: none;
@@ -280,12 +455,66 @@
   text-decoration: underline;
 }
 
-.admin-inbox-compose-toolbar {
+/* ——— Compose ——— */
+.admin-compose {
+  border-top: 1px solid var(--border);
+  padding: 0.85rem 1rem 1rem;
+  background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
+  flex-shrink: 0;
+}
+
+.admin-compose__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.admin-compose__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-compose__hint {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.admin-compose textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  font-size: 0.94rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  resize: vertical;
+  min-height: 3.75rem;
+  margin-bottom: 0.55rem;
+  transition:
+    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.admin-compose textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.admin-compose-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.65rem;
+  gap: 0.45rem 0.65rem;
+  margin-bottom: 0.5rem;
 }
 
 .admin-inbox-file-input {
@@ -304,9 +533,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.86rem;
+  min-height: 2.2rem;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--text-muted);
   border: 1px solid var(--border);
@@ -329,50 +558,14 @@
 }
 
 .admin-inbox-file-hint {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 
-.admin-inbox-compose {
-  border-top: 1px solid var(--border);
-  padding: 1rem 1.1rem;
-  background: color-mix(in srgb, var(--bg-elevated) 85%, var(--bg));
-}
-
-.admin-inbox-compose textarea {
-  width: 100%;
-  padding: 0.65rem 0.85rem;
-  font: inherit;
-  font-size: 0.95rem;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  resize: vertical;
-  min-height: 4rem;
-  margin-bottom: 0.65rem;
-  transition:
-    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
-    box-shadow var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
-}
-
-.admin-inbox-compose textarea:focus {
-  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  outline-offset: 2px;
-}
-
-.admin-inbox-compose-actions {
+.admin-compose-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-}
-
-.admin-inbox-note {
-  padding: 1rem min(1.5rem, 4vw) 1.5rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  max-width: 56ch;
-  line-height: 1.5;
 }
 
 .admin-sr-only {
@@ -387,58 +580,58 @@
   border: 0;
 }
 
-@media (max-width: 640px) {
-  .admin-inbox-bar {
-    align-items: flex-start;
+@media (prefers-reduced-motion: reduce) {
+  .admin-inbox-thread {
+    scroll-behavior: auto;
+  }
+}
+
+/* ——— Mobile ——— */
+@media (max-width: 879px) {
+  .admin-dashboard {
+    min-height: auto;
   }
 
-  .admin-inbox-bar h1 {
-    width: 100%;
-    flex: 1 1 100%;
+  .admin-panel--threads {
+    max-height: min(38dvh, 280px);
   }
 
-  .admin-inbox-bar-actions {
-    width: 100%;
-    flex-wrap: wrap;
+  .admin-panel--chat {
+    min-height: 22rem;
+  }
+
+  .admin-topbar-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-topbar-actions {
     justify-content: flex-start;
-    gap: 0.5rem 0.75rem;
   }
 
-  .admin-inbox-bar-actions > a,
-  .admin-inbox-bar-actions > .admin-logout {
-    min-height: 2.75rem;
+  .admin-topbar-btn,
+  .admin-topbar-link,
+  .admin-topbar-link--btn {
+    min-height: 2.65rem;
     display: inline-flex;
     align-items: center;
-    padding: 0.45rem 0.75rem;
-    border-radius: 8px;
-    touch-action: manipulation;
   }
 
-  .admin-inbox-notify-btn {
-    min-height: 2.75rem;
-    padding: 0.45rem 0.75rem;
-    touch-action: manipulation;
-  }
-
-  .admin-inbox-compose-actions {
+  .admin-compose-actions {
     justify-content: stretch;
   }
 
-  .admin-inbox-compose-actions .btn {
+  .admin-compose-actions .btn {
     width: 100%;
     min-height: 2.75rem;
     justify-content: center;
   }
 
-  .admin-inbox-compose textarea {
+  .admin-compose textarea {
     font-size: 1rem;
   }
 
-  .admin-inbox-note {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
-  }
-
-  .admin-inbox-detail {
-    min-height: 280px;
+  .admin-page-footnote {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
   }
 }

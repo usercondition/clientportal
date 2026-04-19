@@ -20,11 +20,62 @@
     }, 5200);
   }
 
+  var PORTAL_NOTIFY_STORAGE = "portal_notify_ui_enabled";
+
+  function isInAppNotifyEnabled() {
+    try {
+      var v = localStorage.getItem(PORTAL_NOTIFY_STORAGE);
+      if (v === null || v === undefined) return true;
+      return v === "1" || v === "true";
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function setInAppNotifyEnabled(on) {
+    try {
+      localStorage.setItem(PORTAL_NOTIFY_STORAGE, on ? "1" : "0");
+    } catch (e) {}
+  }
+
   function maybeBrowserNotify(title, body) {
     if (typeof Notification !== "function" || Notification.permission !== "granted") return;
+    if (!isInAppNotifyEnabled()) return;
     try {
       new Notification(title, { body: body });
     } catch (e) {}
+  }
+
+  function syncPortalNotifyButton(btn) {
+    if (!btn) return;
+    btn.classList.remove("portal-inline-btn--muted");
+    btn.removeAttribute("aria-pressed");
+    btn.removeAttribute("title");
+    if (typeof Notification === "undefined") {
+      btn.textContent = "Notifications not supported";
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    var perm = Notification.permission;
+    if (perm === "denied") {
+      btn.textContent = "Notifications blocked (browser)";
+      btn.title = "Allow notifications for this site in your browser settings, then reload.";
+      btn.classList.add("portal-inline-btn--muted");
+      return;
+    }
+    if (perm === "default") {
+      btn.textContent = "Enable desktop notifications";
+      btn.setAttribute("aria-pressed", "false");
+      return;
+    }
+    if (isInAppNotifyEnabled()) {
+      btn.textContent = "Disable desktop notifications";
+      btn.setAttribute("aria-pressed", "true");
+    } else {
+      btn.textContent = "Enable desktop notifications";
+      btn.setAttribute("aria-pressed", "false");
+    }
   }
 
   function esc(s) {
@@ -160,19 +211,42 @@
 
   var notifyBtn = document.getElementById("portal-enable-notify");
   if (notifyBtn) {
+    syncPortalNotifyButton(notifyBtn);
     notifyBtn.addEventListener("click", function () {
       if (typeof Notification === "undefined") {
         showAppToast("This browser does not support notifications.");
         return;
       }
-      Notification.requestPermission()
-        .then(function (perm) {
-          if (perm === "granted") showAppToast("Desktop notifications enabled.");
-          else showAppToast("Notifications were not enabled.");
-        })
-        .catch(function () {
-          showAppToast("Could not request notification permission.");
-        });
+      var perm = Notification.permission;
+      if (perm === "denied") {
+        showAppToast("Unblock notifications for this site in your browser settings.");
+        return;
+      }
+      if (perm === "default") {
+        Notification.requestPermission()
+          .then(function (p) {
+            if (p === "granted") {
+              setInAppNotifyEnabled(true);
+              showAppToast("Desktop notifications enabled.");
+            } else {
+              showAppToast("Notifications were not enabled.");
+            }
+            syncPortalNotifyButton(notifyBtn);
+          })
+          .catch(function () {
+            showAppToast("Could not request notification permission.");
+            syncPortalNotifyButton(notifyBtn);
+          });
+        return;
+      }
+      if (isInAppNotifyEnabled()) {
+        setInAppNotifyEnabled(false);
+        showAppToast("Desktop notifications are off. Turn them back on here anytime.");
+      } else {
+        setInAppNotifyEnabled(true);
+        showAppToast("Desktop notifications are on.");
+      }
+      syncPortalNotifyButton(notifyBtn);
     });
   }
 
