@@ -4,6 +4,29 @@
   var p = Portal.getProfile();
   if (!p) return;
 
+  var seenMessageIds = new Set();
+  var baseTitle = document.title;
+
+  function showAppToast(text) {
+    var host = document.getElementById("app-toast-host");
+    if (!host) return;
+    var el = document.createElement("div");
+    el.className = "app-toast";
+    el.setAttribute("role", "status");
+    el.textContent = text;
+    host.appendChild(el);
+    window.setTimeout(function () {
+      el.remove();
+    }, 5200);
+  }
+
+  function maybeBrowserNotify(title, body) {
+    if (typeof Notification !== "function" || Notification.permission !== "granted") return;
+    try {
+      new Notification(title, { body: body });
+    } catch (e) {}
+  }
+
   function esc(s) {
     var d = document.createElement("div");
     d.textContent = s;
@@ -107,6 +130,24 @@
 
   var firstMessageRender = true;
 
+  var notifyBtn = document.getElementById("portal-enable-notify");
+  if (notifyBtn) {
+    notifyBtn.addEventListener("click", function () {
+      if (typeof Notification === "undefined") {
+        showAppToast("This browser does not support notifications.");
+        return;
+      }
+      Notification.requestPermission()
+        .then(function (perm) {
+          if (perm === "granted") showAppToast("Desktop notifications enabled.");
+          else showAppToast("Notifications were not enabled.");
+        })
+        .catch(function () {
+          showAppToast("Could not request notification permission.");
+        });
+    });
+  }
+
   function prefersReducedMotion() {
     return (
       typeof window.matchMedia === "function" &&
@@ -123,6 +164,23 @@
     } catch (e) {
       messages = [];
     }
+
+    var hadSeen = seenMessageIds.size > 0;
+    messages.forEach(function (m) {
+      if (seenMessageIds.has(m.id)) return;
+      seenMessageIds.add(m.id);
+      if (hadSeen && m.from === "admin") {
+        showAppToast("New reply from staff");
+        maybeBrowserNotify("Client portal", "You have a new reply from staff.");
+        if (document.title === baseTitle) {
+          document.title = "(!) " + baseTitle;
+          window.setTimeout(function () {
+            document.title = baseTitle;
+          }, 4000);
+        }
+      }
+    });
+
     thread.innerHTML = messages
       .map(function (m) {
         var isClient = m.from === "client";

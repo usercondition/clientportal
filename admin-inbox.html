@@ -31,6 +31,9 @@
     <header class="admin-inbox-bar">
       <h1>Inbox</h1>
       <div class="admin-inbox-bar-actions">
+        <button type="button" class="admin-inbox-notify-btn" id="admin-enable-notify">
+          Desktop notifications
+        </button>
         <a href="admin.html">← Admin home</a>
         <a href="index.html">Public site</a>
         <button type="button" class="admin-logout" id="admin-inbox-logout">Log out</button>
@@ -71,10 +74,12 @@
         </div>
       </div>
       <p class="admin-inbox-note">
-        Demo: messages use shared storage in this browser. Keep this tab open next to a client portal
-        tab to see updates in real time. Production setups should use a server and WebSockets or push.
+        New client messages appear here on refresh/poll. Configure SMTP on the server to receive email alerts at your
+        admin address.
       </p>
     </main>
+
+    <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>
 
     <script src="admin-inbox.js" defer></script>
   </body>

@@ -8,9 +8,46 @@
   var form = document.getElementById("admin-inbox-form");
   var replyInput = document.getElementById("admin-inbox-reply");
   var logoutBtn = document.getElementById("admin-inbox-logout");
+  var notifyPermBtn = document.getElementById("admin-enable-notify");
 
   /** @type {string | null} */
   var selectedThreadId = null;
+
+  /** @type {Record<string, { updatedAt: string; preview: string; lastFrom: string }>} */
+  var threadListSnapshot = {};
+
+  /** @type {Record<string, Set<string | number>>} */
+  var seenThreadMessageIdsByThread = {};
+
+  var baseTitle = document.title;
+
+  function seenSetForThread(threadId) {
+    if (!threadId) return new Set();
+    if (!seenThreadMessageIdsByThread[threadId]) {
+      seenThreadMessageIdsByThread[threadId] = new Set();
+    }
+    return seenThreadMessageIdsByThread[threadId];
+  }
+
+  function showAppToast(text) {
+    var host = document.getElementById("app-toast-host");
+    if (!host) return;
+    var el = document.createElement("div");
+    el.className = "app-toast";
+    el.setAttribute("role", "status");
+    el.textContent = text;
+    host.appendChild(el);
+    window.setTimeout(function () {
+      el.remove();
+    }, 5200);
+  }
+
+  function maybeBrowserNotify(title, body) {
+    if (typeof Notification !== "function" || Notification.permission !== "granted") return;
+    try {
+      new Notification(title, { body: body });
+    } catch (e) {}
+  }
 
   function esc(s) {
     var d = document.createElement("div");
@@ -55,6 +92,37 @@
     } catch (e) {
       rows = [];
     }
+
+    var hadSnapshot = Object.keys(threadListSnapshot).length > 0;
+    var nextSnap = {};
+    rows.forEach(function (r) {
+      nextSnap[r.threadId] = {
+        updatedAt: String(r.updatedAt || ""),
+        preview: r.preview || "",
+        lastFrom: r.lastFrom || "",
+      };
+    });
+    if (hadSnapshot) {
+      rows.forEach(function (r) {
+        var prev = threadListSnapshot[r.threadId];
+        if (!prev) return;
+        var changed =
+          prev.updatedAt !== nextSnap[r.threadId].updatedAt ||
+          prev.preview !== nextSnap[r.threadId].preview;
+        if (changed && r.lastFrom === "client" && r.threadId !== selectedThreadId) {
+          showAppToast("New message — " + r.clientLabel);
+          maybeBrowserNotify("Admin inbox", "New message from " + r.clientLabel);
+          if (document.title === baseTitle) {
+            document.title = "(!) " + baseTitle;
+            window.setTimeout(function () {
+              document.title = baseTitle;
+            }, 4000);
+          }
+        }
+      });
+    }
+    threadListSnapshot = nextSnap;
+
     listEl.innerHTML = rows
       .map(function (r) {
         var active = r.threadId === selectedThreadId ? " is-active" : "";
@@ -112,6 +180,17 @@
     }
     var t = payload.thread;
     var messages = payload.messages || [];
+
+    var seenSet = seenSetForThread(selectedThreadId);
+    var hadMsgs = seenSet.size > 0;
+    messages.forEach(function (m) {
+      if (seenSet.has(m.id)) return;
+      seenSet.add(m.id);
+      if (hadMsgs && m.from === "client") {
+        showAppToast("New message from client");
+        maybeBrowserNotify("Admin inbox", "New client message in this thread.");
+      }
+    });
 
     emptyEl.hidden = true;
     chatWrap.hidden = false;
@@ -188,6 +267,23 @@
     logoutBtn.addEventListener("click", function () {
       if (window.AdminAuth) AdminAuth.clearAdminSession();
       location.href = "admin-login.html";
+    });
+  }
+
+  if (notifyPermBtn) {
+    notifyPermBtn.addEventListener("click", function () {
+      if (typeof Notification === "undefined") {
+        showAppToast("This browser does not support notifications.");
+        return;
+      }
+      Notification.requestPermission()
+        .then(function (perm) {
+          if (perm === "granted") showAppToast("Desktop notifications enabled.");
+          else showAppToast("Notifications were not enabled.");
+        })
+        .catch(function () {
+          showAppToast("Could not request notification permission.");
+        });
     });
   }
 })();

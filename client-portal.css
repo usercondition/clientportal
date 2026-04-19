@@ -340,6 +340,28 @@
   line-height: 1.45;
 }
 
+.portal-notify-tools {
+  margin: -0.35rem 0 1rem;
+}
+
+.portal-inline-btn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.portal-inline-btn:hover {
+  color: var(--text);
+}
+
 .portal-card-messages {
   padding: 0;
   overflow: hidden;

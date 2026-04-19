@@ -226,6 +226,24 @@
   min-height: 3.35rem;
 }
 
+.flow-welcome-hero {
+  margin: 0 auto 1.35rem;
+  border-radius: var(--radius-lg, 20px);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
+  width: 100%;
+  max-width: 520px;
+}
+
+.flow-welcome-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
 .flow-eyebrow {
   font-size: 0.8rem;
   font-weight: 600;

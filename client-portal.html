@@ -69,7 +69,13 @@
           <section class="portal-section portal-section-messages" aria-labelledby="msg-heading">
             <h2 id="msg-heading" class="portal-h2">Message center</h2>
             <p class="portal-msg-intro">
-              Messages sync to the shop inbox on this device in real time. Open the admin inbox in another tab to reply.
+              Messages sync with the shop inbox. When staff replies, you will see an alert here and can get an email if
+              the server is configured with SMTP.
+            </p>
+            <p class="portal-notify-tools">
+              <button type="button" class="portal-inline-btn" id="portal-enable-notify">
+                Enable desktop notifications
+              </button>
             </p>
             <div class="portal-card portal-card-messages">
               <div class="portal-thread" id="portal-thread" role="log" aria-live="polite"></div>
@@ -92,6 +98,8 @@
         </div>
       </div>
     </main>
+
+    <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>
 
     <script src="client-portal.js" defer></script>
   </body>

@@ -46,6 +46,27 @@
   color: var(--accent);
 }
 
+.admin-inbox-notify-btn {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.admin-inbox-notify-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+}
+
 .admin-inbox-main {
   flex: 1;
   display: flex;
