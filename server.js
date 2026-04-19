@@ -46,6 +46,12 @@ const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.warn("DATABASE_URL not set. API routes will fail until configured.");
+} else if (/\.proxy\.rlwy\.net/i.test(String(DATABASE_URL))) {
+  console.warn(
+    "[railway] DATABASE_URL uses the public TCP proxy host (*.proxy.rlwy.net). That can incur egress fees. " +
+      "For your Node service, reference Postgres's private connection (same-project networking), not DATABASE_PUBLIC_URL. " +
+      "See database/README.md (Railway section)."
+  );
 }
 
 const useSsl =
