@@ -187,6 +187,7 @@
 
 .flow-slide-inner {
   width: min(100%, 420px);
+  margin-inline: auto;
 }
 
 .flow-slide-inner--form {
@@ -194,7 +195,16 @@
 }
 
 .flow-slide-inner--form-wide {
-  width: min(100%, 520px);
+  width: min(100%, 620px);
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border-radius: calc(var(--radius-lg) + 2px);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--bg-elevated) 96%, #ffffff) 0%,
+    color-mix(in srgb, var(--bg-elevated) 86%, var(--accent-soft)) 100%
+  );
+  box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
 }
 
 .flow-eyebrow {
@@ -260,6 +270,24 @@
 
 .flow-form .field {
   margin-bottom: 1.1rem;
+}
+
+.flow-form-block {
+  padding: 1rem;
+  margin: 0 0 0.95rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, var(--accent-soft));
+  transition:
+    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.flow-form-block:hover {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .flow-section-title {
@@ -334,6 +362,14 @@
   outline-offset: 2px;
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.flow-actions-stack .btn:first-child {
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+#slide-new-profile .btn-primary {
+  min-width: 11.5rem;
 }
 
 .flow-error {

@@ -79,6 +79,7 @@
 
 .portal-layout {
   max-width: var(--max);
+  margin-inline: auto;
 }
 
 .portal-welcome {
@@ -142,6 +143,7 @@
 
 .portal-section {
   margin-bottom: 2rem;
+  scroll-margin-top: 5rem;
 }
 
 .portal-h2 {

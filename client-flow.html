@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -181,6 +181,7 @@
             you’ll use with your name when you choose “I’ve been here before.”
           </p>
           <form id="form-new-profile" class="flow-form" novalidate>
+            <section class="flow-form-block">
             <h2 class="flow-section-title">Your name</h2>
             <p class="flow-section-hint">You’ll use this with your address ZIP when you return.</p>
             <div class="field-row field-row--split">
@@ -207,7 +208,9 @@
                 />
               </div>
             </div>
+            </section>
 
+            <section class="flow-form-block">
             <h2 class="flow-section-title">Contact</h2>
             <div class="field-row field-row--split">
               <div class="field">
@@ -234,7 +237,9 @@
                 />
               </div>
             </div>
+            </section>
 
+            <section class="flow-form-block">
             <h2 class="flow-section-title">Shipping / home address</h2>
             <p class="flow-section-hint">Where we should ship orders or send physical mail.</p>
             <div class="field">
@@ -307,6 +312,7 @@
                 Part of your mailing address — also used with your name to sign in next time.
               </p>
             </div>
+            </section>
             <p id="new-profile-error" class="flow-error" role="alert" hidden></p>
             <div class="flow-actions">
               <button type="submit" class="btn btn-primary">Save and continue</button>
