@@ -64,9 +64,21 @@
                 name="reply"
                 rows="3"
                 maxlength="2000"
-                required
-                placeholder="Type your reply…"
+                placeholder="Type your reply… (optional if you attach a file)"
               ></textarea>
+              <div class="admin-inbox-compose-toolbar">
+                <input
+                  type="file"
+                  id="admin-inbox-files"
+                  name="files"
+                  class="admin-inbox-file-input"
+                  multiple
+                  accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                  aria-label="Attach images or PDF"
+                />
+                <label class="admin-inbox-file-label" for="admin-inbox-files">Attach</label>
+                <span class="admin-inbox-file-hint" id="admin-inbox-file-hint" aria-live="polite"></span>
+              </div>
               <div class="admin-inbox-compose-actions">
                 <button type="submit" class="btn btn-primary">Send reply</button>
               </div>

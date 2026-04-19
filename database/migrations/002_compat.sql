@@ -12,3 +12,5 @@ ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS sender_ref text;
 ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS delivered_at timestamptz;
 
 ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS read_at timestamptz;
+
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS attachments jsonb NOT NULL DEFAULT '[]'::jsonb;

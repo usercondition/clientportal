@@ -33,6 +33,34 @@
     return d.innerHTML;
   }
 
+  function renderAttachmentsHtml(attachments) {
+    if (!attachments || !attachments.length) return "";
+    var parts = attachments.map(function (a) {
+      var href = esc(a.url || "");
+      var name = esc(a.name || "file");
+      var isImg = a.kind === "image" || (a.mime && String(a.mime).indexOf("image/") === 0);
+      if (isImg) {
+        return (
+          '<a class="portal-msg-img-wrap" href="' +
+          href +
+          '" target="_blank" rel="noopener noreferrer">' +
+          '<img src="' +
+          href +
+          '" alt="" loading="lazy" decoding="async" />' +
+          "</a>"
+        );
+      }
+      return (
+        '<a class="portal-msg-file" href="' +
+        href +
+        '" target="_blank" rel="noopener noreferrer">' +
+        name +
+        "</a>"
+      );
+    });
+    return '<div class="portal-msg-attachments">' + parts.join("") + "</div>";
+  }
+
   function formatTime(iso) {
     try {
       var d = new Date(iso);
@@ -184,11 +212,15 @@
     thread.innerHTML = messages
       .map(function (m) {
         var isClient = m.from === "client";
+        var bodyText = String(m.body || "").trim();
+        var bodyHtml = bodyText ? esc(bodyText) : "";
+        var attHtml = renderAttachmentsHtml(m.attachments);
         return (
           '<div class="portal-bubble portal-bubble--' +
           (isClient ? "client" : "admin") +
           '">' +
-          esc(m.body) +
+          (bodyHtml ? "<p class=\"portal-bubble-text\">" + bodyHtml + "</p>" : "") +
+          attHtml +
           "<time>" +
           esc(formatTime(m.at)) +
           "</time></div>"
@@ -221,17 +253,29 @@
 
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");
+  var fileInput = document.getElementById("portal-msg-files");
+  var fileHint = document.getElementById("portal-msg-file-hint");
+  if (fileInput && fileHint) {
+    fileInput.addEventListener("change", function () {
+      var n = fileInput.files ? fileInput.files.length : 0;
+      fileHint.textContent = n ? n + " file" + (n === 1 ? "" : "s") + " selected" : "";
+    });
+  }
   if (form && input) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var t = String(input.value || "").trim();
-      if (!t) return;
+      var files = fileInput && fileInput.files ? fileInput.files : null;
+      if (!t && (!files || !files.length)) return;
       try {
-        await Portal.appendClientMessage(t);
+        await Portal.appendClientMessage(t, files);
       } catch (err) {
+        showAppToast((err && err.message) || "Could not send message.");
         return;
       }
       input.value = "";
+      if (fileInput) fileInput.value = "";
+      if (fileHint) fileHint.textContent = "";
       renderMessages();
     });
   }

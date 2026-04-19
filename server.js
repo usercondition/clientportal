@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const nodemailer = require("nodemailer");
@@ -5,6 +6,7 @@ const { Pool } = require("pg");
 require("dotenv").config();
 
 const emailTemplates = require("./lib/email-templates");
+const chatAttachments = require("./lib/chat-attachments");
 
 const ADMIN_NOTIFY_EMAIL_DEFAULT = "m.e.mercado@proton.me";
 
@@ -72,6 +74,39 @@ async function notifyOrderStatusChange(pool, { clientId, orderNumber, title, sta
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
+
+const uploadsRoot = path.join(__dirname, "uploads");
+const uploadsChatDir = path.join(uploadsRoot, "chat");
+fs.mkdirSync(uploadsChatDir, { recursive: true });
+const uploadMiddleware = chatAttachments.createUploadMiddleware(uploadsChatDir);
+
+/**
+ * Parse multipart for chat messages; JSON-only requests skip this (handled by express.json).
+ */
+function messageMultipartUpload(req, res, next) {
+  const ct = String(req.headers["content-type"] || "");
+  if (ct.includes("multipart/form-data")) {
+    return uploadMiddleware.array("files", chatAttachments.MAX_FILES_PER_MESSAGE)(req, res, (err) => {
+      if (!err) return next();
+      const msg =
+        err.code === "LIMIT_FILE_SIZE"
+          ? `Each file must be ${chatAttachments.MAX_FILE_BYTES / (1024 * 1024)} MB or smaller.`
+          : err.message || "Upload failed.";
+      return res.status(400).json({ error: msg });
+    });
+  }
+  next();
+}
+
+function mapMessageRow(m) {
+  return {
+    id: m.id,
+    from: m.sender === "admin" ? "admin" : m.sender === "client" ? "client" : "admin",
+    body: m.body,
+    attachments: chatAttachments.toApiAttachments(m.attachments),
+    at: m.created_at,
+  };
+}
 
 const {
   resolveDatabaseUrlWithSource,
@@ -371,24 +406,22 @@ app.get("/api/client/:clientId/messages", async (req, res) => {
   if (!threadRes.rows.length) return res.json({ messages: [] });
   const threadId = threadRes.rows[0].id;
   const msgRes = await pool.query(
-    "select id, sender, body, created_at from messages where thread_id = $1 order by created_at asc",
+    "select id, sender, body, attachments, created_at from messages where thread_id = $1 order by created_at asc",
     [threadId]
   );
   res.json({
     threadId,
-    messages: msgRes.rows.map((m) => ({
-      id: m.id,
-      from: m.sender === "admin" ? "admin" : m.sender === "client" ? "client" : "admin",
-      body: m.body,
-      at: m.created_at,
-    })),
+    messages: msgRes.rows.map(mapMessageRow),
   });
 });
 
-app.post("/api/client/:clientId/messages", async (req, res) => {
+app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, res) => {
   const { clientId } = req.params;
-  const body = String((req.body && req.body.body) || "").trim();
-  if (!body) return res.status(400).json({ error: "Message body required." });
+  const bodyText = String((req.body && req.body.body) || "").trim();
+  const uploaded = chatAttachments.mapUploadedFilesToDb(req.files || []);
+  if (!bodyText && uploaded.length === 0) {
+    return res.status(400).json({ error: "Message text or at least one file is required." });
+  }
 
   const threadRes = await pool.query(
     "insert into message_threads (client_id, subject, last_message_at) values ($1,$2, now()) on conflict (client_id) do update set last_message_at = now() returning id",
@@ -396,8 +429,8 @@ app.post("/api/client/:clientId/messages", async (req, res) => {
   );
   const threadId = threadRes.rows[0].id;
   const msgRes = await pool.query(
-    "insert into messages (thread_id, sender, sender_ref, body, delivered_at) values ($1,'client',$2,$3, now()) returning id, created_at",
-    [threadId, clientId, body]
+    "insert into messages (thread_id, sender, sender_ref, body, attachments, delivered_at) values ($1,'client',$2,$3,$4::jsonb, now()) returning id, created_at",
+    [threadId, clientId, bodyText, JSON.stringify(uploaded)]
   );
   await pool.query("update message_threads set last_message_at = now(), updated_at = now() where id = $1", [threadId]);
   const infoRes = await pool.query(
@@ -406,13 +439,20 @@ app.post("/api/client/:clientId/messages", async (req, res) => {
   );
   const who = infoRes.rows[0];
   const label = who ? `${who.first_name || ""} ${who.last_name || ""}`.trim() || "Client" : "Client";
+  const snippet = chatAttachments.snippetWithAttachments(bodyText, uploaded);
   const { subject, text } = emailTemplates.staffNewClientMessage({
     clientLabel: label,
-    bodySnippet: body,
+    bodySnippet: snippet,
   });
   queueNotifyEmail(resolveAdminNotifyEmail(), subject, text);
   res.status(201).json({
-    message: { id: msgRes.rows[0].id, from: "client", body, at: msgRes.rows[0].created_at },
+    message: {
+      id: msgRes.rows[0].id,
+      from: "client",
+      body: bodyText,
+      attachments: chatAttachments.toApiAttachments(uploaded),
+      at: msgRes.rows[0].created_at,
+    },
   });
 });
 
@@ -426,11 +466,12 @@ app.get("/api/admin/inbox", async (_req, res) => {
       c.last_name,
       c.email,
       m.body as preview,
+      m.attachments as preview_attachments,
       m.sender as last_sender
     from message_threads t
     join clients c on c.id = t.client_id
     left join lateral (
-      select body, sender
+      select body, sender, attachments
       from messages
       where thread_id = t.id
       order by created_at desc
@@ -446,7 +487,8 @@ app.get("/api/admin/inbox", async (_req, res) => {
       clientLabel: `${r.first_name || ""} ${r.last_name || ""}`.trim() || "Client",
       clientEmail: r.email || "",
       updatedAt: r.last_message_at,
-      preview: r.preview || "",
+      preview:
+        chatAttachments.inboxPreviewLine(r.preview, r.preview_attachments) || "(no messages)",
       lastFrom: r.last_sender || "",
     })),
   });
@@ -465,7 +507,7 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   if (!threadRes.rows.length) return res.status(404).json({ error: "Thread not found." });
   const info = threadRes.rows[0];
   const msgRes = await pool.query(
-    "select id, sender, body, created_at from messages where thread_id = $1 order by created_at asc",
+    "select id, sender, body, attachments, created_at from messages where thread_id = $1 order by created_at asc",
     [threadId]
   );
   res.json({
@@ -475,22 +517,20 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
       clientLabel: `${info.first_name || ""} ${info.last_name || ""}`.trim() || "Client",
       clientEmail: info.email || "",
     },
-    messages: msgRes.rows.map((m) => ({
-      id: m.id,
-      from: m.sender === "client" ? "client" : "admin",
-      body: m.body,
-      at: m.created_at,
-    })),
+    messages: msgRes.rows.map(mapMessageRow),
   });
 });
 
-app.post("/api/admin/threads/:threadId/messages", async (req, res) => {
+app.post("/api/admin/threads/:threadId/messages", messageMultipartUpload, async (req, res) => {
   const { threadId } = req.params;
-  const body = String((req.body && req.body.body) || "").trim();
-  if (!body) return res.status(400).json({ error: "Message body required." });
+  const bodyText = String((req.body && req.body.body) || "").trim();
+  const uploaded = chatAttachments.mapUploadedFilesToDb(req.files || []);
+  if (!bodyText && uploaded.length === 0) {
+    return res.status(400).json({ error: "Message text or at least one file is required." });
+  }
   const msgRes = await pool.query(
-    "insert into messages (thread_id, sender, sender_ref, body, delivered_at) values ($1,'admin','admin', $2, now()) returning id, created_at",
-    [threadId, body]
+    "insert into messages (thread_id, sender, sender_ref, body, attachments, delivered_at) values ($1,'admin','admin', $2, $3::jsonb, now()) returning id, created_at",
+    [threadId, bodyText, JSON.stringify(uploaded)]
   );
   await pool.query("update message_threads set last_message_at = now(), updated_at = now() where id = $1", [threadId]);
   const clientRes = await pool.query(
@@ -503,16 +543,25 @@ app.post("/api/admin/threads/:threadId/messages", async (req, res) => {
   );
   const cRow = clientRes.rows[0];
   if (cRow && cRow.email) {
+    const snippet = chatAttachments.snippetWithAttachments(bodyText, uploaded);
     const { subject, text } = emailTemplates.clientNewStaffMessage({
       firstName: cRow.first_name,
-      bodySnippet: body,
+      bodySnippet: snippet,
     });
     queueNotifyEmail(String(cRow.email).trim(), subject, text);
   }
   res.status(201).json({
-    message: { id: msgRes.rows[0].id, from: "admin", body, at: msgRes.rows[0].created_at },
+    message: {
+      id: msgRes.rows[0].id,
+      from: "admin",
+      body: bodyText,
+      attachments: chatAttachments.toApiAttachments(uploaded),
+      at: msgRes.rows[0].created_at,
+    },
   });
 });
+
+app.use("/uploads", express.static(uploadsRoot));
 
 const staticDir = path.resolve(__dirname);
 app.use(express.static(staticDir));

@@ -563,6 +563,99 @@
   margin-top: 0.35rem;
 }
 
+.portal-bubble-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.portal-msg-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.portal-msg-img-wrap {
+  display: block;
+  max-width: min(100%, 280px);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  line-height: 0;
+}
+
+.portal-msg-img-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.portal-msg-file {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.portal-msg-file:hover {
+  text-decoration: underline;
+}
+
+.portal-compose-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.portal-msg-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.portal-msg-file-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.portal-msg-file-label:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+}
+
+.portal-msg-file-input:focus-visible + .portal-msg-file-label {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.portal-msg-file-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 .portal-compose {
   border-top: 1px solid var(--border);
   padding: 1rem 1.1rem;

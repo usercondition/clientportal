@@ -87,9 +87,21 @@
                   name="message"
                   rows="3"
                   maxlength="2000"
-                  required
-                  placeholder="Write your message…"
+                  placeholder="Write your message… (optional if you attach a file)"
                 ></textarea>
+                <div class="portal-compose-toolbar">
+                  <input
+                    type="file"
+                    id="portal-msg-files"
+                    name="files"
+                    class="portal-msg-file-input"
+                    multiple
+                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                    aria-label="Attach images or PDF"
+                  />
+                  <label class="portal-msg-file-label" for="portal-msg-files">Attach</label>
+                  <span class="portal-msg-file-hint" id="portal-msg-file-hint" aria-live="polite"></span>
+                </div>
                 <div class="portal-compose-actions">
                   <button type="submit" class="btn btn-primary">Send</button>
                 </div>

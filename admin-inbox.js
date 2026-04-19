@@ -7,6 +7,8 @@
   var emailEl = document.getElementById("admin-inbox-client-email");
   var form = document.getElementById("admin-inbox-form");
   var replyInput = document.getElementById("admin-inbox-reply");
+  var adminFileInput = document.getElementById("admin-inbox-files");
+  var adminFileHint = document.getElementById("admin-inbox-file-hint");
   var logoutBtn = document.getElementById("admin-inbox-logout");
   var notifyPermBtn = document.getElementById("admin-enable-notify");
 
@@ -55,6 +57,34 @@
     return d.innerHTML;
   }
 
+  function renderAttachmentsHtml(attachments) {
+    if (!attachments || !attachments.length) return "";
+    var parts = attachments.map(function (a) {
+      var href = esc(a.url || "");
+      var name = esc(a.name || "file");
+      var isImg = a.kind === "image" || (a.mime && String(a.mime).indexOf("image/") === 0);
+      if (isImg) {
+        return (
+          '<a class="admin-inbox-img-wrap" href="' +
+          href +
+          '" target="_blank" rel="noopener noreferrer">' +
+          '<img src="' +
+          href +
+          '" alt="" loading="lazy" decoding="async" />' +
+          "</a>"
+        );
+      }
+      return (
+        '<a class="admin-inbox-file-link" href="' +
+        href +
+        '" target="_blank" rel="noopener noreferrer">' +
+        name +
+        "</a>"
+      );
+    });
+    return '<div class="admin-inbox-attachments">' + parts.join("") + "</div>";
+  }
+
   function formatTime(iso) {
     try {
       return new Date(iso).toLocaleString(undefined, {
@@ -81,6 +111,47 @@
     } catch (e) {}
     if (!res.ok) throw new Error((payload && payload.error) || "Request failed.");
     return payload;
+  }
+
+  async function postThreadMessage(threadId, text, fileList) {
+    var url = "/api/admin/threads/" + encodeURIComponent(threadId) + "/messages";
+    var bodyText = String(text || "").trim();
+    var files =
+      fileList && fileList.length ? Array.prototype.slice.call(fileList) : [];
+    if (!bodyText && files.length === 0) return;
+
+    if (files.length > 0) {
+      var fd = new FormData();
+      fd.append("body", bodyText);
+      for (var i = 0; i < files.length; i++) {
+        fd.append("files", files[i]);
+      }
+      var res = await fetch(url, { method: "POST", body: fd });
+      var raw = "";
+      try {
+        raw = await res.text();
+      } catch (e) {
+        raw = "";
+      }
+      var payload = null;
+      if (raw) {
+        try {
+          payload = JSON.parse(raw);
+        } catch (e) {
+          payload = null;
+        }
+      }
+      if (!res.ok) {
+        throw new Error((payload && payload.error) || "Upload failed.");
+      }
+      return payload;
+    }
+
+    return requestJson(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: bodyText }),
+    });
   }
 
   async function renderList() {
@@ -200,11 +271,15 @@
     threadEl.innerHTML = messages
       .map(function (m) {
         var isAdmin = m.from === "admin";
+        var bodyText = String(m.body || "").trim();
+        var bodyHtml = bodyText ? esc(bodyText) : "";
+        var attHtml = renderAttachmentsHtml(m.attachments);
         return (
           '<div class="admin-inbox-bubble admin-inbox-bubble--' +
           (isAdmin ? "admin" : "client") +
           '">' +
-          esc(m.body) +
+          (bodyHtml ? "<p class=\"admin-inbox-bubble-text\">" + bodyHtml + "</p>" : "") +
+          attHtml +
           "<time>" +
           esc(formatTime(m.at)) +
           "</time></div>"
@@ -242,22 +317,29 @@
     if (selectedThreadId) renderThread();
   }, 3000);
 
+  if (adminFileInput && adminFileHint) {
+    adminFileInput.addEventListener("change", function () {
+      var n = adminFileInput.files ? adminFileInput.files.length : 0;
+      adminFileHint.textContent = n ? n + " file" + (n === 1 ? "" : "s") + " selected" : "";
+    });
+  }
+
   if (form && replyInput) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       if (!selectedThreadId) return;
       var text = String(replyInput.value || "").trim();
-      if (!text) return;
+      var files = adminFileInput && adminFileInput.files ? adminFileInput.files : null;
+      if (!text && (!files || !files.length)) return;
       try {
-        await requestJson("/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body: text }),
-        });
+        await postThreadMessage(selectedThreadId, text, files);
       } catch (err) {
+        showAppToast((err && err.message) || "Could not send reply.");
         return;
       }
       replyInput.value = "";
+      if (adminFileInput) adminFileInput.value = "";
+      if (adminFileHint) adminFileHint.textContent = "";
       renderList();
       renderThread();
     });

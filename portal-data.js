@@ -101,13 +101,53 @@
     return payload.messages || [];
   }
 
-  async function appendClientMessage(text) {
+  /**
+   * @param {string} text
+   * @param {FileList | File[] | null | undefined} fileList
+   */
+  async function appendClientMessage(text, fileList) {
     var p = getProfile();
     if (!p || !p.id) return;
-    await requestJson("/api/client/" + encodeURIComponent(p.id) + "/messages", {
+    var bodyText = String(text || "").trim();
+    var files =
+      fileList && fileList.length ? Array.prototype.slice.call(fileList) : [];
+    if (!bodyText && files.length === 0) return;
+
+    var url = "/api/client/" + encodeURIComponent(p.id) + "/messages";
+    if (files.length > 0) {
+      var fd = new FormData();
+      fd.append("body", bodyText);
+      for (var i = 0; i < files.length; i++) {
+        fd.append("files", files[i]);
+      }
+      var res = await fetch(url, { method: "POST", body: fd });
+      var raw = "";
+      try {
+        raw = await res.text();
+      } catch (e) {
+        raw = "";
+      }
+      var payload = null;
+      if (raw) {
+        try {
+          payload = JSON.parse(raw);
+        } catch (e) {
+          payload = null;
+        }
+      }
+      if (!res.ok) {
+        throw new Error(
+          (payload && payload.error) ||
+            (res.status === 400 ? "Upload failed." : "Request failed (" + res.status + ").")
+        );
+      }
+      return payload;
+    }
+
+    await requestJson(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: String(text || "").trim() }),
+      body: JSON.stringify({ body: bodyText }),
     });
   }
 
