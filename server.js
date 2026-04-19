@@ -86,7 +86,7 @@ const pool = new Pool({
   ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
-const { applyInitialSchemaIfNeeded } = require("./lib/apply-initial-schema");
+const { applyInitialSchemaIfNeeded, applySchemaCompat } = require("./lib/apply-initial-schema");
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -248,10 +248,11 @@ app.post("/api/client/register", async (req, res) => {
         (err.code === "42P01" || err.code === "42703" || err.code === "42883")
       ) {
         try {
-          const fixed = await applyInitialSchemaIfNeeded(pool);
-          if (fixed.applied) continue;
+          await applyInitialSchemaIfNeeded(pool);
+          await applySchemaCompat(pool);
+          continue;
         } catch (migrateErr) {
-          console.error("[db] applyInitialSchemaIfNeeded on register retry:", migrateErr);
+          console.error("[db] migration on register retry:", migrateErr);
         }
       }
       break;
@@ -476,6 +477,7 @@ async function start() {
           `[db] Auto-applied initial schema (${r.statements} statements). Missing: ${(r.missing || []).join(", ")}.`
         );
       }
+      await applySchemaCompat(pool);
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
     }

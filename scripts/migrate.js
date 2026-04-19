@@ -1,5 +1,5 @@
 /**
- * Apply database/migrations/001_init.sql.
+ * Apply database/migrations/001_init.sql then 002_compat.sql.
  *
  * Usage:
  *   npm run db:migrate
@@ -10,7 +10,7 @@
  */
 const path = require("path");
 const { Client } = require("pg");
-const { getMigrationStatements, runMigrationStatements } = require("../lib/apply-initial-schema");
+const { getAllMigrationStatements, runMigrationStatements } = require("../lib/apply-initial-schema");
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
 function resolveDatabaseUrl() {
@@ -52,7 +52,7 @@ async function main() {
   }
   console.log("Connecting using:", source);
 
-  const statements = getMigrationStatements();
+  const statements = getAllMigrationStatements();
   const client = new Client({
     connectionString: url,
     ssl: sslOption(url) || undefined,

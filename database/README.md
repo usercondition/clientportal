@@ -7,6 +7,8 @@ The app (`server.js`) uses PostgreSQL via **`DATABASE_URL`**. This folder holds 
 - `database/migrations/001_init.sql`
   - Core tables: `clients`, `client_addresses`, `orders`, `order_timeline_events`, `message_threads`, `messages`, `admin_users`
   - Constraints, enums, and indexes for portal lookup and inbox performance
+- `database/migrations/002_compat.sql`
+  - Idempotent `ADD COLUMN IF NOT EXISTS` patches for databases that already had tables but an older column set (the server applies this on every startup after bootstrap)
 - `database/seed.sql`
   - Optional local demo seed data
 - `docker-compose.db.yml`
@@ -32,11 +34,13 @@ PowerShell:
 $env:DATABASE_URL="postgresql://clientportal:clientportal_dev_password@localhost:5432/clientportal"
 ```
 
-3) Apply migration
+3) Apply migration (runs `001_init.sql` and `002_compat.sql`)
 
 ```bash
-psql "$DATABASE_URL" -f database/migrations/001_init.sql
+npm run db:migrate
 ```
+
+(or: `psql "$DATABASE_URL" -f database/migrations/001_init.sql` then `-f database/migrations/002_compat.sql`)
 
 4) (Optional) Seed
 
@@ -70,9 +74,9 @@ If `DATABASE_URL` accidentally points at the public proxy, this repo’s server 
 
 ### Apply schema on Railway (first deploy)
 
-The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after migration on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
+The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). It then applies **`002_compat.sql`** every boot (cheap idempotent column patches) so older databases pick up new columns without requiring a full table rebuild. Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after running migrations on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
 
-If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually:
+If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually (this runs **001** and **002**):
 
 **Option A — from your laptop** (recommended once):
 
@@ -113,6 +117,7 @@ npm run db:migrate
 
 ```bash
 psql "$DATABASE_URL" -f database/migrations/001_init.sql
+psql "$DATABASE_URL" -f database/migrations/002_compat.sql
 ```
 
 Re-run **`npm run db:migrate`** after pulling schema changes. Tables use `IF NOT EXISTS`; **enums** (`order_status`, `message_sender`) are not idempotent — if migrate errors on “already exists”, the schema is already applied.
