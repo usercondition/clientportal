@@ -86,6 +86,8 @@ const pool = new Pool({
   ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
+const { applyInitialSchemaIfNeeded } = require("./lib/apply-initial-schema");
+
 app.use(express.json({ limit: "1mb" }));
 
 function normalizeUSZip5(raw) {
@@ -192,72 +194,93 @@ app.post("/api/client/register", async (req, res) => {
   }
 
   try {
-    await clientConn.query("begin");
-    const insertClient = `
+  let lastErr = /** @type {unknown} */ (null);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await clientConn.query("begin");
+      const insertClient = `
       insert into clients (first_name, last_name, email, phone, sign_in_zip)
       values ($1,$2,$3,$4,$5)
       returning id, first_name, last_name, email, phone, sign_in_zip
     `;
-    const cRes = await clientConn.query(insertClient, [
-      String(firstName).trim(),
-      String(lastName).trim(),
-      String(email).trim(),
-      phone ? String(phone).trim() : null,
-      zip5,
-    ]);
+      const cRes = await clientConn.query(insertClient, [
+        String(firstName).trim(),
+        String(lastName).trim(),
+        String(email).trim(),
+        phone ? String(phone).trim() : null,
+        zip5,
+      ]);
 
-    const client = cRes.rows[0];
-    const insertAddress = `
+      const client = cRes.rows[0];
+      const insertAddress = `
       insert into client_addresses (client_id, line_1, line_2, city, state, postal_code, is_default)
       values ($1,$2,$3,$4,$5,$6,true)
       returning line_1, line_2, city, state, postal_code
     `;
-    const aRes = await clientConn.query(insertAddress, [
-      client.id,
-      String(addressLine1).trim(),
-      addressLine2 ? String(addressLine2).trim() : null,
-      String(city).trim(),
-      state2,
-      zip5,
-    ]);
+      const aRes = await clientConn.query(insertAddress, [
+        client.id,
+        String(addressLine1).trim(),
+        addressLine2 ? String(addressLine2).trim() : null,
+        String(city).trim(),
+        state2,
+        zip5,
+      ]);
 
-    await clientConn.query(
-      "insert into message_threads (client_id, subject, last_message_at) values ($1, $2, now())",
-      [client.id, "General support"]
-    );
+      await clientConn.query(
+        "insert into message_threads (client_id, subject, last_message_at) values ($1, $2, now())",
+        [client.id, "General support"]
+      );
 
-    await clientConn.query("commit");
-    return res.status(201).json({
-      client: toClientProfile({ ...client, ...aRes.rows[0] }),
+      await clientConn.query("commit");
+      return res.status(201).json({
+        client: toClientProfile({ ...client, ...aRes.rows[0] }),
+      });
+    } catch (err) {
+      lastErr = err;
+      try {
+        await clientConn.query("rollback");
+      } catch (rollbackErr) {
+        /* ignore */
+      }
+      if (
+        attempt === 0 &&
+        err &&
+        (err.code === "42P01" || err.code === "42703" || err.code === "42883")
+      ) {
+        try {
+          const fixed = await applyInitialSchemaIfNeeded(pool);
+          if (fixed.applied) continue;
+        } catch (migrateErr) {
+          console.error("[db] applyInitialSchemaIfNeeded on register retry:", migrateErr);
+        }
+      }
+      break;
+    }
+  }
+
+  const err = lastErr;
+  if (err && err.code === "23505") {
+    return res.status(409).json({ error: "Client already exists for this name + ZIP." });
+  }
+  if (err && err.code === "23514") {
+    return res.status(400).json({
+      error:
+        "Address or ZIP did not pass validation. Use a 5-digit US ZIP and a 2-letter state code.",
     });
-  } catch (err) {
-    try {
-      await clientConn.query("rollback");
-    } catch (rollbackErr) {
-      /* ignore */
-    }
-    if (err && err.code === "23505") {
-      return res.status(409).json({ error: "Client already exists for this name + ZIP." });
-    }
-    if (err && err.code === "23514") {
-      return res.status(400).json({
-        error:
-          "Address or ZIP did not pass validation. Use a 5-digit US ZIP and a 2-letter state code.",
-      });
-    }
-    if (err && (err.code === "42P01" || err.code === "42703")) {
-      return res.status(500).json({
-        error:
-          "Database schema mismatch. From the project root run: npm run db:migrate " +
-          "(with DATABASE_URL set), or: psql \"$DATABASE_URL\" -f database/migrations/001_init.sql",
-      });
-    }
-    console.error(err);
-    return res.status(500).json({ error: "Failed to register client." });
+  }
+  if (err && (err.code === "42P01" || err.code === "42703" || err.code === "42883")) {
+    return res.status(500).json({
+      error:
+        "Database schema mismatch or incomplete migration. Redeploy the server (it auto-applies 001_init.sql when tables are missing), " +
+        "or from the project root run: npm run db:migrate (with DATABASE_URL set).",
+    });
+  }
+  console.error(err);
+  return res.status(500).json({ error: "Failed to register client." });
   } finally {
     clientConn.release();
   }
-});
+  });
 
 app.get("/api/client/:clientId/orders", async (req, res) => {
   const { clientId } = req.params;
@@ -442,14 +465,14 @@ app.use((req, res) => {
   });
 });
 
-const { applyInitialSchemaIfNeeded } = require("./lib/apply-initial-schema");
-
 async function start() {
   if (DATABASE_URL && String(process.env.SKIP_AUTO_SCHEMA || "").toLowerCase() !== "true") {
     try {
       const r = await applyInitialSchemaIfNeeded(pool);
       if (r.applied) {
-        console.log(`[db] Auto-applied initial schema (${r.statements} statements). public.clients was missing.`);
+        console.log(
+          `[db] Auto-applied initial schema (${r.statements} statements). Missing: ${(r.missing || []).join(", ")}.`
+        );
       }
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
