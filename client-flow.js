@@ -1,68 +1,7 @@
 (function () {
-  var STORAGE_KEY = "clientFlowProfiles";
-
-  /**
-   * @typedef {{
-   *   firstName: string,
-   *   lastName: string,
-   *   zip: string,
-   *   email?: string,
-   *   phone?: string,
-   *   address?: { line1: string, line2?: string, city: string, state: string, zip: string },
-   *   name?: string
-   * }} Profile
-   * `name` is legacy single-field storage only.
-   */
 
   function isValidEmail(s) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
-  }
-
-  function loadProfiles() {
-    try {
-      var raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /** @param {Profile[]} list */
-  function saveProfiles(list) {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }
-
-  function normalizeName(s) {
-    return String(s || "")
-      .trim()
-      .replace(/\s+/g, " ")
-      .toLowerCase();
-  }
-
-  /**
-   * @param {Partial<Profile> & { name?: string }} p
-   * @returns {{ first: string, last: string }}
-   */
-  function profileFirstLast(p) {
-    if (typeof p.firstName === "string" || typeof p.lastName === "string") {
-      return { first: normalizeName(p.firstName), last: normalizeName(p.lastName) };
-    }
-    if (p.name) {
-      var s = String(p.name).trim().replace(/\s+/g, " ");
-      var i = s.indexOf(" ");
-      if (i === -1) return { first: normalizeName(s), last: "" };
-      return { first: normalizeName(s.slice(0, i)), last: normalizeName(s.slice(i + 1)) };
-    }
-    return { first: "", last: "" };
-  }
-
-  /** @param {Partial<Profile> & { name?: string }} a @param {Partial<Profile> & { name?: string }} b */
-  function samePerson(a, b) {
-    var af = profileFirstLast(/** @type {*} */ (a));
-    var bf = profileFirstLast(/** @type {*} */ (b));
-    return af.first === bf.first && af.last === bf.last && String(a.zip).trim() === String(b.zip).trim();
   }
 
   /** @param {HTMLElement} el */
@@ -180,7 +119,7 @@
   var lookupError = document.getElementById("lookup-error");
 
   if (lookupForm) {
-    lookupForm.addEventListener("submit", function (e) {
+    lookupForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       clearError(/** @type {HTMLElement} */ (lookupError));
 
@@ -194,26 +133,21 @@
         return;
       }
 
-      var profiles = loadProfiles();
-      var match = profiles.find(function (p) {
-        return samePerson(
-          /** @type {Profile} */ ({ firstName: firstName, lastName: lastName, zip: zip }),
-          /** @type {Profile} */ (p)
-        );
-      });
-
-      if (!match) {
-        showError(
-          /** @type {HTMLElement} */ (lookupError),
-          "We couldn’t find a profile with those names and ZIP. Check your details or create a new profile from the start."
-        );
+      if (!window.Portal || !Portal.loginClient) {
+        showError(/** @type {HTMLElement} */ (lookupError), "Portal service is unavailable.");
         return;
       }
-
-      if (window.Portal) {
-        Portal.setActiveProfile(/** @type {*} */ (match));
+      try {
+        await Portal.loginClient(firstName, lastName, zip);
+        location.replace("client-portal.html");
+      } catch (err) {
+        showError(
+          /** @type {HTMLElement} */ (lookupError),
+          err && err.message
+            ? err.message
+            : "We couldn’t find a profile with those names and ZIP. Check your details or create a new profile."
+        );
       }
-      location.replace("client-portal.html");
     });
   }
 
@@ -221,7 +155,7 @@
   var newError = document.getElementById("new-profile-error");
 
   if (newForm) {
-    newForm.addEventListener("submit", function (e) {
+    newForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       clearError(/** @type {HTMLElement} */ (newError));
 
@@ -269,39 +203,32 @@
       var stateInput = document.getElementById("new-state");
       if (stateInput) stateInput.value = state;
 
-      var profiles = loadProfiles();
-      var candidate = /** @type {Profile} */ ({
+      var candidate = {
         firstName: firstName,
         lastName: lastName,
-        zip: addressZip,
         email: email,
         phone: phone || undefined,
-        address: {
-          line1: addressLine1,
-          line2: addressLine2 || undefined,
-          city: city,
-          state: state,
-          zip: addressZip,
-        },
-      });
-      var exists = profiles.some(function (p) {
-        return samePerson(candidate, /** @type {Profile} */ (p));
-      });
-      if (exists) {
-        showError(
-          /** @type {HTMLElement} */ (newError),
-          "A profile with this first name, last name, and ZIP already exists. Use “I’ve been here before” to sign in."
-        );
+        addressLine1: addressLine1,
+        addressLine2: addressLine2 || "",
+        city: city,
+        state: state,
+        addressZip: addressZip,
+      };
+      if (!window.Portal || !Portal.registerClient) {
+        showError(/** @type {HTMLElement} */ (newError), "Portal service is unavailable.");
         return;
       }
-
-      profiles.push(candidate);
-      saveProfiles(profiles);
-
-      if (window.Portal) {
-        Portal.setActiveProfile(/** @type {*} */ (candidate));
+      try {
+        await Portal.registerClient(candidate);
+        location.replace("client-portal.html");
+      } catch (err) {
+        showError(
+          /** @type {HTMLElement} */ (newError),
+          err && err.message
+            ? err.message
+            : "Unable to create profile right now. Please try again."
+        );
       }
-      location.replace("client-portal.html");
     });
   }
 

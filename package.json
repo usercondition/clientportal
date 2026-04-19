@@ -1,0 +1,27 @@
+{
+  "name": "personal-site",
+  "version": "1.0.0",
+  "description": "Client portal + admin inbox with PostgreSQL API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usercondition/clientportal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/usercondition/clientportal/issues"
+  },
+  "homepage": "https://github.com/usercondition/clientportal#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.20.0"
+  }
+}

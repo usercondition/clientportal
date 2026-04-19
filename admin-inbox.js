@@ -1,6 +1,4 @@
 (function () {
-  if (!window.MessageBus) return;
-
   var listEl = document.getElementById("admin-inbox-list");
   var emptyEl = document.getElementById("admin-inbox-empty");
   var chatWrap = document.getElementById("admin-inbox-chat");
@@ -12,7 +10,7 @@
   var logoutBtn = document.getElementById("admin-inbox-logout");
 
   /** @type {string | null} */
-  var selectedKey = null;
+  var selectedThreadId = null;
 
   function esc(s) {
     var d = document.createElement("div");
@@ -38,17 +36,33 @@
     );
   }
 
-  function renderList() {
+  async function requestJson(url, options) {
+    var res = await fetch(url, options || {});
+    var payload = null;
+    try {
+      payload = await res.json();
+    } catch (e) {}
+    if (!res.ok) throw new Error((payload && payload.error) || "Request failed.");
+    return payload;
+  }
+
+  async function renderList() {
     if (!listEl) return;
-    var rows = MessageBus.getInboxList();
+    var rows = [];
+    try {
+      var payload = await requestJson("/api/admin/inbox");
+      rows = payload.threads || [];
+    } catch (e) {
+      rows = [];
+    }
     listEl.innerHTML = rows
       .map(function (r) {
-        var active = r.profileKey === selectedKey ? " is-active" : "";
+        var active = r.threadId === selectedThreadId ? " is-active" : "";
         return (
           '<li><button type="button" class="admin-inbox-item' +
           active +
           '" data-key="' +
-          esc(r.profileKey) +
+          esc(r.threadId) +
           '">' +
           '<p class="admin-inbox-item-name">' +
           esc(r.clientLabel) +
@@ -66,7 +80,7 @@
 
     if (rows.length === 0) {
       listEl.innerHTML =
-        '<li><p style="padding:0.75rem 1rem;color:var(--text-muted);font-size:0.9rem;margin:0">No conversations yet. When a client sends a message from their portal, it appears here.</p></li>';
+        '<li><p style="padding:0.75rem 1rem;color:var(--text-muted);font-size:0.9rem;margin:0">No conversations yet. Client messages will appear here.</p></li>';
     }
 
     listEl.querySelectorAll(".admin-inbox-item").forEach(function (btn) {
@@ -75,31 +89,36 @@
         if (k) selectThread(k);
       });
     });
+    return rows;
   }
 
-  function renderThread() {
+  async function renderThread() {
     if (!threadEl || !nameEl || !emailEl || !emptyEl || !chatWrap) return;
-    if (!selectedKey) {
+    if (!selectedThreadId) {
       emptyEl.hidden = false;
       chatWrap.hidden = true;
       threadEl.innerHTML = "";
       return;
     }
 
-    var t = MessageBus.getThread(selectedKey);
-    if (!t) {
-      selectedKey = null;
+    var payload;
+    try {
+      payload = await requestJson("/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages");
+    } catch (e) {
+      selectedThreadId = null;
       renderList();
       renderThread();
       return;
     }
+    var t = payload.thread;
+    var messages = payload.messages || [];
 
     emptyEl.hidden = true;
     chatWrap.hidden = false;
     nameEl.textContent = t.clientLabel || "Client";
     emailEl.textContent = t.clientEmail ? t.clientEmail : "";
 
-    threadEl.innerHTML = (t.messages || [])
+    threadEl.innerHTML = messages
       .map(function (m) {
         var isAdmin = m.from === "admin";
         return (
@@ -124,33 +143,41 @@
     window.requestAnimationFrame(scrollEnd);
   }
 
-  function selectThread(key) {
-    selectedKey = key;
+  function selectThread(threadId) {
+    selectedThreadId = threadId;
     renderList();
     renderThread();
     if (replyInput) replyInput.focus();
   }
 
-  renderList();
-  renderThread();
-
-  var rows = MessageBus.getInboxList();
-  if (rows.length && !selectedKey) {
-    selectThread(rows[0].profileKey);
-  }
-
-  MessageBus.onMessagesUpdated(function () {
+  (async function init() {
+    var rows = await renderList();
+    if (rows.length && !selectedThreadId) {
+      selectThread(rows[0].threadId);
+    } else {
+      renderThread();
+    }
+  })();
+  setInterval(function () {
     renderList();
-    renderThread();
-  });
+    if (selectedThreadId) renderThread();
+  }, 3000);
 
   if (form && replyInput) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      if (!selectedKey) return;
+      if (!selectedThreadId) return;
       var text = String(replyInput.value || "").trim();
       if (!text) return;
-      MessageBus.appendAdminMessage(selectedKey, text);
+      try {
+        await requestJson("/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body: text }),
+        });
+      } catch (err) {
+        return;
+      }
       replyInput.value = "";
       renderList();
       renderThread();

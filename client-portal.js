@@ -55,8 +55,13 @@
     dl.innerHTML = rows.join("");
   }
 
-  function renderOrders() {
-    var orders = Portal.getOrders();
+  async function renderOrders() {
+    var orders = [];
+    try {
+      orders = await Portal.getOrders();
+    } catch (e) {
+      orders = [];
+    }
     var curEl = document.getElementById("portal-orders-current");
     var pastEl = document.getElementById("portal-orders-past");
     var curEmpty = document.getElementById("portal-orders-current-empty");
@@ -109,10 +114,15 @@
     );
   }
 
-  function renderMessages() {
+  async function renderMessages() {
     var thread = document.getElementById("portal-thread");
     if (!thread) return;
-    var messages = Portal.getMessages();
+    var messages = [];
+    try {
+      messages = await Portal.getMessages();
+    } catch (e) {
+      messages = [];
+    }
     thread.innerHTML = messages
       .map(function (m) {
         var isClient = m.from === "client";
@@ -149,21 +159,20 @@
 
   renderOrders();
   renderMessages();
-
-  if (window.MessageBus && typeof MessageBus.onMessagesUpdated === "function") {
-    MessageBus.onMessagesUpdated(function () {
-      renderMessages();
-    });
-  }
+  setInterval(renderMessages, 3000);
 
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");
   if (form && input) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var t = String(input.value || "").trim();
       if (!t) return;
-      Portal.appendClientMessage(t);
+      try {
+        await Portal.appendClientMessage(t);
+      } catch (err) {
+        return;
+      }
       input.value = "";
       renderMessages();
     });

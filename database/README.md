@@ -54,10 +54,38 @@ psql "$DATABASE_URL" -f database/seed.sql
 
 ## Next implementation step
 
-Build API routes/services that replace browser storage in:
+API wiring is now included in `server.js` and frontend portal scripts.
 
-- `portal-data.js`
-- `message-bus.js`
+## Run the app with DB + API
 
-Use database IDs and server auth/session for both client portal and admin portal.
+1) Start Postgres (if not already running)
+
+```bash
+docker compose -f docker-compose.db.yml up -d
+```
+
+2) Copy env
+
+```bash
+cp .env.example .env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3) Install dependencies and run server
+
+```bash
+npm install
+npm run start
+```
+
+4) Open app
+
+- [http://localhost:3000](http://localhost:3000)
+
+This serves static pages and API from the same origin, so portal/admin calls are ready for live backend data.
 
