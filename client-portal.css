@@ -403,7 +403,7 @@
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
 }
 
-.portal-bubble--business {
+.portal-bubble--admin {
   align-self: flex-start;
   background: var(--bg);
   border: 1px solid var(--border);

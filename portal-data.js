@@ -65,7 +65,7 @@
     var key = profileKey(p);
     sessionStorage.setItem(ACTIVE_KEY, key);
     sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(p));
-    ensureDemoData(key);
+    ensureDemoData(p);
   }
 
   function clearSession() {
@@ -77,11 +77,8 @@
     return "portal_orders_" + profileKey;
   }
 
-  function messagesStorageKey(profileKey) {
-    return "portal_messages_" + profileKey;
-  }
-
-  function ensureDemoData(key) {
+  function ensureDemoData(profile) {
+    var key = profileKey(profile);
     if (!sessionStorage.getItem(ordersStorageKey(key))) {
       var orders = [
         {
@@ -119,36 +116,17 @@
       ];
       sessionStorage.setItem(ordersStorageKey(key), JSON.stringify(orders));
     }
-    if (!sessionStorage.getItem(messagesStorageKey(key))) {
-      var messages = [
-        {
-          id: "m1",
-          from: "business",
-          body:
-            "Welcome to your portal. You can reply here anytime — in production this syncs to my inbox.",
-          at: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-          id: "m2",
-          from: "client",
-          body: "Thanks — looking forward to it.",
-          at: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: "m3",
-          from: "business",
-          body: "Sounds good. I’ll follow up with next steps soon.",
-          at: new Date(Date.now() - 3600000 * 5).toISOString(),
-        },
-      ];
-      sessionStorage.setItem(messagesStorageKey(key), JSON.stringify(messages));
+    if (global.MessageBus) {
+      MessageBus.seedDemoIfEmpty(key, profile);
     }
   }
 
   function getOrders() {
     var key = sessionStorage.getItem(ACTIVE_KEY);
     if (!key) return [];
-    ensureDemoData(key);
+    var prof = getProfile();
+    if (!prof) return [];
+    ensureDemoData(prof);
     try {
       var raw = sessionStorage.getItem(ordersStorageKey(key));
       return raw ? JSON.parse(raw) : [];
@@ -160,28 +138,19 @@
   function getMessages() {
     var key = sessionStorage.getItem(ACTIVE_KEY);
     if (!key) return [];
-    ensureDemoData(key);
-    try {
-      var raw = sessionStorage.getItem(messagesStorageKey(key));
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
+    var prof = getProfile();
+    if (!prof) return [];
+    ensureDemoData(prof);
+    if (!global.MessageBus) return [];
+    return MessageBus.getMessagesForProfile(key);
   }
 
   function appendClientMessage(text) {
     var key = sessionStorage.getItem(ACTIVE_KEY);
-    if (!key) return;
-    var t = String(text || "").trim();
-    if (!t) return;
-    var list = getMessages();
-    list.push({
-      id: "m" + Date.now(),
-      from: "client",
-      body: t,
-      at: new Date().toISOString(),
-    });
-    sessionStorage.setItem(messagesStorageKey(key), JSON.stringify(list));
+    if (!key || !global.MessageBus) return;
+    var prof = getProfile();
+    if (!prof) return;
+    MessageBus.appendClientMessage(key, prof, text);
   }
 
   /** @param {{ line1: string, line2?: string, city: string, state: string, zip: string }} a */

@@ -118,7 +118,7 @@
         var isClient = m.from === "client";
         return (
           '<div class="portal-bubble portal-bubble--' +
-          (isClient ? "client" : "business") +
+          (isClient ? "client" : "admin") +
           '">' +
           esc(m.body) +
           "<time>" +
@@ -149,6 +149,12 @@
 
   renderOrders();
   renderMessages();
+
+  if (window.MessageBus && typeof MessageBus.onMessagesUpdated === "function") {
+    MessageBus.onMessagesUpdated(function () {
+      renderMessages();
+    });
+  }
 
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");

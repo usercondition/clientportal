@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Inbox — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin-inbox.css" />
+    <script src="admin-auth.js"></script>
+    <script>
+      (function () {
+        if (!window.AdminAuth) {
+          location.replace("admin-login.html?next=admin-inbox.html");
+          return;
+        }
+        if (!AdminAuth.isAdminSession()) {
+          location.replace("admin-login.html?next=" + encodeURIComponent("admin-inbox.html"));
+        }
+      })();
+    </script>
+    <script src="message-bus.js"></script>
+  </head>
+  <body class="admin-inbox-shell">
+    <header class="admin-inbox-bar">
+      <h1>Inbox</h1>
+      <div class="admin-inbox-bar-actions">
+        <a href="admin.html">← Admin home</a>
+        <a href="index.html">Public site</a>
+        <button type="button" class="admin-logout" id="admin-inbox-logout">Log out</button>
+      </div>
+    </header>
+
+    <main class="admin-inbox-main">
+      <div class="admin-inbox-grid">
+        <div class="admin-inbox-list-wrap">
+          <div class="admin-inbox-list-head">Conversations</div>
+          <ul class="admin-inbox-list" id="admin-inbox-list" aria-label="Client threads"></ul>
+        </div>
+        <div class="admin-inbox-detail" id="admin-inbox-detail">
+          <div class="admin-inbox-detail-empty" id="admin-inbox-empty">
+            Select a conversation to read and reply.
+          </div>
+          <div id="admin-inbox-chat" hidden>
+            <div class="admin-inbox-chat-head">
+              <h2 id="admin-inbox-client-name">—</h2>
+              <p id="admin-inbox-client-email"></p>
+            </div>
+            <div class="admin-inbox-thread" id="admin-inbox-thread" role="log"></div>
+            <form class="admin-inbox-compose" id="admin-inbox-form" novalidate>
+              <label class="admin-sr-only" for="admin-inbox-reply">Reply</label>
+              <textarea
+                id="admin-inbox-reply"
+                name="reply"
+                rows="3"
+                maxlength="2000"
+                required
+                placeholder="Type your reply…"
+              ></textarea>
+              <div class="admin-inbox-compose-actions">
+                <button type="submit" class="btn btn-primary">Send reply</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <p class="admin-inbox-note">
+        Demo: messages use shared storage in this browser. Keep this tab open next to a client portal
+        tab to see updates in real time. Production setups should use a server and WebSockets or push.
+      </p>
+    </main>
+
+    <script src="admin-inbox.js" defer></script>
+  </body>
+</html>

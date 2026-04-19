@@ -13,6 +13,7 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="client-portal.css" />
+    <script src="message-bus.js"></script>
     <script src="portal-data.js"></script>
     <script>
       if (!window.Portal || !Portal.getProfile()) {
@@ -68,7 +69,7 @@
           <section class="portal-section portal-section-messages" aria-labelledby="msg-heading">
             <h2 id="msg-heading" class="portal-h2">Message center</h2>
             <p class="portal-msg-intro">
-              Send a note to the shop. In production this would notify your contact by email or your CRM.
+              Messages sync to the shop inbox on this device in real time. Open the admin inbox in another tab to reply.
             </p>
             <div class="portal-card portal-card-messages">
               <div class="portal-thread" id="portal-thread" role="log" aria-live="polite"></div>
