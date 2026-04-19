@@ -54,7 +54,7 @@
         <span class="flow-progress-label">Step </span>
         <span id="progress-current">1</span>
         <span class="flow-progress-of"> of </span>
-        <span id="progress-total">4</span>
+        <span id="progress-total">3</span>
       </div>
     </header>
 
@@ -318,58 +318,9 @@
         </div>
       </section>
 
-      <!-- Shared end state -->
-      <section
-        id="slide-profile"
-        class="flow-slide"
-        data-step="profile"
-        tabindex="-1"
-        aria-labelledby="profile-title"
-        hidden
-      >
-        <div class="flow-slide-inner">
-          <p class="flow-eyebrow" id="profile-mode-label">Profile</p>
-          <h1 id="profile-title" class="flow-title">You’re all set</h1>
-          <div class="flow-profile-card" aria-live="polite">
-            <dl class="flow-dl">
-              <div>
-                <dt>First name</dt>
-                <dd id="profile-display-first-name">—</dd>
-              </div>
-              <div>
-                <dt>Last name</dt>
-                <dd id="profile-display-last-name">—</dd>
-              </div>
-              <div id="profile-zip-row">
-                <dt>ZIP</dt>
-                <dd id="profile-display-zip">—</dd>
-              </div>
-              <div id="profile-email-row">
-                <dt>Email</dt>
-                <dd id="profile-display-email">—</dd>
-              </div>
-              <div id="profile-phone-row" hidden>
-                <dt>Phone</dt>
-                <dd id="profile-display-phone">—</dd>
-              </div>
-              <div id="profile-address-block" hidden>
-                <dt>Shipping / home address</dt>
-                <dd id="profile-display-address" class="profile-address-dd">—</dd>
-              </div>
-            </dl>
-          </div>
-          <p class="flow-note">
-            This demo stores profiles in your browser session only. Wire your API here to load and
-            save real customer records.
-          </p>
-          <div class="flow-actions">
-            <a class="btn btn-primary" href="index.html">Back to home</a>
-            <button type="button" class="btn btn-ghost" id="btn-start-over">Start over</button>
-          </div>
-        </div>
-      </section>
     </main>
 
+    <script src="portal-data.js"></script>
     <script src="client-flow.js" defer></script>
   </body>
 </html>

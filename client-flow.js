@@ -18,20 +18,6 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
   }
 
-  /** @param {{ line1: string, line2?: string, city: string, state: string, zip: string }} a */
-  function formatAddressLines(a) {
-    var lines = [a.line1];
-    if (a.line2 && String(a.line2).trim()) lines.push(String(a.line2).trim());
-    lines.push(
-      [a.city, a.state, a.zip]
-        .filter(function (x) {
-          return String(x || "").trim();
-        })
-        .join(", ")
-    );
-    return lines.join("\n");
-  }
-
   function loadProfiles() {
     try {
       var raw = sessionStorage.getItem(STORAGE_KEY);
@@ -101,13 +87,12 @@
     lookup: "slide-lookup",
     "new-profile-intro": "slide-new-profile-intro",
     "new-profile": "slide-new-profile",
-    profile: "slide-profile",
   };
 
   var pathSteps = {
     welcome: ["welcome"],
-    returning: ["welcome", "lookup", "profile"],
-    new: ["welcome", "new-profile-intro", "new-profile", "profile"],
+    returning: ["welcome", "lookup"],
+    new: ["welcome", "new-profile-intro", "new-profile"],
   };
 
   var visitorPath = /** @type {"returning" | "new" | null} */ (null);
@@ -129,7 +114,12 @@
     var total = visitorPath ? list.length : 1;
     var curEl = document.getElementById("progress-current");
     var totEl = document.getElementById("progress-total");
-    if (curEl) curEl.textContent = String(current);
+    if (curEl) {
+      curEl.textContent = String(current);
+      curEl.classList.remove("flow-progress-bump");
+      void curEl.offsetWidth;
+      curEl.classList.add("flow-progress-bump");
+    }
     if (totEl) totEl.textContent = String(total);
   }
 
@@ -220,8 +210,10 @@
         return;
       }
 
-      fillProfileView(/** @type {Profile} */ (match), "returning");
-      goToStep("profile");
+      if (window.Portal) {
+        Portal.setActiveProfile(/** @type {*} */ (match));
+      }
+      location.replace("client-portal.html");
     });
   }
 
@@ -306,69 +298,10 @@
       profiles.push(candidate);
       saveProfiles(profiles);
 
-      fillProfileView(candidate, "new");
-      goToStep("profile");
-    });
-  }
-
-  /** @param {Profile} p @param {"new" | "returning"} mode */
-  function fillProfileView(p, mode) {
-    var label = document.getElementById("profile-mode-label");
-    var title = document.getElementById("profile-title");
-    var firstEl = document.getElementById("profile-display-first-name");
-    var lastEl = document.getElementById("profile-display-last-name");
-    var zipEl = document.getElementById("profile-display-zip");
-    var emailEl = document.getElementById("profile-display-email");
-    var phoneRow = document.getElementById("profile-phone-row");
-    var phoneEl = document.getElementById("profile-display-phone");
-
-    if (label) {
-      label.textContent = mode === "new" ? "New profile" : "Welcome back";
-    }
-    if (title) {
-      title.textContent = mode === "new" ? "Profile created" : "Profile loaded";
-    }
-    var fn = typeof p.firstName === "string" ? p.firstName : "";
-    var ln = typeof p.lastName === "string" ? p.lastName : "";
-    if ((!fn || !ln) && p.name) {
-      var parts = String(p.name).trim().split(/\s+/);
-      if (!fn) fn = parts[0] || "";
-      if (!ln) ln = parts.slice(1).join(" ") || "";
-    }
-    if (firstEl) firstEl.textContent = fn || "—";
-    if (lastEl) lastEl.textContent = ln || "—";
-
-    var zipRow = document.getElementById("profile-zip-row");
-    var hasAddress = !!(p.address && p.address.line1);
-    if (zipRow) zipRow.hidden = hasAddress;
-    if (zipEl) zipEl.textContent = p.zip || "—";
-    if (emailEl) emailEl.textContent = p.email && String(p.email).trim() ? p.email : "—";
-    if (p.phone && phoneRow && phoneEl) {
-      phoneEl.textContent = p.phone;
-      phoneRow.hidden = false;
-    } else if (phoneRow) {
-      phoneRow.hidden = true;
-    }
-
-    var addrBlock = document.getElementById("profile-address-block");
-    var addrEl = document.getElementById("profile-display-address");
-    if (p.address && p.address.line1 && addrBlock && addrEl) {
-      addrEl.textContent = formatAddressLines(/** @type {*} */ (p.address));
-      addrBlock.hidden = false;
-    } else if (addrBlock) {
-      addrBlock.hidden = true;
-    }
-  }
-
-  var startOver = document.getElementById("btn-start-over");
-  if (startOver) {
-    startOver.addEventListener("click", function () {
-      visitorPath = null;
-      if (lookupForm) lookupForm.reset();
-      if (newForm) newForm.reset();
-      clearError(/** @type {HTMLElement} */ (lookupError));
-      clearError(/** @type {HTMLElement} */ (newError));
-      goToStep("welcome");
+      if (window.Portal) {
+        Portal.setActiveProfile(/** @type {*} */ (candidate));
+      }
+      location.replace("client-portal.html");
     });
   }
 

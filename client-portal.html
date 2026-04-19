@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Your client portal — profile, orders, and messages." />
+    <title>My portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="client-portal.css" />
+    <script src="portal-data.js"></script>
+    <script>
+      if (!window.Portal || !Portal.getProfile()) {
+        location.replace("client-flow.html");
+      }
+    </script>
+  </head>
+  <body class="portal-body">
+    <a class="skip-link" href="#portal-main">Skip to content</a>
+
+    <header class="portal-header">
+      <div class="container portal-header-inner">
+        <span class="portal-brand">My portal</span>
+        <div class="portal-header-actions">
+          <a class="portal-link" href="index.html">Website home</a>
+          <button type="button" class="portal-link portal-link-btn" id="portal-sign-out">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="portal-main" class="portal-main">
+      <div class="container portal-layout">
+        <header class="portal-welcome">
+          <p class="portal-eyebrow">Signed in</p>
+          <h1 class="portal-title" id="portal-greeting">Welcome</h1>
+          <p class="portal-sub" id="portal-subline">
+            Your profile, orders, and messages — demo data in this browser until you connect an API.
+          </p>
+        </header>
+
+        <section class="portal-section" aria-labelledby="info-heading">
+          <h2 id="info-heading" class="portal-h2">Your information</h2>
+          <div class="portal-card portal-card-info">
+            <dl class="portal-dl" id="portal-info-dl"></dl>
+          </div>
+        </section>
+
+        <div class="portal-two-col">
+          <section class="portal-section" aria-labelledby="orders-heading">
+            <h2 id="orders-heading" class="portal-h2">Orders</h2>
+            <div class="portal-subsection">
+              <h3 class="portal-h3">Current</h3>
+              <ul class="portal-order-list" id="portal-orders-current"></ul>
+              <p class="portal-empty" id="portal-orders-current-empty" hidden>No active orders right now.</p>
+            </div>
+            <div class="portal-subsection">
+              <h3 class="portal-h3">Past</h3>
+              <ul class="portal-order-list" id="portal-orders-past"></ul>
+              <p class="portal-empty" id="portal-orders-past-empty" hidden>No past orders yet.</p>
+            </div>
+          </section>
+
+          <section class="portal-section portal-section-messages" aria-labelledby="msg-heading">
+            <h2 id="msg-heading" class="portal-h2">Message center</h2>
+            <p class="portal-msg-intro">
+              Send a note to the shop. In production this would notify your contact by email or your CRM.
+            </p>
+            <div class="portal-card portal-card-messages">
+              <div class="portal-thread" id="portal-thread" role="log" aria-live="polite"></div>
+              <form class="portal-compose" id="portal-compose" novalidate>
+                <label class="portal-sr-only" for="portal-msg-input">Write a message</label>
+                <textarea
+                  id="portal-msg-input"
+                  name="message"
+                  rows="3"
+                  maxlength="2000"
+                  required
+                  placeholder="Write your message…"
+                ></textarea>
+                <div class="portal-compose-actions">
+                  <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script src="client-portal.js" defer></script>
+  </body>
+</html>

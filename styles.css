@@ -12,6 +12,12 @@
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-display: "Fraunces", Georgia, serif;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --dur-fast: 0.18s;
+  --dur-med: 0.35s;
+  --dur-slow: 0.55s;
   --max: 1120px;
   --narrow: 640px;
 }
@@ -131,12 +137,22 @@ code {
   background: var(--bg-elevated);
   color: var(--text-muted);
   text-decoration: none;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-fluid),
+    border-color var(--dur-med) var(--ease-fluid),
+    color var(--dur-med) var(--ease-fluid),
+    box-shadow var(--dur-med) var(--ease-fluid);
 }
 
 .admin-entry:hover {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
   color: var(--accent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.admin-entry:active {
+  transform: scale(0.94);
 }
 
 .admin-entry-icon {
@@ -285,17 +301,35 @@ code {
   border-radius: 999px;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-fluid),
+    background var(--dur-med) var(--ease-fluid),
+    color var(--dur-med) var(--ease-fluid),
+    border-color var(--dur-med) var(--ease-fluid),
+    box-shadow var(--dur-med) var(--ease-fluid);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 3px;
 }
 
 .btn-primary {
   background: var(--accent);
   color: var(--bg);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .btn-primary:hover {
   background: #d4b88a;
   color: var(--bg);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .btn-ghost {
@@ -307,6 +341,16 @@ code {
 .btn-ghost:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: background var(--dur-med), color var(--dur-med), border-color var(--dur-med);
+  }
+  .btn:active {
+    transform: none;
+  }
 }
 
 .hero-panel {
@@ -393,12 +437,22 @@ code {
   border-radius: var(--radius);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color var(--dur-med) var(--ease-fluid),
+    transform var(--dur-med) var(--ease-fluid),
+    box-shadow var(--dur-slow) var(--ease-fluid);
 }
 
 .card:hover {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    transform: none;
+  }
 }
 
 .card-title {
