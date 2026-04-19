@@ -209,17 +209,32 @@
   box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
 }
 
-#slide-welcome .flow-slide-inner {
-  width: min(100%, 540px);
+#slide-welcome .flow-slide-inner--welcome {
+  width: min(100%, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+#slide-welcome .flow-eyebrow {
+  margin: 0;
+}
+
+#slide-welcome .flow-title {
+  margin: 0;
 }
 
 #slide-welcome .flow-lede {
-  max-width: 34ch;
+  margin: 0;
+  max-width: 36ch;
 }
 
 #slide-welcome .flow-actions-stack {
-  max-width: 520px;
-  margin-inline: auto;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.25rem;
 }
 
 #slide-welcome .flow-actions-stack .btn {
@@ -227,13 +242,13 @@
 }
 
 .flow-welcome-hero {
-  margin: 0 auto 1.35rem;
+  margin: 0;
   border-radius: var(--radius-lg, 20px);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
   box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
   width: 100%;
-  max-width: 520px;
+  max-width: 100%;
 }
 
 .flow-welcome-hero img {
