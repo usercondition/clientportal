@@ -11,8 +11,13 @@ if (!DATABASE_URL) {
   console.warn("DATABASE_URL not set. API routes will fail until configured.");
 }
 
+const useSsl =
+  !!DATABASE_URL &&
+  (String(DATABASE_URL).includes("railway") || String(process.env.PGSSL || "").toLowerCase() === "true");
+
 const pool = new Pool({
   connectionString: DATABASE_URL,
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
 app.use(express.json({ limit: "1mb" }));
@@ -287,7 +292,7 @@ app.post("/api/admin/threads/:threadId/messages", async (req, res) => {
   });
 });
 
-app.get("*", (req, res) => {
+app.use((req, res) => {
   const target = req.path === "/" ? "index.html" : req.path.slice(1);
   res.sendFile(path.resolve(__dirname, target), (err) => {
     if (err) res.sendFile(path.resolve(__dirname, "index.html"));
