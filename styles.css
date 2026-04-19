@@ -23,6 +23,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0c0515;
   --bg-elevated: #150a24;
   --text: #f8eeff;
@@ -45,6 +46,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-x: clip;
+  color-scheme: dark;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -66,6 +68,11 @@ body {
     radial-gradient(ellipse 70% 55% at 100% 0%, rgba(82, 241, 255, 0.16), transparent 60%),
     radial-gradient(ellipse 65% 45% at 0% 85%, rgba(143, 78, 255, 0.22), transparent 62%);
   min-height: 100vh;
+  min-height: 100dvh;
+  /* Notched phones / home indicator: keep content off system UI */
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
 }
 
 .skip-link {
@@ -120,6 +127,8 @@ code {
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(12px);
+  /* Ensure mobile menu dropdown anchors to full header width */
+  padding-top: max(0px, env(safe-area-inset-top, 0px));
 }
 
 .header-inner {
@@ -350,6 +359,34 @@ code {
 
   .site-footer {
     padding-bottom: max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .section-head h2 {
+    line-height: 1.2;
+  }
+
+  .synth-tile {
+    min-height: 200px;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-inner {
+    gap: 0.4rem;
+  }
+
+  .admin-entry {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .client-portal-entry {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
   }
 }
 

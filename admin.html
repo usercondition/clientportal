@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#160a24" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -36,7 +37,8 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1rem min(1.5rem, 4vw);
+        flex-wrap: wrap;
+        padding: max(1rem, env(safe-area-inset-top, 0px)) min(1.5rem, 4vw) 1rem;
         border-bottom: 1px solid var(--border);
         background: color-mix(in srgb, var(--bg) 92%, transparent);
         backdrop-filter: blur(10px);
@@ -52,6 +54,7 @@
         display: flex;
         align-items: center;
         gap: 1rem;
+        flex-wrap: wrap;
       }
       .admin-logout {
         font: inherit;
@@ -80,6 +83,7 @@
       .admin-main {
         flex: 1;
         padding: clamp(1.5rem, 4vw, 2.5rem) min(1.5rem, 4vw);
+        padding-bottom: max(clamp(1.5rem, 4vw, 2.5rem), env(safe-area-inset-bottom, 0px));
       }
       .admin-nav {
         display: grid;
@@ -107,6 +111,25 @@
         color: var(--text-muted);
         max-width: 36ch;
         line-height: 1.5;
+      }
+      @media (max-width: 520px) {
+        .admin-bar h1 {
+          width: 100%;
+        }
+        .admin-bar-actions {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        .admin-logout,
+        .admin-bar a {
+          min-height: 2.75rem;
+          display: inline-flex;
+          align-items: center;
+          touch-action: manipulation;
+        }
+        .admin-nav {
+          max-width: none;
+        }
       }
     </style>
   </head>
