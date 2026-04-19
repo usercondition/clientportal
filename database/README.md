@@ -84,12 +84,24 @@ export DATABASE_URL="postgresql://…postgres.railway.internal:5432/railway"
 npm run db:migrate
 ```
 
+Or pass the URL as an argument (use **`--`** so npm forwards it):
+
+```bash
+npm run db:migrate -- "postgresql://USER:PASS@HOST:5432/DB"
+```
+
 PowerShell:
 
 ```powershell
 $env:DATABASE_URL="postgresql://…"
 npm run db:migrate
 ```
+
+```powershell
+npm run db:migrate -- "postgresql://USER:PASS@HOST:5432/DB"
+```
+
+`postgres.railway.internal` usually **does not resolve from your laptop**; use **Railway’s shell** / `railway run`, or set `DATABASE_URL` on the service and run **Option B**.
 
 **Option B — Railway shell** against the Web or Postgres service that has `DATABASE_URL` set:
 
