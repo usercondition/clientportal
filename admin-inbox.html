@@ -39,12 +39,34 @@
         </div>
         <div class="admin-topbar-actions">
           <button type="button" class="admin-topbar-btn" id="admin-enable-notify">
-            Desktop alerts
+            <svg class="admin-topbar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            <span class="admin-topbar-btn__label">Desktop Alerts</span>
           </button>
-          <a class="admin-topbar-link" href="admin.html">Admin home</a>
-          <a class="admin-topbar-link" href="index.html">Public site</a>
+          <a class="admin-topbar-link" href="admin.html">
+            <svg class="admin-topbar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Admin Home</span>
+          </a>
+          <a class="admin-topbar-link" href="index.html">
+            <svg class="admin-topbar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span>Public Site</span>
+          </a>
           <button type="button" class="admin-topbar-link admin-topbar-link--btn" id="admin-inbox-logout">
-            Log out
+            <svg class="admin-topbar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span>Log Out</span>
           </button>
         </div>
       </div>
@@ -80,7 +102,13 @@
                   <h2 class="admin-peer-header__name" id="admin-inbox-client-name">—</h2>
                   <p class="admin-peer-header__email" id="admin-inbox-client-email"></p>
                 </div>
-                <span class="admin-peer-header__badge">Client</span>
+                <div class="admin-peer-header__aside">
+                  <label class="admin-show-archived">
+                    <input type="checkbox" id="admin-show-archived" />
+                    <span>Show archived</span>
+                  </label>
+                  <span class="admin-peer-header__badge">Client</span>
+                </div>
               </header>
 
               <div class="admin-thread-panel">

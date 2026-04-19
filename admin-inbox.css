@@ -59,6 +59,9 @@
 }
 
 .admin-topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.84rem;
   font-weight: 500;
   color: var(--text-muted);
@@ -66,6 +69,11 @@
   padding: 0.38rem 0.65rem;
   border-radius: 8px;
   transition: color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.admin-topbar-icon {
+  flex-shrink: 0;
+  opacity: 0.92;
 }
 
 .admin-topbar-link:hover {
@@ -86,6 +94,9 @@
 }
 
 .admin-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
@@ -99,6 +110,10 @@
   transition:
     border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
     color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.admin-topbar-btn__label {
+  line-height: 1.2;
 }
 
 .admin-topbar-btn:hover {
@@ -132,6 +147,13 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-page-lede,
+.admin-page-footnote {
+  flex-shrink: 0;
 }
 
 .admin-page-lede {
@@ -159,13 +181,15 @@
   display: grid;
   gap: 1rem;
   align-items: stretch;
-  min-height: min(72vh, 760px);
+  flex: 1;
+  min-height: 0;
 }
 
 @media (min-width: 880px) {
   .admin-dashboard {
     grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
     gap: 1.15rem;
+    min-height: min(72vh, 760px);
   }
 }
 
@@ -224,7 +248,9 @@
 
 .admin-panel--chat {
   flex: 1;
-  min-height: min(60vh, 640px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ——— Thread list ——— */
@@ -269,10 +295,33 @@
   background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
 }
 
+.admin-inbox-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
 .admin-inbox-item-name {
   font-weight: 600;
   font-size: 0.9rem;
-  margin: 0 0 0.2rem;
+  line-height: 1.25;
+  min-width: 0;
+  text-align: left;
+}
+
+.admin-inbox-unread {
+  flex-shrink: 0;
+  min-width: 1.15rem;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--bg, #0b0b12);
+  background: var(--accent);
+  border-radius: 999px;
+  text-align: center;
 }
 
 .admin-inbox-item-preview {
@@ -284,12 +333,15 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-align: left;
 }
 
 .admin-inbox-item-meta {
+  display: block;
   font-size: 0.7rem;
   color: var(--text-muted);
   margin: 0.35rem 0 0;
+  text-align: left;
 }
 
 /* ——— Empty / active chat ——— */
@@ -331,6 +383,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.9rem 1.1rem;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
@@ -356,6 +409,32 @@
   word-break: break-all;
 }
 
+.admin-peer-header__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.admin-show-archived {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-show-archived input {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .admin-peer-header__badge {
   flex-shrink: 0;
   font-size: 0.65rem;
@@ -371,7 +450,7 @@
 
 .admin-thread-panel {
   flex: 1;
-  min-height: 10rem;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -379,46 +458,105 @@
 
 .admin-inbox-thread {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 0.9rem 1rem;
+  overflow-x: hidden;
+  padding: 0.85rem 1rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
   scroll-behavior: smooth;
 }
 
-/* ——— Bubbles ——— */
-.admin-inbox-bubble {
-  max-width: 88%;
-  padding: 0.6rem 0.8rem;
-  border-radius: 10px;
+/* ——— Message rows ——— */
+.admin-msg {
+  max-width: min(100%, 34rem);
+  border-radius: var(--radius, 12px);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
   font-size: 0.91rem;
   line-height: 1.45;
 }
 
-.admin-inbox-bubble--client {
-  align-self: flex-start;
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-
-.admin-inbox-bubble--admin {
+.admin-msg--admin {
   align-self: flex-end;
-  background: color-mix(in srgb, var(--accent) 16%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  margin-left: auto;
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
 }
 
-.admin-inbox-bubble time {
-  display: block;
-  font-size: 0.7rem;
+.admin-msg--client {
+  align-self: flex-start;
+}
+
+.admin-msg--archived {
+  opacity: 0.88;
+  border-style: dashed;
+}
+
+.admin-msg__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.45rem 0.75rem 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  margin-top: 0.3rem;
 }
 
-.admin-inbox-bubble-text {
+.admin-msg__head time {
+  font-weight: 500;
+  font-size: 0.68rem;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.admin-msg__body {
+  padding: 0.15rem 0.75rem 0.65rem;
+}
+
+.admin-msg__text {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.admin-msg__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  padding: 0 0.65rem 0.55rem;
+}
+
+.admin-msg__btn {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.28rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.admin-msg__btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--accent);
+}
+
+.admin-msg__btn--danger:hover {
+  border-color: color-mix(in srgb, #f87171 45%, var(--border));
+  color: #fecaca;
 }
 
 .admin-inbox-attachments {

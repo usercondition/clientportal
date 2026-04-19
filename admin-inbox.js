@@ -11,9 +11,13 @@
   var adminFileHint = document.getElementById("admin-inbox-file-hint");
   var logoutBtn = document.getElementById("admin-inbox-logout");
   var notifyPermBtn = document.getElementById("admin-enable-notify");
+  var showArchivedEl = document.getElementById("admin-show-archived");
 
   /** @type {string | null} */
   var selectedThreadId = null;
+
+  /** When true, GET thread messages includes rows with admin_archived_at set. */
+  var includeArchived = false;
 
   /** @type {Record<string, { updatedAt: string; preview: string; lastFrom: string }>} */
   var threadListSnapshot = {};
@@ -70,34 +74,39 @@
     } catch (e) {}
   }
 
+  function notifyBtnLabelEl(btn) {
+    return btn ? btn.querySelector(".admin-topbar-btn__label") : null;
+  }
+
   function syncAdminNotifyButton(btn) {
     if (!btn) return;
+    var lab = notifyBtnLabelEl(btn);
     btn.classList.remove("admin-topbar-btn--muted");
     btn.removeAttribute("aria-pressed");
     btn.removeAttribute("title");
     if (typeof Notification === "undefined") {
-      btn.textContent = "Alerts not supported";
+      if (lab) lab.textContent = "Alerts Not Supported";
       btn.disabled = true;
       return;
     }
     btn.disabled = false;
     var perm = Notification.permission;
     if (perm === "denied") {
-      btn.textContent = "Alerts blocked";
+      if (lab) lab.textContent = "Alerts Blocked";
       btn.title = "Allow notifications for this site in your browser settings.";
       btn.classList.add("admin-topbar-btn--muted");
       return;
     }
     if (perm === "default") {
-      btn.textContent = "Desktop alerts";
+      if (lab) lab.textContent = "Desktop Alerts";
       btn.setAttribute("aria-pressed", "false");
       return;
     }
     if (isInAppNotifyEnabled()) {
-      btn.textContent = "Turn off alerts";
+      if (lab) lab.textContent = "Turn Off Alerts";
       btn.setAttribute("aria-pressed", "true");
     } else {
-      btn.textContent = "Desktop alerts";
+      if (lab) lab.textContent = "Desktop Alerts";
       btn.setAttribute("aria-pressed", "false");
     }
   }
@@ -164,6 +173,19 @@
     return payload;
   }
 
+  async function patchThreadMessage(threadId, messageId, action) {
+    var url =
+      "/api/admin/threads/" +
+      encodeURIComponent(threadId) +
+      "/messages/" +
+      encodeURIComponent(messageId);
+    return requestJson(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: action }),
+    });
+  }
+
   async function postThreadMessage(threadId, text, fileList) {
     var url = "/api/admin/threads/" + encodeURIComponent(threadId) + "/messages";
     var bodyText = String(text || "").trim();
@@ -222,6 +244,7 @@
         updatedAt: String(r.updatedAt || ""),
         preview: r.preview || "",
         lastFrom: r.lastFrom || "",
+        unreadCount: Number(r.unreadCount || 0),
       };
     });
     if (hadSnapshot) {
@@ -248,21 +271,33 @@
     listEl.innerHTML = rows
       .map(function (r) {
         var active = r.threadId === selectedThreadId ? " is-active" : "";
+        var unread = Number(r.unreadCount || 0);
+        var badge =
+          unread > 0
+            ? '<span class="admin-inbox-unread" aria-label="' +
+              esc(unread + " unread") +
+              '">' +
+              (unread > 99 ? "99+" : String(unread)) +
+              "</span>"
+            : "";
         return (
           '<li><button type="button" class="admin-inbox-item' +
           active +
           '" data-key="' +
           esc(r.threadId) +
           '">' +
-          '<p class="admin-inbox-item-name">' +
+          '<span class="admin-inbox-item-top">' +
+          '<span class="admin-inbox-item-name">' +
           esc(r.clientLabel) +
-          "</p>" +
-          '<p class="admin-inbox-item-preview">' +
+          "</span>" +
+          badge +
+          "</span>" +
+          '<span class="admin-inbox-item-preview">' +
           esc(r.preview || "(no messages)") +
-          "</p>" +
-          '<p class="admin-inbox-item-meta">' +
+          "</span>" +
+          '<span class="admin-inbox-item-meta">' +
           esc(formatTime(r.updatedAt)) +
-          "</p>" +
+          "</span>" +
           "</button></li>"
         );
       })
@@ -293,7 +328,10 @@
 
     var payload;
     try {
-      payload = await requestJson("/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages");
+      var qs = includeArchived ? "?includeArchived=1" : "";
+      payload = await requestJson(
+        "/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages" + qs
+      );
     } catch (e) {
       selectedThreadId = null;
       renderList();
@@ -325,15 +363,52 @@
         var bodyText = String(m.body || "").trim();
         var bodyHtml = bodyText ? esc(bodyText) : "";
         var attHtml = renderAttachmentsHtml(m.attachments);
+        var who = isAdmin ? "You" : "Client";
+        var rowCls = "admin-msg admin-msg--" + (isAdmin ? "admin" : "client");
+        if (!isAdmin && m.archived) rowCls += " admin-msg--archived";
+        var actions = "";
+        if (!isAdmin) {
+          if (m.archived) {
+            actions =
+              '<div class="admin-msg__actions">' +
+              '<button type="button" class="admin-msg__btn" data-msg-action="restore" data-msg-id="' +
+              esc(String(m.id)) +
+              '">Restore</button>' +
+              "</div>";
+          } else {
+            actions =
+              '<div class="admin-msg__actions">' +
+              '<button type="button" class="admin-msg__btn" data-msg-action="archive" data-msg-id="' +
+              esc(String(m.id)) +
+              '">Archive</button>' +
+              '<button type="button" class="admin-msg__btn admin-msg__btn--danger" data-msg-action="delete" data-msg-id="' +
+              esc(String(m.id)) +
+              '">Delete</button>' +
+              "</div>";
+          }
+        }
         return (
-          '<div class="admin-inbox-bubble admin-inbox-bubble--' +
-          (isAdmin ? "admin" : "client") +
+          '<article class="' +
+          rowCls +
+          '" data-message-id="' +
+          esc(String(m.id)) +
           '">' +
-          (bodyHtml ? "<p class=\"admin-inbox-bubble-text\">" + bodyHtml + "</p>" : "") +
-          attHtml +
-          "<time>" +
+          '<header class="admin-msg__head">' +
+          '<span class="admin-msg__who">' +
+          esc(who) +
+          "</span>" +
+          "<time datetime=\"" +
+          esc(String(m.at || "")) +
+          '">' +
           esc(formatTime(m.at)) +
-          "</time></div>"
+          "</time>" +
+          "</header>" +
+          '<div class="admin-msg__body">' +
+          (bodyHtml ? '<p class="admin-msg__text">' + bodyHtml + "</p>" : "") +
+          attHtml +
+          "</div>" +
+          actions +
+          "</article>"
         );
       })
       .join("");
@@ -353,6 +428,34 @@
     renderList();
     renderThread();
     if (replyInput) replyInput.focus();
+  }
+
+  if (threadEl) {
+    threadEl.addEventListener("click", async function (ev) {
+      var t = ev.target;
+      if (!t || !t.getAttribute) return;
+      var act = t.getAttribute("data-msg-action");
+      var mid = t.getAttribute("data-msg-id");
+      if (!act || !mid || !selectedThreadId) return;
+      ev.preventDefault();
+      try {
+        await patchThreadMessage(selectedThreadId, mid, act);
+        showAppToast(
+          act === "archive" ? "Message archived." : act === "delete" ? "Message deleted." : "Message restored."
+        );
+        await renderList();
+        await renderThread();
+      } catch (err) {
+        showAppToast((err && err.message) || "Could not update message.");
+      }
+    });
+  }
+
+  if (showArchivedEl) {
+    showArchivedEl.addEventListener("change", function () {
+      includeArchived = Boolean(showArchivedEl.checked);
+      renderThread();
+    });
   }
 
   (async function init() {

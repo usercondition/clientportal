@@ -133,6 +133,7 @@ function mapMessageRow(m) {
     body: m.body,
     attachments: chatAttachments.toApiAttachments(m.attachments),
     at: m.created_at,
+    archived: Boolean(m.admin_archived_at),
   };
 }
 
@@ -434,7 +435,7 @@ app.get("/api/client/:clientId/messages", async (req, res) => {
   if (!threadRes.rows.length) return res.json({ messages: [] });
   const threadId = threadRes.rows[0].id;
   const msgRes = await pool.query(
-    "select id, sender, body, attachments, created_at from messages where thread_id = $1 order by created_at asc",
+    "select id, sender, body, attachments, created_at, admin_archived_at from messages where thread_id = $1 and deleted_at is null order by created_at asc",
     [threadId]
   );
   res.json({
@@ -490,19 +491,32 @@ app.get("/api/admin/inbox", async (_req, res) => {
     select
       t.id as thread_id,
       t.last_message_at,
+      t.admin_last_read_at,
       c.id as client_id,
       c.first_name,
       c.last_name,
       c.email,
       m.body as preview,
       m.attachments as preview_attachments,
-      m.sender as last_sender
+      m.sender as last_sender,
+      (
+        select count(*)::int
+        from messages m2
+        where m2.thread_id = t.id
+          and m2.sender = 'client'
+          and m2.deleted_at is null
+          and (
+            t.admin_last_read_at is null
+            or m2.created_at > t.admin_last_read_at
+          )
+      ) as unread_count
     from message_threads t
     join clients c on c.id = t.client_id
     left join lateral (
       select body, sender, attachments
       from messages
       where thread_id = t.id
+        and deleted_at is null
       order by created_at desc
       limit 1
     ) m on true
@@ -519,12 +533,15 @@ app.get("/api/admin/inbox", async (_req, res) => {
       preview:
         chatAttachments.inboxPreviewLine(r.preview, r.preview_attachments) || "(no messages)",
       lastFrom: r.last_sender || "",
+      unreadCount: Number(r.unread_count || 0),
     })),
   });
 });
 
 app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   const { threadId } = req.params;
+  const includeArchived =
+    String(req.query.includeArchived || "").toLowerCase() === "true" || String(req.query.includeArchived || "") === "1";
   const threadSql = `
     select t.id as thread_id, c.id as client_id, c.first_name, c.last_name, c.email
     from message_threads t
@@ -535,10 +552,15 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   const threadRes = await pool.query(threadSql, [threadId]);
   if (!threadRes.rows.length) return res.status(404).json({ error: "Thread not found." });
   const info = threadRes.rows[0];
-  const msgRes = await pool.query(
-    "select id, sender, body, attachments, created_at from messages where thread_id = $1 order by created_at asc",
-    [threadId]
-  );
+  const msgSql = includeArchived
+    ? `select id, sender, body, attachments, created_at, admin_archived_at from messages
+       where thread_id = $1 and deleted_at is null order by created_at asc`
+    : `select id, sender, body, attachments, created_at, admin_archived_at from messages
+       where thread_id = $1 and deleted_at is null and admin_archived_at is null order by created_at asc`;
+  const msgRes = await pool.query(msgSql, [threadId]);
+  await pool.query("update message_threads set admin_last_read_at = now(), updated_at = updated_at where id = $1", [
+    threadId,
+  ]);
   res.json({
     thread: {
       threadId: info.thread_id,
@@ -547,7 +569,39 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
       clientEmail: info.email || "",
     },
     messages: msgRes.rows.map(mapMessageRow),
+    includeArchived,
   });
+});
+
+app.patch("/api/admin/threads/:threadId/messages/:messageId", async (req, res) => {
+  const { threadId, messageId } = req.params;
+  const action = String((req.body && req.body.action) || "").toLowerCase();
+  if (!["archive", "delete", "restore"].includes(action)) {
+    return res.status(400).json({ error: "action must be archive, delete, or restore." });
+  }
+  const chk = await pool.query(
+    "select id, sender from messages where id = $1 and thread_id = $2 limit 1",
+    [messageId, threadId]
+  );
+  if (!chk.rows.length) return res.status(404).json({ error: "Message not found." });
+  const row = chk.rows[0];
+  if (row.sender !== "client") {
+    return res.status(400).json({ error: "Only client messages can be archived or deleted by staff." });
+  }
+  if (action === "archive") {
+    await pool.query("update messages set admin_archived_at = now() where id = $1 and thread_id = $2", [
+      messageId,
+      threadId,
+    ]);
+  } else if (action === "delete") {
+    await pool.query("update messages set deleted_at = now() where id = $1 and thread_id = $2", [messageId, threadId]);
+  } else if (action === "restore") {
+    await pool.query("update messages set admin_archived_at = null where id = $1 and thread_id = $2", [
+      messageId,
+      threadId,
+    ]);
+  }
+  res.json({ ok: true });
 });
 
 app.post("/api/admin/threads/:threadId/messages", messageMultipartUpload, async (req, res) => {
