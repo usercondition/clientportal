@@ -5,7 +5,7 @@
  */
 const path = require("path");
 const { Client } = require("pg");
-const { getMigrationStatements } = require("../lib/apply-initial-schema");
+const { getMigrationStatements, runMigrationStatements } = require("../lib/apply-initial-schema");
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
 function resolveDatabaseUrl() {
@@ -42,12 +42,7 @@ async function main() {
   });
   await client.connect();
 
-  for (const chunk of statements) {
-    const q = chunk.endsWith(";") ? chunk : `${chunk};`;
-    await client.query(q);
-    const preview = q.split(/\r?\n/).find((l) => l.trim() && !l.trim().startsWith("--")) || q;
-    console.log("  ✓", preview.slice(0, 88).trim());
-  }
+  await runMigrationStatements(client, statements, { logOk: true });
 
   await client.end();
   console.log("Done. Applied", statements.length, "statements.");

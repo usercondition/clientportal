@@ -269,13 +269,15 @@ app.post("/api/client/register", async (req, res) => {
     });
   }
   if (err && (err.code === "42P01" || err.code === "42703" || err.code === "42883")) {
+    console.error("[db] register failed (schema):", err.code, err.message, err.detail || "", err.table || "");
     return res.status(500).json({
       error:
         "Database schema mismatch or incomplete migration. Redeploy the server (it auto-applies 001_init.sql when tables are missing), " +
         "or from the project root run: npm run db:migrate (with DATABASE_URL set).",
+      postgresCode: err.code || undefined,
     });
   }
-  console.error(err);
+  console.error("[db] register failed:", err);
   return res.status(500).json({ error: "Failed to register client." });
   } finally {
     clientConn.release();

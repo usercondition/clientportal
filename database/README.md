@@ -70,7 +70,7 @@ If `DATABASE_URL` accidentally points at the public proxy, this repo’s server 
 
 ### Apply schema on Railway (first deploy)
 
-The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). If that step fails, check deploy logs for `[db] Auto-schema failed`. Registration also retries once after applying the migration if Postgres reports a missing table/column/function.
+The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after migration on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
 
 If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually:
 
