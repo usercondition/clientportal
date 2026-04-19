@@ -68,6 +68,41 @@ Use **`DATABASE_PUBLIC_URL`** only when something **outside** Railway’s privat
 
 If `DATABASE_URL` accidentally points at the public proxy, this repo’s server logs a one-line warning when the hostname looks like `*.proxy.rlwy.net`.
 
+### Apply schema on Railway (first deploy)
+
+If the API returns **“Database schema mismatch — run migrations”**, Postgres is reachable but **`001_init.sql` has not been applied** to that database.
+
+**Option A — from your laptop** (recommended once):
+
+1. Copy the **private** `DATABASE_URL` from Railway (Postgres or Web service variables).
+2. In this project root:
+
+```bash
+export DATABASE_URL="postgresql://…postgres.railway.internal:5432/railway"
+npm run db:migrate
+```
+
+PowerShell:
+
+```powershell
+$env:DATABASE_URL="postgresql://…"
+npm run db:migrate
+```
+
+**Option B — Railway shell** against the Web or Postgres service that has `DATABASE_URL` set:
+
+```bash
+npm run db:migrate
+```
+
+**Option C — `psql`**:
+
+```bash
+psql "$DATABASE_URL" -f database/migrations/001_init.sql
+```
+
+Re-run **`npm run db:migrate`** after pulling schema changes. Tables use `IF NOT EXISTS`; **enums** (`order_status`, `message_sender`) are not idempotent — if migrate errors on “already exists”, the schema is already applied.
+
 ## Run the app with DB + API
 
 1) Start Postgres (if not already running)

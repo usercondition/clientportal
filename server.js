@@ -246,7 +246,11 @@ app.post("/api/client/register", async (req, res) => {
       });
     }
     if (err && (err.code === "42P01" || err.code === "42703")) {
-      return res.status(500).json({ error: "Database schema mismatch. Run migrations (database/migrations/001_init.sql)." });
+      return res.status(500).json({
+        error:
+          "Database schema mismatch. From the project root run: npm run db:migrate " +
+          "(with DATABASE_URL set), or: psql \"$DATABASE_URL\" -f database/migrations/001_init.sql",
+      });
     }
     console.error(err);
     return res.status(500).json({ error: "Failed to register client." });
