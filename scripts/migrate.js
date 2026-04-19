@@ -6,7 +6,8 @@
  *   npm run db:migrate -- "postgresql://user:pass@host:5432/dbname"
  *
  * Without a URL, reads DATABASE_URL (or DATABASE_PRIVATE_URL / POSTGRES_URL / DATABASE_PUBLIC_URL) from .env / env.
- * Note: postgres.railway.internal only works inside Railway (shell or CI there), not from your laptop.
+ * Note: Hosts like postgres-xxx.railway.internal only resolve *inside* Railway (Shell / deployed services).
+ * From your laptop use the *public* connection string (e.g. *.proxy.rlwy.net) with SSL, or run migrate in Railway Shell.
  */
 const path = require("path");
 const { Client } = require("pg");
@@ -55,5 +56,19 @@ async function main() {
 
 main().catch((err) => {
   console.error(err.message || err);
+  const code = err && err.code;
+  const cliUrl = process.argv
+    .slice(2)
+    .find((a) => String(a).startsWith("postgresql://") || String(a).startsWith("postgres://"));
+  const envUrl = String(process.env.DATABASE_URL || process.env.DATABASE_PRIVATE_URL || "");
+  const urlHint = cliUrl || envUrl;
+  if (code === "ENOTFOUND" && /\.railway\.internal/i.test(urlHint)) {
+    console.error(
+      "\n[db:migrate] *.railway.internal does not resolve on your PC — it only works inside Railway’s network.\n" +
+        "  • Easiest: Railway → your Web service → Shell → npm run db:migrate (uses injected DATABASE_URL).\n" +
+        "  • Or: copy the Postgres *public* / TCP URL from Railway (often *.proxy.rlwy.net), set PGSSL if needed, then:\n" +
+        '      npm run db:migrate -- "postgresql://USER:PASS@HOST:5432/railway"\n'
+    );
+  }
   process.exit(1);
 });

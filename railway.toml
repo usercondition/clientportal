@@ -6,3 +6,6 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "npm start"
+# Liveness only — does not require Postgres (use /api/health to verify DB).
+healthcheckPath = "/health"
+healthcheckTimeout = 30

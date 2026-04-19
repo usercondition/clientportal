@@ -84,6 +84,11 @@ const { applyInitialSchemaIfNeeded, applySchemaCompat } = require("./lib/apply-i
 
 app.use(express.json({ limit: "1mb" }));
 
+/** Liveness for Railway / load balancers — does not touch the database (avoids restart loops during DB misconfig). */
+app.get("/health", (_req, res) => {
+  res.status(200).type("text/plain").send("ok");
+});
+
 function normalizeUSZip5(raw) {
   const d = String(raw || "").replace(/\D/g, "");
   return d.length >= 5 ? d.slice(0, 5) : d;
@@ -118,17 +123,22 @@ function formatMoney(cents) {
   return n > 0 ? `$${n.toFixed(2)}` : "—";
 }
 
+/** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
 app.get("/api/health", async (_req, res) => {
   if (!DATABASE_URL) {
-    return res.json({ ok: true, database: "not_configured", hint: "Set DATABASE_URL on this service." });
+    return res.status(200).json({
+      ok: true,
+      database: "not_configured",
+      hint: "Set DATABASE_URL on the Web service (reference from Postgres).",
+    });
   }
   try {
     await pool.query("select 1 as health_check");
-    return res.json({ ok: true, database: "connected", env: DATABASE_SOURCE_KEY });
+    return res.status(200).json({ ok: true, database: "connected", env: DATABASE_SOURCE_KEY });
   } catch (e) {
     const err = /** @type {{ message?: string; code?: string }} */ (e);
-    return res.status(503).json({
-      ok: false,
+    return res.status(200).json({
+      ok: true,
       database: "unreachable",
       message: err.message,
       postgresCode: err.code,
@@ -485,14 +495,18 @@ async function start() {
           `[db] Auto-applied initial schema (${r.statements} statements). Missing: ${(r.missing || []).join(", ")}.`
         );
       }
-      await applySchemaCompat(pool);
+      const compat = await applySchemaCompat(pool);
+      if (compat.ran) {
+        console.log(`[db] Applied compat migration (${compat.statements} statements).`);
+      }
+      console.log("[db] Schema step complete (bootstrap + compat).");
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
     }
   }
 
   app.listen(PORT, () => {
-    console.log(`Client portal server running at http://localhost:${PORT}`);
+    console.log(`Client portal server listening on port ${PORT} (GET /health, GET /api/health)`);
   });
 }
 
