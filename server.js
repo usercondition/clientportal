@@ -442,7 +442,24 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Client portal server running at http://localhost:${PORT}`);
-});
+const { applyInitialSchemaIfNeeded } = require("./lib/apply-initial-schema");
+
+async function start() {
+  if (DATABASE_URL && String(process.env.SKIP_AUTO_SCHEMA || "").toLowerCase() !== "true") {
+    try {
+      const r = await applyInitialSchemaIfNeeded(pool);
+      if (r.applied) {
+        console.log(`[db] Auto-applied initial schema (${r.statements} statements). public.clients was missing.`);
+      }
+    } catch (e) {
+      console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
+    }
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Client portal server running at http://localhost:${PORT}`);
+  });
+}
+
+start();
 

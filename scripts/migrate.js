@@ -3,9 +3,9 @@
  * Usage: npm run db:migrate
  * Railway: set DATABASE_URL on the service, then run once (e.g. railway run npm run db:migrate).
  */
-const fs = require("fs");
 const path = require("path");
 const { Client } = require("pg");
+const { getMigrationStatements } = require("../lib/apply-initial-schema");
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
 function resolveDatabaseUrl() {
@@ -35,18 +35,7 @@ async function main() {
   }
   console.log("Connecting using:", source);
 
-  const migrationPath = path.resolve(__dirname, "..", "database", "migrations", "001_init.sql");
-  const rawSql = fs.readFileSync(migrationPath, "utf8");
-  const sql = rawSql
-    .split(/\r?\n/)
-    .filter((line) => !/^\s*--/.test(line))
-    .join("\n");
-
-  const statements = sql
-    .split(/;\s*\r?\n/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
+  const statements = getMigrationStatements();
   const client = new Client({
     connectionString: url,
     ssl: sslOption(url) || undefined,
@@ -61,7 +50,7 @@ async function main() {
   }
 
   await client.end();
-  console.log("Done. Applied", statements.length, "statements from", path.relative(process.cwd(), migrationPath));
+  console.log("Done. Applied", statements.length, "statements.");
 }
 
 main().catch((err) => {

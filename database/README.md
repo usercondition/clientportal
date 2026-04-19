@@ -70,7 +70,9 @@ If `DATABASE_URL` accidentally points at the public proxy, this repo’s server 
 
 ### Apply schema on Railway (first deploy)
 
-If the API returns **“Database schema mismatch — run migrations”**, Postgres is reachable but **`001_init.sql` has not been applied** to that database.
+The **Node server auto-applies** `001_init.sql` on startup when the **`public.clients`** table does not exist (so a fresh Railway Postgres usually needs no manual step). If that step fails, check deploy logs for `[db] Auto-schema failed`.
+
+If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually:
 
 **Option A — from your laptop** (recommended once):
 
