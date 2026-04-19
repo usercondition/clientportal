@@ -58,7 +58,11 @@ const pool = new Pool({
 });
 
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static(path.resolve(__dirname)));
+
+function normalizeUSZip5(raw) {
+  const d = String(raw || "").replace(/\D/g, "");
+  return d.length >= 5 ? d.slice(0, 5) : d;
+}
 
 function toClientProfile(row) {
   return {
@@ -131,7 +135,31 @@ app.post("/api/client/register", async (req, res) => {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
-  const clientConn = await pool.connect();
+  if (!DATABASE_URL) {
+    return res.status(503).json({
+      error: "Database is not configured on this server (set DATABASE_URL).",
+    });
+  }
+
+  const zip5 = normalizeUSZip5(addressZip);
+  if (!/^\d{5}$/.test(zip5)) {
+    return res.status(400).json({ error: "Address ZIP must be exactly 5 digits (US)." });
+  }
+  const state2 = String(state).trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+  if (state2.length !== 2) {
+    return res.status(400).json({ error: "State must be a two-letter code." });
+  }
+
+  let clientConn;
+  try {
+    clientConn = await pool.connect();
+  } catch (connErr) {
+    console.error(connErr);
+    return res.status(503).json({
+      error: "Could not reach the database. Check DATABASE_URL and that PostgreSQL is running.",
+    });
+  }
+
   try {
     await clientConn.query("begin");
     const insertClient = `
@@ -144,7 +172,7 @@ app.post("/api/client/register", async (req, res) => {
       String(lastName).trim(),
       String(email).trim(),
       phone ? String(phone).trim() : null,
-      String(addressZip).trim(),
+      zip5,
     ]);
 
     const client = cRes.rows[0];
@@ -158,12 +186,12 @@ app.post("/api/client/register", async (req, res) => {
       String(addressLine1).trim(),
       addressLine2 ? String(addressLine2).trim() : null,
       String(city).trim(),
-      String(state).trim().toUpperCase(),
-      String(addressZip).trim(),
+      state2,
+      zip5,
     ]);
 
     await clientConn.query(
-      "insert into message_threads (client_id, subject, last_message_at) values ($1,$2, now()) on conflict (client_id) do nothing",
+      "insert into message_threads (client_id, subject, last_message_at) values ($1, $2, now())",
       [client.id, "General support"]
     );
 
@@ -172,9 +200,22 @@ app.post("/api/client/register", async (req, res) => {
       client: toClientProfile({ ...client, ...aRes.rows[0] }),
     });
   } catch (err) {
-    await clientConn.query("rollback");
+    try {
+      await clientConn.query("rollback");
+    } catch (rollbackErr) {
+      /* ignore */
+    }
     if (err && err.code === "23505") {
       return res.status(409).json({ error: "Client already exists for this name + ZIP." });
+    }
+    if (err && err.code === "23514") {
+      return res.status(400).json({
+        error:
+          "Address or ZIP did not pass validation. Use a 5-digit US ZIP and a 2-letter state code.",
+      });
+    }
+    if (err && (err.code === "42P01" || err.code === "42703")) {
+      return res.status(500).json({ error: "Database schema mismatch. Run migrations (database/migrations/001_init.sql)." });
     }
     console.error(err);
     return res.status(500).json({ error: "Failed to register client." });
@@ -355,6 +396,9 @@ app.post("/api/admin/threads/:threadId/messages", async (req, res) => {
     message: { id: msgRes.rows[0].id, from: "admin", body, at: msgRes.rows[0].created_at },
   });
 });
+
+const staticDir = path.resolve(__dirname);
+app.use(express.static(staticDir));
 
 app.use((req, res) => {
   const target = req.path === "/" ? "index.html" : req.path.slice(1);

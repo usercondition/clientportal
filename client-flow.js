@@ -174,6 +174,11 @@
         .slice(0, 2);
       var addressZip = String(fd.get("addressZip") || "").trim();
 
+      if (!firstName || !lastName) {
+        showError(/** @type {HTMLElement} */ (newError), "First and last name are required.");
+        return;
+      }
+
       if (!email) {
         showError(/** @type {HTMLElement} */ (newError), "Email is required.");
         return;

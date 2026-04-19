@@ -22,12 +22,28 @@
 
   async function requestJson(url, options) {
     var res = await fetch(url, options || {});
-    var payload = null;
+    var text = "";
     try {
-      payload = await res.json();
-    } catch (e) {}
+      text = await res.text();
+    } catch (e) {
+      text = "";
+    }
+    var payload = null;
+    if (text) {
+      try {
+        payload = JSON.parse(text);
+      } catch (e) {
+        payload = null;
+      }
+    }
     if (!res.ok) {
-      var msg = (payload && payload.error) || "Request failed.";
+      var msg =
+        (payload && payload.error) ||
+        (res.status === 404
+          ? "Not found. Open this site through the Node server (npm start), not as a local file."
+          : res.status === 503
+            ? "Service unavailable. Check that DATABASE_URL is set and PostgreSQL is running."
+            : "Request failed (" + res.status + ").");
       throw new Error(msg);
     }
     return payload;
