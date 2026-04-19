@@ -1,0 +1,263 @@
+.client-flow-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem min(1.5rem, 4vw);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.flow-logo {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.flow-logo:hover {
+  color: var(--accent);
+}
+
+.flow-progress {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.flow-deck {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template: 1fr / 1fr;
+  min-height: 0;
+}
+
+.flow-slide {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 3rem) min(1.5rem, 4vw) 2.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(1.25rem);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    visibility 0.35s;
+}
+
+.flow-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-slide {
+    transition: none;
+    transform: none;
+  }
+}
+
+.flow-slide-inner {
+  width: min(100%, 420px);
+}
+
+.flow-slide-inner--form {
+  width: min(100%, 440px);
+}
+
+.flow-slide-inner--form-wide {
+  width: min(100%, 520px);
+}
+
+.flow-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.75rem;
+}
+
+.flow-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.flow-title-sm {
+  font-size: clamp(1.35rem, 3.2vw, 1.75rem);
+}
+
+.flow-lede {
+  color: var(--text-muted);
+  margin: 0 0 1.75rem;
+  line-height: 1.55;
+}
+
+.flow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.flow-actions-stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.flow-actions-stack .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.flow-form .field-row {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.flow-form .field-row .field {
+  margin-bottom: 0;
+}
+
+@media (min-width: 480px) {
+  .flow-form .field-row--split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.flow-form .field {
+  margin-bottom: 1.1rem;
+}
+
+.flow-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+.flow-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.flow-section-hint {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}
+
+.flow-form label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+}
+
+.flow-form .field-hint {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.flow-form .field-help {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0.35rem 0 0;
+  line-height: 1.4;
+}
+
+.flow-form .optional {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.flow-form .input-state {
+  text-transform: uppercase;
+}
+
+.flow-form input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.flow-form input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.flow-error {
+  color: #e8a598;
+  font-size: 0.92rem;
+  margin: -0.25rem 0 1rem;
+}
+
+.flow-profile-card {
+  padding: 1.25rem 1.35rem;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.flow-dl {
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.flow-dl dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.flow-dl dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.profile-address-dd {
+  white-space: pre-line;
+  line-height: 1.45;
+}
+
+.flow-note {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.flow-back {
+  margin-left: 0;
+}

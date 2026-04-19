@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="admin-auth.js"></script>
+    <script>
+      (function () {
+        if (!window.AdminAuth) {
+          location.replace("admin-login.html");
+          return;
+        }
+        if (!AdminAuth.isAdminSession()) {
+          AdminAuth.redirectToLogin();
+        }
+      })();
+    </script>
+    <style>
+      .admin-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .admin-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem min(1.5rem, 4vw);
+        border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        backdrop-filter: blur(10px);
+      }
+      .admin-bar h1 {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+      .admin-bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .admin-logout {
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+      }
+      .admin-logout:hover {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+      }
+      .admin-bar a {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+      }
+      .admin-bar a:hover {
+        color: var(--accent);
+      }
+      .admin-main {
+        flex: 1;
+        padding: clamp(1.5rem, 4vw, 2.5rem) min(1.5rem, 4vw);
+      }
+      .admin-nav {
+        display: grid;
+        gap: 0.5rem;
+        max-width: 20rem;
+      }
+      .admin-nav a {
+        display: block;
+        padding: 0.65rem 0.85rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: var(--bg-elevated);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      .admin-nav a:hover {
+        border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+        color: var(--accent);
+      }
+      .admin-note {
+        margin: 1.25rem 0 0;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        max-width: 36ch;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-shell">
+      <header class="admin-bar">
+        <h1>Admin</h1>
+        <div class="admin-bar-actions">
+          <button type="button" class="admin-logout" id="admin-logout">Log out</button>
+          <a href="index.html">Public site</a>
+        </div>
+      </header>
+      <main class="admin-main">
+        <nav class="admin-nav" aria-label="Admin sections">
+          <a href="#">Dashboard</a>
+          <a href="#">Orders</a>
+          <a href="#">Customers</a>
+          <a href="#">Settings</a>
+        </nav>
+        <p class="admin-note">
+          Placeholder links — point these at your real dashboard routes or apps when you wire the
+          backend.
+        </p>
+      </main>
+    </div>
+    <script>
+      var lo = document.getElementById("admin-logout");
+      if (lo) {
+        lo.addEventListener("click", function () {
+          if (window.AdminAuth) AdminAuth.clearAdminSession();
+          location.href = "admin-login.html";
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Personal site — projects, notes, and contact." />
+    <title>Your Name — Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <span class="site-mark">YN</span>
+        <div class="header-actions">
+          <nav id="site-nav" class="site-nav" aria-label="Primary">
+            <ul class="nav-list">
+              <li><a href="#work">Work</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </nav>
+          <a
+            class="admin-entry"
+            href="admin.html"
+            aria-label="Dashboard and admin"
+          >
+            <span class="admin-entry-icon" aria-hidden="true"></span>
+          </a>
+          <button
+            type="button"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="Open menu"
+          >
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Hello —</p>
+            <h1 class="hero-title">
+              I design and build things for the web.
+            </h1>
+            <p class="hero-lede">
+              This is a starter page you can rename, restyle, and ship. Edit the text in
+              <code>index.html</code> and colors in <code>styles.css</code>.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#work">See projects</a>
+              <a class="btn btn-ghost" href="#contact">Get in touch</a>
+              <a class="btn btn-ghost" href="client-flow.html">Client portal demo</a>
+            </div>
+          </div>
+          <div class="hero-panel" aria-hidden="true">
+            <div class="hero-card">
+              <span class="hero-card-label">Now</span>
+              <p class="hero-card-text">Building something new.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="work" class="section">
+        <div class="container">
+          <header class="section-head">
+            <h2>Selected work</h2>
+            <p>Swap these cards for your real projects or case studies.</p>
+          </header>
+          <ul class="card-grid">
+            <li>
+              <article class="card">
+                <h3 class="card-title">Project Alpha</h3>
+                <p class="card-desc">
+                  Short description: problem, your role, and the outcome.
+                </p>
+                <a class="card-link" href="#">View details →</a>
+              </article>
+            </li>
+            <li>
+              <article class="card">
+                <h3 class="card-title">Project Beta</h3>
+                <p class="card-desc">
+                  Another line or two about stack, timeline, or metrics.
+                </p>
+                <a class="card-link" href="#">View details →</a>
+              </article>
+            </li>
+            <li>
+              <article class="card">
+                <h3 class="card-title">Project Gamma</h3>
+                <p class="card-desc">
+                  Link to GitHub, demo, or a write-up when you have it.
+                </p>
+                <a class="card-link" href="#">View details →</a>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="about" class="section section-alt">
+        <div class="container narrow">
+          <header class="section-head">
+            <h2>About</h2>
+          </header>
+          <p>
+            Use this block for a short bio: what you care about, where you are based, and what you
+            are looking for next. Keep it friendly and specific — one or two short paragraphs is
+            enough.
+          </p>
+        </div>
+      </section>
+
+      <section id="contact" class="section">
+        <div class="container narrow">
+          <header class="section-head">
+            <h2>Contact</h2>
+            <p>Say hello — replace the links below with your email and profiles.</p>
+          </header>
+          <ul class="contact-list">
+            <li>
+              <a href="mailto:you@example.com">you@example.com</a>
+            </li>
+            <li>
+              <a href="https://github.com/" rel="noopener noreferrer">GitHub</a>
+            </li>
+            <li>
+              <a href="https://www.linkedin.com/" rel="noopener noreferrer">LinkedIn</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© <span id="year"></span> Your Name. All rights reserved.</p>
+        <p class="footer-note">Made with plain HTML, CSS, and a little JavaScript.</p>
+      </div>
+    </footer>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>

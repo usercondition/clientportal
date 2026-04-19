@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Client onboarding — new or returning." />
+    <title>Client portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="client-flow.css" />
+  </head>
+  <body class="client-flow-body">
+    <a class="skip-link" href="#deck">Skip to steps</a>
+
+    <header class="flow-header">
+      <a class="flow-logo" href="admin.html">← Admin</a>
+      <div class="flow-progress" role="status" aria-live="polite">
+        <span class="flow-progress-label">Step </span>
+        <span id="progress-current">1</span>
+        <span class="flow-progress-of"> of </span>
+        <span id="progress-total">4</span>
+      </div>
+    </header>
+
+    <main id="deck" class="flow-deck" aria-label="Onboarding steps">
+      <!-- 1 Welcome -->
+      <section
+        id="slide-welcome"
+        class="flow-slide is-active"
+        data-step="welcome"
+        tabindex="-1"
+        aria-labelledby="welcome-title"
+      >
+        <div class="flow-slide-inner">
+          <p class="flow-eyebrow">Client portal</p>
+          <h1 id="welcome-title" class="flow-title">Welcome</h1>
+          <p class="flow-lede">Tell us how we should get started.</p>
+          <div class="flow-actions flow-actions-stack">
+            <button type="button" class="btn btn-primary flow-choice" data-goto="new-profile-intro">
+              I’m new here
+            </button>
+            <button type="button" class="btn btn-ghost flow-choice" data-goto="lookup">
+              I’ve been here before
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Returning: lookup -->
+      <section
+        id="slide-lookup"
+        class="flow-slide"
+        data-step="lookup"
+        tabindex="-1"
+        aria-labelledby="lookup-title"
+        hidden
+      >
+        <div class="flow-slide-inner flow-slide-inner--form">
+          <p class="flow-eyebrow">Welcome back</p>
+          <h1 id="lookup-title" class="flow-title flow-title-sm">Find your profile</h1>
+          <p class="flow-lede">Enter the first name, last name, and ZIP on file so we can match you.</p>
+          <form id="form-lookup" class="flow-form" novalidate>
+            <div class="field-row field-row--split">
+              <div class="field">
+                <label for="lookup-first-name">First name</label>
+                <input
+                  id="lookup-first-name"
+                  name="firstName"
+                  type="text"
+                  autocomplete="given-name"
+                  required
+                  maxlength="80"
+                />
+              </div>
+              <div class="field">
+                <label for="lookup-last-name">Last name</label>
+                <input
+                  id="lookup-last-name"
+                  name="lastName"
+                  type="text"
+                  autocomplete="family-name"
+                  required
+                  maxlength="80"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label for="lookup-zip">ZIP code</label>
+              <input
+                id="lookup-zip"
+                name="zip"
+                type="text"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                pattern="[0-9]{5}"
+                maxlength="5"
+                required
+                placeholder="12345"
+              />
+            </div>
+            <p id="lookup-error" class="flow-error" role="alert" hidden></p>
+            <div class="flow-actions">
+              <button type="submit" class="btn btn-primary">Pull up my profile</button>
+              <button type="button" class="btn btn-ghost flow-back" data-back="welcome">Back</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- New: intro then build profile (same data as lookup for convergence) -->
+      <section
+        id="slide-new-profile-intro"
+        class="flow-slide"
+        data-step="new-profile-intro"
+        tabindex="-1"
+        aria-labelledby="new-intro-title"
+        hidden
+      >
+        <div class="flow-slide-inner">
+          <p class="flow-eyebrow">New client</p>
+          <h1 id="new-intro-title" class="flow-title">Let’s create your profile</h1>
+          <p class="flow-lede">
+            Next, you’ll enter contact info and a shipping or home address. When you return, you’ll
+            use your first name, last name, and the ZIP from your address to load your profile.
+          </p>
+          <div class="flow-actions">
+            <button type="button" class="btn btn-primary" data-goto="new-profile">Continue</button>
+            <button type="button" class="btn btn-ghost flow-back" data-back="welcome">Back</button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="slide-new-profile"
+        class="flow-slide"
+        data-step="new-profile"
+        tabindex="-1"
+        aria-labelledby="new-profile-title"
+        hidden
+      >
+        <div class="flow-slide-inner flow-slide-inner--form flow-slide-inner--form-wide">
+          <h1 id="new-profile-title" class="flow-title flow-title-sm">Your profile</h1>
+          <p class="flow-lede">
+            We need your name, email, and a full shipping or home address. Your address ZIP is what
+            you’ll use with your name when you choose “I’ve been here before.”
+          </p>
+          <form id="form-new-profile" class="flow-form" novalidate>
+            <h2 class="flow-section-title">Your name</h2>
+            <p class="flow-section-hint">You’ll use this with your address ZIP when you return.</p>
+            <div class="field-row field-row--split">
+              <div class="field">
+                <label for="new-first-name">First name</label>
+                <input
+                  id="new-first-name"
+                  name="firstName"
+                  type="text"
+                  autocomplete="given-name"
+                  required
+                  maxlength="80"
+                />
+              </div>
+              <div class="field">
+                <label for="new-last-name">Last name</label>
+                <input
+                  id="new-last-name"
+                  name="lastName"
+                  type="text"
+                  autocomplete="family-name"
+                  required
+                  maxlength="80"
+                />
+              </div>
+            </div>
+
+            <h2 class="flow-section-title">Contact</h2>
+            <div class="field-row field-row--split">
+              <div class="field">
+                <label for="new-email">Email</label>
+                <input
+                  id="new-email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  maxlength="120"
+                />
+              </div>
+              <div class="field">
+                <label for="new-phone">Phone <span class="optional">(optional)</span></label>
+                <input
+                  id="new-phone"
+                  name="phone"
+                  type="tel"
+                  autocomplete="tel"
+                  inputmode="tel"
+                  maxlength="32"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+            </div>
+
+            <h2 class="flow-section-title">Shipping / home address</h2>
+            <p class="flow-section-hint">Where we should ship orders or send physical mail.</p>
+            <div class="field">
+              <label for="new-address-line1">Street address</label>
+              <input
+                id="new-address-line1"
+                name="addressLine1"
+                type="text"
+                autocomplete="street-address"
+                required
+                maxlength="120"
+                placeholder="123 Main St"
+              />
+            </div>
+            <div class="field">
+              <label for="new-address-line2">Apt, suite, unit <span class="optional">(optional)</span></label>
+              <input
+                id="new-address-line2"
+                name="addressLine2"
+                type="text"
+                autocomplete="address-line2"
+                maxlength="120"
+                placeholder="Apt 4"
+              />
+            </div>
+            <div class="field-row field-row--split">
+              <div class="field">
+                <label for="new-city">City</label>
+                <input
+                  id="new-city"
+                  name="city"
+                  type="text"
+                  autocomplete="address-level2"
+                  required
+                  maxlength="80"
+                />
+              </div>
+              <div class="field">
+                <label for="new-state">State</label>
+                <input
+                  id="new-state"
+                  name="state"
+                  type="text"
+                  autocomplete="address-level1"
+                  required
+                  maxlength="2"
+                  minlength="2"
+                  placeholder="CA"
+                  class="input-state"
+                  aria-describedby="new-state-desc"
+                />
+                <p id="new-state-desc" class="field-help">Two-letter code (e.g. CA, NY).</p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="new-address-zip">ZIP code</label>
+              <input
+                id="new-address-zip"
+                name="addressZip"
+                type="text"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                pattern="[0-9]{5}"
+                maxlength="5"
+                required
+                placeholder="12345"
+                aria-describedby="new-address-zip-desc"
+              />
+              <p id="new-address-zip-desc" class="field-help">
+                Part of your mailing address — also used with your name to sign in next time.
+              </p>
+            </div>
+            <p id="new-profile-error" class="flow-error" role="alert" hidden></p>
+            <div class="flow-actions">
+              <button type="submit" class="btn btn-primary">Save and continue</button>
+              <button type="button" class="btn btn-ghost flow-back" data-back="new-profile-intro">
+                Back
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Shared end state -->
+      <section
+        id="slide-profile"
+        class="flow-slide"
+        data-step="profile"
+        tabindex="-1"
+        aria-labelledby="profile-title"
+        hidden
+      >
+        <div class="flow-slide-inner">
+          <p class="flow-eyebrow" id="profile-mode-label">Profile</p>
+          <h1 id="profile-title" class="flow-title">You’re all set</h1>
+          <div class="flow-profile-card" aria-live="polite">
+            <dl class="flow-dl">
+              <div>
+                <dt>First name</dt>
+                <dd id="profile-display-first-name">—</dd>
+              </div>
+              <div>
+                <dt>Last name</dt>
+                <dd id="profile-display-last-name">—</dd>
+              </div>
+              <div id="profile-zip-row">
+                <dt>ZIP</dt>
+                <dd id="profile-display-zip">—</dd>
+              </div>
+              <div id="profile-email-row">
+                <dt>Email</dt>
+                <dd id="profile-display-email">—</dd>
+              </div>
+              <div id="profile-phone-row" hidden>
+                <dt>Phone</dt>
+                <dd id="profile-display-phone">—</dd>
+              </div>
+              <div id="profile-address-block" hidden>
+                <dt>Shipping / home address</dt>
+                <dd id="profile-display-address" class="profile-address-dd">—</dd>
+              </div>
+            </dl>
+          </div>
+          <p class="flow-note">
+            This demo stores profiles in your browser session only. Wire your API here to load and
+            save real customer records.
+          </p>
+          <div class="flow-actions">
+            <a class="btn btn-primary" href="index.html">Back to home</a>
+            <button type="button" class="btn btn-ghost" id="btn-start-over">Start over</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="client-flow.js" defer></script>
+  </body>
+</html>

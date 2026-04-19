@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin sign in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .admin-login-body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: min(1.5rem, 4vw);
+      }
+      .admin-login-card {
+        width: min(100%, 380px);
+        padding: 1.75rem 1.5rem 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: var(--bg-elevated);
+        box-shadow: var(--shadow);
+      }
+      .admin-login-card h1 {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin: 0 0 0.35rem;
+        letter-spacing: -0.02em;
+      }
+      .admin-login-card .sub {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin: 0 0 1.25rem;
+        line-height: 1.45;
+      }
+      .admin-login-card label {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+      }
+      .admin-login-card input[type="password"] {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        font: inherit;
+        font-size: 1rem;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+      }
+      .admin-login-card input:focus {
+        outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+        outline-offset: 2px;
+      }
+      .admin-login-error {
+        color: #e8a598;
+        font-size: 0.9rem;
+        margin: -0.5rem 0 0.75rem;
+        min-height: 1.25rem;
+      }
+      .admin-login-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+      }
+      .admin-login-actions .btn-primary {
+        flex: 1;
+        min-width: 8rem;
+        justify-content: center;
+      }
+      .admin-login-back {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        text-decoration: none;
+      }
+      .admin-login-back:hover {
+        color: var(--accent);
+      }
+    </style>
+    <script src="admin-auth.js"></script>
+    <script>
+      if (window.AdminAuth && AdminAuth.isAdminSession()) {
+        var q = new URLSearchParams(location.search);
+        var n = q.get("next");
+        if (n && /^[a-zA-Z0-9_.-]+\.html$/.test(n)) {
+          location.replace(n);
+        } else {
+          location.replace("admin.html");
+        }
+      }
+    </script>
+  </head>
+  <body class="admin-login-body">
+    <div class="admin-login-card">
+      <h1>Admin sign in</h1>
+      <p class="sub">Staff only. Clients use the public site and client portal — not this page.</p>
+      <form id="admin-login-form" novalidate>
+        <label for="admin-password">Passphrase</label>
+        <input
+          id="admin-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          maxlength="200"
+        />
+        <p id="admin-login-error" class="admin-login-error" role="alert" aria-live="polite"></p>
+        <div class="admin-login-actions">
+          <button type="submit" class="btn btn-primary">Sign in</button>
+          <a class="admin-login-back" href="index.html">Back to public site</a>
+        </div>
+      </form>
+    </div>
+    <script>
+      (function () {
+        var form = document.getElementById("admin-login-form");
+        var err = document.getElementById("admin-login-error");
+        var input = document.getElementById("admin-password");
+
+        function safeNext() {
+          var q = new URLSearchParams(location.search);
+          var n = q.get("next");
+          if (n && /^[a-zA-Z0-9_.-]+\.html$/.test(n)) return n;
+          return "admin.html";
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          err.textContent = "";
+          var pass = (input && input.value) || "";
+          if (!window.AdminAuth) {
+            err.textContent = "Auth script failed to load.";
+            return;
+          }
+          if (AdminAuth.checkPassword(pass)) {
+            AdminAuth.setAdminSession();
+            location.href = safeNext();
+          } else {
+            err.textContent = "That passphrase is not correct.";
+            input.focus();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
