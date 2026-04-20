@@ -112,6 +112,14 @@
   width: 100%;
 }
 
+/*
+  Critical: our display:flex on .admin-empty-state beats the UA [hidden] rule (same specificity).
+  Without this, empty state + chat both render and crush the message area.
+*/
+.admin-panel--chat > [hidden] {
+  display: none !important;
+}
+
 @media (min-width: 880px) {
   .admin-panel--chat {
     height: 100%;
