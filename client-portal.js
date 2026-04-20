@@ -551,6 +551,23 @@
   var input = document.getElementById("portal-msg-input");
   var fileInput = document.getElementById("portal-msg-files");
   var fileHint = document.getElementById("portal-msg-file-hint");
+  var sendBtn =
+    form && typeof form.querySelector === "function"
+      ? form.querySelector('button[type="submit"]')
+      : null;
+  var sendBtnDefaultLabel = sendBtn ? sendBtn.textContent : "";
+  var sendingMessage = false;
+
+  function setComposeSendingState(on) {
+    sendingMessage = !!on;
+    if (sendBtn) {
+      sendBtn.disabled = sendingMessage;
+      sendBtn.setAttribute("aria-busy", sendingMessage ? "true" : "false");
+      sendBtn.textContent = sendingMessage ? "Sending..." : sendBtnDefaultLabel;
+    }
+    if (fileInput) fileInput.disabled = sendingMessage;
+  }
+
   if (fileInput && fileHint) {
     fileInput.addEventListener("change", function () {
       var n = fileInput.files ? fileInput.files.length : 0;
@@ -560,29 +577,35 @@
   if (form && input) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
+      if (sendingMessage) return;
       var t = String(input.value || "").trim();
       var files = fileInput && fileInput.files ? fileInput.files : null;
       if (!t && (!files || !files.length)) return;
+      setComposeSendingState(true);
       try {
-        await Portal.appendClientMessage(t, files);
-      } catch (err) {
-        showAppToast((err && err.message) || "Could not send message.");
-        return;
-      }
-      input.value = "";
-      if (fileInput) fileInput.value = "";
-      if (fileHint) fileHint.textContent = "";
-      await renderMessages();
-      window.requestAnimationFrame(function () {
-        scrollChatThreadToEnd();
-      });
-      try {
-        input.focus({ preventScroll: true });
-      } catch (_e) {
-        input.focus();
-      }
-      if (mobileChatMq && mobileChatMq.matches) {
-        showAppToast("Message sent.");
+        try {
+          await Portal.appendClientMessage(t, files);
+        } catch (err) {
+          showAppToast((err && err.message) || "Could not send message.");
+          return;
+        }
+        input.value = "";
+        if (fileInput) fileInput.value = "";
+        if (fileHint) fileHint.textContent = "";
+        await renderMessages();
+        window.requestAnimationFrame(function () {
+          scrollChatThreadToEnd();
+        });
+        try {
+          input.focus({ preventScroll: true });
+        } catch (_e) {
+          input.focus();
+        }
+        if (mobileChatMq && mobileChatMq.matches) {
+          showAppToast("Message sent.");
+        }
+      } finally {
+        setComposeSendingState(false);
       }
     });
   }
