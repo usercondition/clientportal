@@ -265,20 +265,19 @@ html:has(.client-flow-body) {
   min-height: clamp(2.65rem, 8vh, 3rem);
 }
 
+/* Shrink-wrap to the image’s laid-out size (no extra full-width band) */
 .flow-welcome-hero {
-  margin: 0;
+  margin: 0 auto;
   border-radius: var(--radius-lg, 20px);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
   box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
-  width: 100%;
+  width: -moz-fit-content;
+  width: fit-content;
   max-width: 100%;
   height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Letterbox behind image when aspect ratios differ */
-  background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
+  display: block;
+  line-height: 0;
   flex-shrink: 0;
 }
 
