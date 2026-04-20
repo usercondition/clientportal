@@ -1,18 +1,19 @@
 /* Theme — tweak these variables to re-skin quickly */
 :root {
-  --bg: #e7ecee;
-  --bg-elevated: #d3dcde;
-  --text: #102936;
-  --text-muted: #3e5f67;
-  --accent: #5c8485;
-  --accent-soft: rgba(92, 132, 133, 0.16);
-  --border: rgba(16, 41, 54, 0.2);
+  /* Wallhaven-inspired: taupe / sage / slate */
+  --bg: #d5cdc4;
+  --bg-elevated: #ccd4cd;
+  --text: #0b1419;
+  --text-muted: #6a6e70;
+  --accent: #4f5862;
+  --accent-soft: rgba(79, 88, 98, 0.14);
+  --border: rgba(11, 20, 25, 0.18);
   --radius: 12px;
   --radius-lg: 20px;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Manrope", "Inter", system-ui, sans-serif;
-  --shadow: 0 24px 56px rgba(9, 23, 33, 0.2);
-  --shadow-sm: 0 10px 24px rgba(9, 23, 33, 0.14);
+  --shadow: 0 24px 56px rgba(11, 20, 25, 0.16);
+  --shadow-sm: 0 10px 24px rgba(11, 20, 25, 0.1);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.18s;
@@ -24,15 +25,15 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #03182a;
-  --bg-elevated: #072738;
-  --text: #d8e0e2;
-  --text-muted: #8bb0af;
-  --accent: #84b2ad;
-  --accent-soft: rgba(132, 178, 173, 0.24);
-  --border: rgba(189, 196, 199, 0.2);
-  --shadow: 0 24px 64px rgba(0, 8, 15, 0.54);
-  --shadow-sm: 0 10px 28px rgba(0, 8, 15, 0.42);
+  --bg: #0b1419;
+  --bg-elevated: #2c372c;
+  --text: #ccd4cd;
+  --text-muted: #979aa6;
+  --accent: #a4ac97;
+  --accent-soft: rgba(164, 172, 151, 0.22);
+  --border: rgba(204, 212, 205, 0.16);
+  --shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 10px 28px rgba(0, 0, 0, 0.32);
 }
 
 *,
@@ -64,9 +65,9 @@ body {
   color: var(--text);
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 58%),
-    radial-gradient(ellipse 70% 55% at 100% 0%, color-mix(in srgb, #84b2ad 30%, transparent), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 0% 90%, color-mix(in srgb, #5c8485 26%, transparent), transparent 62%);
+    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 0%, color-mix(in srgb, #979aa6 22%, transparent), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 90%, color-mix(in srgb, #a4ac97 20%, transparent), transparent 62%);
   min-height: 100vh;
   min-height: 100dvh;
   /* Notched phones / home indicator: keep content off system UI */
@@ -82,7 +83,7 @@ body {
   z-index: 100;
   padding: 0.5rem 1rem;
   background: var(--accent);
-  color: var(--bg);
+  color: #ccd4cd;
   font-weight: 600;
   border-radius: 6px;
 }
@@ -98,7 +99,7 @@ a {
 }
 
 a:hover {
-  color: color-mix(in srgb, var(--accent) 78%, #072738);
+  color: color-mix(in srgb, var(--accent) 72%, #2c372c);
 }
 
 code {
@@ -483,21 +484,33 @@ code {
 .btn-primary {
   background: linear-gradient(
     140deg,
-    color-mix(in srgb, var(--accent) 90%, #a8cdca) 0%,
-    color-mix(in srgb, #5c8485 76%, #84b2ad) 100%
+    #3a4449 0%,
+    color-mix(in srgb, var(--accent) 88%, #2c372c) 100%
   );
-  color: #062235;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 25%, transparent);
+  color: #ccd4cd;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--text) 22%, transparent);
 }
 
 .btn-primary:hover {
   background: linear-gradient(
     140deg,
-    color-mix(in srgb, var(--accent) 100%, #b4d6d3) 0%,
-    color-mix(in srgb, #5c8485 84%, #92bdb9) 100%
+    #4f5862 0%,
+    color-mix(in srgb, var(--accent) 92%, #3a4449) 100%
   );
-  color: #062235;
-  box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 28%, transparent);
+  color: #d5cdc4;
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--text) 28%, transparent);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: linear-gradient(140deg, #6a6e70 0%, #a4ac97 100%);
+  color: #0b1419;
+  box-shadow: 0 10px 22px color-mix(in srgb, #ccd4cd 18%, transparent);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: linear-gradient(140deg, #a4ac97 0%, #ccd4cd 100%);
+  color: #0b1419;
+  box-shadow: 0 14px 28px color-mix(in srgb, #ccd4cd 24%, transparent);
 }
 
 .btn-ghost {
@@ -706,7 +719,7 @@ code {
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
   overflow: hidden;
-  background: linear-gradient(140deg, #011b2e 0%, #003645 52%, #5c8485 100%);
+  background: linear-gradient(140deg, #0b1419 0%, #2c372c 48%, #4f5862 100%);
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--dur-med) var(--ease-fluid),
@@ -719,14 +732,14 @@ code {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 20%, rgba(132, 178, 173, 0.34), transparent 35%),
-    radial-gradient(circle at 85% 85%, rgba(189, 196, 199, 0.26), transparent 38%),
+    radial-gradient(circle at 18% 20%, rgba(164, 172, 151, 0.28), transparent 35%),
+    radial-gradient(circle at 85% 85%, rgba(151, 154, 166, 0.22), transparent 38%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.06), transparent 56%);
 }
 
 .synth-tile:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 22px 40px rgba(5, 18, 27, 0.42);
+  box-shadow: 0 22px 40px rgba(11, 20, 25, 0.38);
   border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
 }
 
@@ -767,15 +780,15 @@ code {
 }
 
 .synth-tile--02 {
-  background: linear-gradient(140deg, #032438 0%, #0b3d4d 52%, #6a9492 100%);
+  background: linear-gradient(140deg, #2c372c 0%, #3a4449 52%, #6a6e70 100%);
 }
 
 .synth-tile--03 {
-  background: linear-gradient(155deg, #0d3144 0%, #35696e 48%, #84b2ad 100%);
+  background: linear-gradient(155deg, #0b1419 0%, #4f5862 48%, #979aa6 100%);
 }
 
 .synth-tile--04 {
-  background: linear-gradient(145deg, #011b2e 0%, #255766 44%, #aec4c7 100%);
+  background: linear-gradient(145deg, #2c372c 0%, #4f5862 44%, #a4ac97 100%);
 }
 
 .contact-list {
