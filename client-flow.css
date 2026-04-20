@@ -24,7 +24,7 @@ html:has(.client-flow-body) {
   justify-content: space-between;
   gap: 0.65rem;
   flex-shrink: 0;
-  padding: max(0.55rem, env(safe-area-inset-top, 0px)) min(1.25rem, 4vw) 0.65rem;
+  padding: max(0.55rem, env(safe-area-inset-top, 0px)) max(var(--space-gutter, 1rem), min(1.25rem, 4vw)) 0.65rem;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(10px);
@@ -512,7 +512,7 @@ html:has(.client-flow-body) {
     flex-direction: column;
     align-items: stretch;
     gap: 0.45rem;
-    padding: max(0.4rem, env(safe-area-inset-top, 0px)) min(1.1rem, 4vw) 0.45rem;
+    padding: max(0.4rem, env(safe-area-inset-top, 0px)) max(var(--space-gutter, 1rem), min(1.1rem, 4vw)) 0.45rem;
   }
 
   .flow-header-start {

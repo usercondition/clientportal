@@ -22,10 +22,10 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: max(min(1.5rem, 4vw), env(safe-area-inset-top, 0px)) min(1.5rem, 4vw)
-          max(min(1.5rem, 4vw), env(safe-area-inset-bottom, 0px));
-        padding-left: max(min(1.5rem, 4vw), env(safe-area-inset-left, 0px));
-        padding-right: max(min(1.5rem, 4vw), env(safe-area-inset-right, 0px));
+        padding: max(var(--space-gutter, 1rem), env(safe-area-inset-top, 0px)) var(--space-gutter, 1rem)
+          max(var(--space-gutter, 1rem), env(safe-area-inset-bottom, 0px));
+        padding-left: max(var(--space-gutter, 1rem), env(safe-area-inset-left, 0px));
+        padding-right: max(var(--space-gutter, 1rem), env(safe-area-inset-right, 0px));
       }
       .admin-login-card {
         width: min(100%, 380px);

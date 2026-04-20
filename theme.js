@@ -20,6 +20,16 @@
     return dark ? BG_PAGE_DARK : BG_PAGE_LIGHT;
   }
 
+  function syncThemeColorMeta(mode) {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", pageBackground(mode));
+  }
+
   function applyTheme(mode) {
     if (mode === "dark") {
       root.setAttribute("data-theme", "dark");
@@ -27,6 +37,7 @@
       root.removeAttribute("data-theme");
     }
     root.style.backgroundColor = pageBackground(mode);
+    syncThemeColorMeta(mode);
   }
 
   function getSavedTheme() {
@@ -72,15 +83,31 @@
     document.body.appendChild(btn);
   }
 
-  applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
+  function refreshToggleLabel() {
+    var btn = document.querySelector(".theme-toggle");
+    if (btn) updateLabel(btn, currentTheme());
+  }
+
+  function initialMode() {
+    return getSavedTheme() === "dark" ? "dark" : "light";
+  }
+
+  applyTheme(initialMode());
+
+  window.addEventListener("storage", function (e) {
+    if (e.key !== KEY) return;
+    var mode = e.newValue === "dark" ? "dark" : "light";
+    applyTheme(mode);
+    refreshToggleLabel();
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
-      applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
+      applyTheme(initialMode());
       mountToggle();
     });
   } else {
-    applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
+    applyTheme(initialMode());
     mountToggle();
   }
 })();

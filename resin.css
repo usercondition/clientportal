@@ -151,16 +151,17 @@ body.resin-home .theme-toggle:hover {
 
 /* ——— Layout utility ——— */
 body.resin-home .rh-container {
-  width: min(100% - 2 * var(--rh-step-4), var(--rh-max));
+  width: min(100% - 2 * var(--space-gutter, 1rem), var(--rh-max));
   margin-inline: auto;
 }
 
 body.resin-home .rh-section {
-  padding: var(--rh-step-7) 0;
+  padding-block: clamp(2.1rem, 6.5vw, var(--rh-step-7));
+  padding-inline: 0;
 }
 
 body.resin-home .rh-section--tight {
-  padding: var(--rh-step-6) 0;
+  padding-block: clamp(1.85rem, 5.5vw, var(--rh-step-6));
 }
 
 body.resin-home .rh-kicker {
@@ -779,4 +780,134 @@ html[data-theme="dark"] body.resin-home .rh-btn--primary:hover {
 body.resin-home .skip-link:focus {
   outline: 2px solid var(--rh-copper);
   outline-offset: 2px;
+}
+
+/* Main bottom space so fixed theme toggle does not cover CTAs */
+body.resin-home #main {
+  padding-bottom: max(4.25rem, calc(3rem + env(safe-area-inset-bottom, 0px)));
+}
+
+/* ——— Mobile: even rhythm, touch targets, single-column gallery on narrow phones ——— */
+@media (max-width: 719px) {
+  body.resin-home .rh-hero {
+    padding-block: clamp(1.65rem, 5vw, 2.25rem) clamp(1.85rem, 6vw, 2.75rem);
+  }
+
+  body.resin-home .rh-hero__grid {
+    gap: var(--rh-step-5);
+  }
+
+  body.resin-home .rh-hero__title {
+    font-size: clamp(1.65rem, 7vw, 2.35rem);
+  }
+
+  body.resin-home .rh-hero__copy {
+    font-size: 1rem;
+    margin-bottom: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--rh-step-3);
+  }
+
+  body.resin-home .rh-btn {
+    width: 100%;
+    min-height: 2.875rem;
+    box-sizing: border-box;
+  }
+
+  body.resin-home .rh-hero__note {
+    margin-top: var(--rh-step-4);
+    padding-top: var(--rh-step-4);
+    border-top: 1px solid var(--rh-border);
+  }
+
+  body.resin-home .rh-gallery__grid {
+    gap: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-gallery__cap {
+    padding: var(--rh-step-3) var(--rh-step-3) var(--rh-step-4);
+  }
+
+  body.resin-home .rh-services__layout {
+    gap: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-services__list {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--rh-step-2);
+  }
+
+  body.resin-home .rh-services__list button {
+    padding: 0.65rem 0.75rem;
+    min-height: 2.75rem;
+    border-radius: var(--rh-radius-sm);
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: color-mix(in srgb, var(--rh-surface) 55%, transparent);
+  }
+
+  body.resin-home .rh-services__list button.is-active {
+    background: color-mix(in srgb, var(--rh-surface) 88%, var(--rh-bg));
+    border-color: var(--rh-border);
+    color: var(--rh-text);
+  }
+
+  body.resin-home .rh-services__panel {
+    padding: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-process__intro {
+    margin-bottom: var(--rh-step-5);
+  }
+
+  body.resin-home .rh-process__steps {
+    gap: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-step {
+    padding: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-quality__grid,
+  body.resin-home .rh-trust__grid {
+    gap: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-quality__card,
+  body.resin-home .rh-trust__item {
+    padding: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-cta__wrap {
+    padding: var(--rh-step-4);
+    gap: var(--rh-step-4);
+  }
+
+  body.resin-home .rh-cta__form input,
+  body.resin-home .rh-cta__form textarea {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  body.resin-home .rh-cta__form textarea {
+    min-height: 7.5rem;
+  }
+
+  body.resin-home .site-footer {
+    padding-bottom: max(1.75rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+@media (max-width: 479px) {
+  body.resin-home .rh-gallery__grid {
+    grid-template-columns: 1fr;
+    gap: var(--rh-step-4);
+  }
 }
