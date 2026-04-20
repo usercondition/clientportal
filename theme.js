@@ -1,9 +1,24 @@
 (function () {
   var KEY = "site_theme_mode";
   var root = document.documentElement;
-  /** Must match styles.css --bg for light / dark (prevents flash before CSS paints). */
+  /** Default app shell (admin / portal) — must match styles.css --bg */
   var BG_PAGE_LIGHT = "#f5f6f8";
   var BG_PAGE_DARK = "#0f1115";
+  /** Resin marketing homepage (index) — must match resin.css */
+  var RESIN_BG_LIGHT = "#F5F1EA";
+  var RESIN_BG_DARK = "#1c1b18";
+
+  function isResinMarketing() {
+    return root.getAttribute("data-marketing") === "resin";
+  }
+
+  function pageBackground(mode) {
+    var dark = mode === "dark";
+    if (isResinMarketing()) {
+      return dark ? RESIN_BG_DARK : RESIN_BG_LIGHT;
+    }
+    return dark ? BG_PAGE_DARK : BG_PAGE_LIGHT;
+  }
 
   function applyTheme(mode) {
     if (mode === "dark") {
@@ -11,7 +26,7 @@
     } else {
       root.removeAttribute("data-theme");
     }
-    root.style.backgroundColor = mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;
+    root.style.backgroundColor = pageBackground(mode);
   }
 
   function getSavedTheme() {
@@ -60,8 +75,12 @@
   applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mountToggle);
+    document.addEventListener("DOMContentLoaded", function () {
+      applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
+      mountToggle();
+    });
   } else {
+    applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
     mountToggle();
   }
 })();
