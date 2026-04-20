@@ -897,8 +897,9 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Must not use display:block alone — it overrides the [hidden] attribute and traps the whole UI */
   .portal-chat-backdrop {
-    display: block;
+    display: none;
     position: fixed;
     inset: 0;
     z-index: 78;
@@ -906,6 +907,10 @@
     border: 0;
     padding: 0;
     margin: 0;
+  }
+
+  .portal-body--chat-open .portal-chat-backdrop {
+    display: block;
   }
 
   .portal-panel--messages {
