@@ -1,0 +1,28 @@
+---
+description: Route project requests through the correct agent skills in a consistent order
+alwaysApply: true
+---
+
+# Agent Orchestration Workflow
+
+When the user asks to "run agents", "set up agents", "review before release", or requests broad project quality checks:
+
+1. Select skills from `.cursor/skills/` based on the request type and changed files.
+2. Use this order by default:
+   - `qa-regression-agent`
+   - `pr-reviewer-agent`
+   - `release-readiness-agent`
+3. If failures appear, invoke `bug-triage-agent` next.
+4. If image/content files are included, include `content-asset-agent`.
+5. If backend/email reliability is included, include `ops-health-agent`.
+6. For daily planning/operations requests, use `customer-workflow-agent`.
+
+Execution behavior:
+
+- Prefer targeted runs over broad sweeps when the user asks for a specific fix.
+- Use parallel agent runs only for independent tracks.
+- Return concise results with:
+  - priority findings
+  - exact file paths
+  - next recommended agent or action
+

@@ -377,9 +377,9 @@ body.resin-home .rh-gallery__thumb img {
   display: block;
 }
 
-/* Prototype tile: stretch image to fill full container. */
+/* Prototype tile: match gallery fill behavior for consistent framing. */
 body.resin-home .rh-gallery__item--prototype .rh-gallery__thumb img {
-  object-fit: fill;
+  object-fit: cover;
   padding: 0;
 }
 
