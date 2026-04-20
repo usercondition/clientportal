@@ -172,10 +172,21 @@
     bucket.push(item);
   }
 
+  function hasPriorityKeywords(text) {
+    var s = String(text || "").toLowerCase();
+    if (!s) return false;
+    return /(rush|urgent|asap|priority|deadline|expedite|critical)/.test(s);
+  }
+
+  function cap(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+
   function mapRankedItems(items) {
     return (items || [])
       .sort(function (a, b) {
-        return b.score - a.score;
+        if (b.score !== a.score) return b.score - a.score;
+        return Number(b.tieBreaker || 0) - Number(a.tieBreaker || 0);
       })
       .map(function (item) {
         var urgency = urgencyLabel(item.score);
@@ -191,31 +202,58 @@
     var followUp = [];
     var pending = [];
     var todo = [];
+    var openOrdersByClient = {};
+
+    (orders || []).forEach(function (o) {
+      var status = String(o.status || "");
+      if (status === "fulfilled" || status === "cancelled") return;
+      var key = String(o.clientName || "").toLowerCase();
+      if (!key) return;
+      openOrdersByClient[key] = (openOrdersByClient[key] || 0) + 1;
+    });
 
     (threads || []).forEach(function (t) {
       var unread = Number(t.unreadCount || 0);
       var ageHours = ageHoursFrom(t.updatedAt);
       var stale = ageHours >= 24;
+      var veryStale = ageHours >= 72;
+      var priorityThread = hasPriorityKeywords(t.preview || "");
+      var clientOrderLoad = openOrdersByClient[String(t.clientLabel || "").toLowerCase()] || 0;
+      var oldestBias = cap(Math.floor(ageHours / 12), 0, 18);
       if (t.archived) return;
       if (unread > 0) {
         pushRanked(doNow, {
           text: "Reply to " + (t.clientLabel || "client"),
           meta:
             (unread > 1 ? unread + " unread messages" : "1 unread message") +
-            (stale ? " · stale thread" : ""),
-          score: 70 + Math.min(25, unread * 8) + (stale ? 10 : 0),
+            (stale ? " · stale thread" : "") +
+            (priorityThread ? " · priority signal" : ""),
+          score:
+            66 +
+            Math.min(24, unread * 7) +
+            (stale ? 8 : 0) +
+            (veryStale ? 8 : 0) +
+            (priorityThread ? 12 : 0) +
+            Math.min(8, clientOrderLoad * 2) +
+            oldestBias,
+          tieBreaker: ageHours,
         });
       } else if (t.lastFrom === "admin") {
         pushRanked(followUp, {
           text: "Follow up with " + (t.clientLabel || "client"),
-          meta: stale ? "Awaiting client response · over 24h" : "Awaiting client response",
-          score: stale ? 72 : 48,
+          meta:
+            stale
+              ? "Awaiting client response · over 24h"
+              : "Awaiting client response",
+          score: 44 + (stale ? 16 : 0) + (veryStale ? 10 : 0) + oldestBias,
+          tieBreaker: ageHours,
         });
       } else if (ageHours >= 36) {
         pushRanked(todo, {
           text: "Check dormant thread for " + (t.clientLabel || "client"),
           meta: "No recent activity",
-          score: 38,
+          score: 34 + oldestBias,
+          tieBreaker: ageHours,
         });
       }
     });
@@ -224,35 +262,52 @@
       var status = String(o.status || "");
       var orderAgeHours = ageHoursFrom(o.submittedAt || o.createdAt);
       var orderStale = orderAgeHours >= 24;
+      var orderVeryStale = orderAgeHours >= 72;
+      var orderPrioritySignal =
+        hasPriorityKeywords(o.title || "") || hasPriorityKeywords(o.summaryPreview || "");
+      var oldestOrderBias = cap(Math.floor(orderAgeHours / 24), 0, 16);
       if (status === "submitted") {
         pushRanked(doNow, {
           text: "Review new order " + o.orderNumber,
-          meta: (o.clientName || "Client") + (orderStale ? " · waiting over 24h" : ""),
-          score: 75 + (orderStale ? 18 : 0),
+          meta:
+            (o.clientName || "Client") +
+            (orderStale ? " · waiting over 24h" : "") +
+            (orderPrioritySignal ? " · priority request" : ""),
+          score:
+            72 +
+            (orderStale ? 14 : 0) +
+            (orderVeryStale ? 12 : 0) +
+            (orderPrioritySignal ? 14 : 0) +
+            oldestOrderBias,
+          tieBreaker: orderAgeHours,
         });
       } else if (status === "awaiting_client") {
         pushRanked(followUp, {
           text: "Request update on " + o.orderNumber,
           meta: (o.clientName || "Client") + (orderAgeHours >= 72 ? " · no client update 3d+" : ""),
-          score: orderAgeHours >= 72 ? 68 : 46,
+          score: 42 + (orderAgeHours >= 72 ? 20 : 0) + oldestOrderBias,
+          tieBreaker: orderAgeHours,
         });
       } else if (status === "in_progress") {
         pushRanked(pending, {
           text: "Continue " + o.orderNumber,
           meta: (o.clientName || "Client") + (orderAgeHours >= 120 ? " · long-running" : ""),
-          score: orderAgeHours >= 120 ? 55 : 40,
+          score: 36 + (orderAgeHours >= 120 ? 16 : 0) + (orderPrioritySignal ? 8 : 0) + oldestOrderBias,
+          tieBreaker: orderAgeHours,
         });
       } else if (status === "draft") {
         pushRanked(todo, {
           text: "Finalize draft " + o.orderNumber,
           meta: o.clientName || "Client",
-          score: 44,
+          score: 40 + oldestOrderBias,
+          tieBreaker: orderAgeHours,
         });
       } else if (status === "cancelled") {
         pushRanked(todo, {
           text: "Clean up cancelled " + o.orderNumber,
           meta: "Delete from orders list when confirmed",
-          score: 42,
+          score: 38 + oldestOrderBias,
+          tieBreaker: orderAgeHours,
         });
       }
     });
@@ -262,6 +317,7 @@
         text: "Create progress updates",
         meta: "Keep clients informed on active jobs",
         score: 36,
+        tieBreaker: 0,
       });
     }
 

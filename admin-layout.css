@@ -129,6 +129,9 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
   border-right: 1px solid var(--admin-sidebar-border);
   background: var(--admin-sidebar-bg);
   backdrop-filter: blur(14px);
