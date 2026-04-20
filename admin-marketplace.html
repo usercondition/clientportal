@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-marketing="resin">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -141,18 +141,27 @@
     </aside>
 
     <div class="admin-app__content">
-      <header class="admin-page-header">
+      <header class="admin-page-header admin-page-header--mp">
         <h1 class="admin-page-header__h">Marketplace inbox</h1>
         <p class="admin-page-header__lede">
-          Threads synced by the browser extension appear here. By default each conversation shows only the <strong>latest</strong> message; use “Show full history” in the panel when you need the full thread. Enable
-          <code>MARKETPLACE_SYNC_ENABLED</code> and <code>MARKETPLACE_SYNC_TOKEN</code> on the server; use the same token in extension options.
+          Buyer threads from the sync extension. Each row shows the latest line until you open <strong>Show full history</strong>. Server:
+          <code>MARKETPLACE_SYNC_ENABLED</code> + <code>MARKETPLACE_SYNC_TOKEN</code> — same token in the extension.
         </p>
       </header>
 
       <main id="admin-mp-main" class="admin-app__main">
         <p id="admin-mp-banner" class="admin-mp__banner" hidden role="status"></p>
-        <div class="admin-mp">
-          <div class="admin-mp__list" id="admin-mp-list"></div>
+        <div class="admin-mp admin-mp--shell" aria-label="Marketplace conversations">
+          <div class="admin-mp__rail">
+            <div class="admin-mp__rail-top">
+              <span class="admin-mp__rail-badge" aria-hidden="true"></span>
+              <div>
+                <p class="admin-mp__rail-title">Buying</p>
+                <p class="admin-mp__rail-sub">Synced threads</p>
+              </div>
+            </div>
+            <div class="admin-mp__list" id="admin-mp-list" role="list"></div>
+          </div>
           <div class="admin-mp__detail">
             <div class="admin-mp__head" id="admin-mp-detail-head"></div>
             <div class="admin-mp__msgs" id="admin-mp-msgs">

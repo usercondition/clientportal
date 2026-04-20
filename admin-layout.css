@@ -73,6 +73,35 @@
   flex-direction: column;
 }
 
+/* Marketplace admin: viewport-locked shell; list + transcript scroll inside panels */
+.admin-app.admin-app--marketplace {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.admin-app.admin-app--marketplace .admin-app__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.admin-app.admin-app--marketplace .admin-page-header {
+  flex-shrink: 0;
+}
+
+.admin-app.admin-app--marketplace .admin-app__main {
+  flex: 1 1 0%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ——— Mobile drawer toggle ——— */
 .admin-app__drawer-btn {
   display: none;

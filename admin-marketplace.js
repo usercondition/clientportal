@@ -41,13 +41,15 @@
           active +
           '" data-id="' +
           esc(t.id) +
-          '">' +
+          '" role="listitem">' +
+          '<span class="admin-mp__avatar" aria-hidden="true"></span>' +
+          '<span class="admin-mp__item-text">' +
           '<p class="admin-mp__item-title">' +
           esc(t.buyerName || "Buyer") +
           "</p>" +
           '<p class="admin-mp__item-meta">' +
           esc(t.snippet || t.threadId || "") +
-          "</p></button>"
+          "</p></span></button>"
         );
       })
       .join("");
