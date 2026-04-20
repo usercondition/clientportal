@@ -761,6 +761,10 @@ body.resin-home .rh-assistant {
   right: clamp(0.75rem, 2.5vw, 1.25rem);
   bottom: max(0.75rem, calc(0.75rem + env(safe-area-inset-bottom, 0px)));
   z-index: 130;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
 }
 
 body.resin-home .rh-assistant__fab {
@@ -775,10 +779,13 @@ body.resin-home .rh-assistant__fab {
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--rh-shadow-md);
+  width: auto;
+  max-width: 100%;
 }
 
 body.resin-home .rh-assistant__panel {
   width: min(360px, calc(100vw - 1.5rem));
+  max-height: min(560px, 72vh);
   border: 1px solid var(--rh-border);
   border-radius: var(--rh-radius);
   background: var(--rh-surface);
@@ -814,7 +821,7 @@ body.resin-home .rh-assistant__close {
 
 body.resin-home .rh-assistant__thread {
   min-height: 180px;
-  max-height: 280px;
+  max-height: min(340px, 46vh);
   overflow-y: auto;
   padding: 0.7rem;
   display: flex;
@@ -1068,17 +1075,29 @@ body.resin-home #main {
   }
 
   body.resin-home .rh-assistant {
-    right: 0.65rem;
-    left: 0.65rem;
-    bottom: max(0.65rem, calc(0.65rem + env(safe-area-inset-bottom, 0px)));
+    right: 0.6rem;
+    left: auto;
+    bottom: max(0.6rem, calc(0.6rem + env(safe-area-inset-bottom, 0px)));
+    width: auto;
+    align-items: flex-end;
   }
 
   body.resin-home .rh-assistant__panel {
-    width: 100%;
+    width: min(94vw, 360px);
+    max-height: min(68vh, 520px);
+    border-radius: 0.75rem;
   }
 
   body.resin-home .rh-assistant__fab {
-    width: 100%;
+    width: auto;
+    min-height: 2.55rem;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  body.resin-home .rh-assistant__thread {
+    min-height: 150px;
+    max-height: min(36vh, 260px);
   }
 }
 
