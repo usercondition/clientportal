@@ -290,10 +290,14 @@
   font-size: 0.65rem;
   font-weight: 700;
   line-height: 1.25;
-  color: var(--bg, #0b0b12);
+  color: #fff;
   background: var(--accent);
   border-radius: 999px;
   text-align: center;
+}
+
+html[data-theme="dark"] .admin-inbox-unread {
+  color: #111418;
 }
 
 /* ——— Empty / active chat ——— */
@@ -616,9 +620,9 @@
 }
 
 .admin-msg__btn--danger:hover {
-  border-color: color-mix(in srgb, #f87171 50%, var(--border));
-  color: #fecaca;
-  background: color-mix(in srgb, #f87171 8%, var(--bg));
+  border-color: color-mix(in srgb, #b91c1c 42%, var(--border));
+  color: color-mix(in srgb, #b91c1c 78%, var(--text-muted));
+  background: color-mix(in srgb, #b91c1c 10%, var(--bg));
 }
 
 /* ——— Compose ——— */

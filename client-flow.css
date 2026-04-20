@@ -457,7 +457,7 @@ html:has(.client-flow-body) {
 }
 
 .flow-error {
-  color: #e8a598;
+  color: color-mix(in srgb, #b91c1c 82%, var(--text-muted));
   font-size: 0.92rem;
   margin: -0.25rem 0 1rem;
 }

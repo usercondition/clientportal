@@ -1149,8 +1149,8 @@
   padding: 0.65rem 0.75rem;
   font-size: 0.85rem;
   line-height: 1.4;
-  color: color-mix(in srgb, #f87171 92%, var(--text));
-  background: color-mix(in srgb, #7f1d1d 22%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, #f87171 35%, transparent);
+  color: color-mix(in srgb, #b91c1c 78%, var(--text));
+  background: color-mix(in srgb, #b91c1c 12%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, #b91c1c 28%, var(--border));
   border-radius: 0.5rem;
 }

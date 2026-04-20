@@ -65,8 +65,8 @@
   width: 0%;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--accent) 90%, white 10%),
-    color-mix(in srgb, var(--accent) 45%, #7dd3fc 55%)
+    color-mix(in srgb, var(--accent) 88%, var(--bg-elevated)),
+    color-mix(in srgb, var(--accent) 52%, var(--accent-cyan))
   );
   transition: width var(--dur-med) var(--ease-fluid);
 }

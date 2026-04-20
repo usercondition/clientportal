@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0c0518" />
+    <meta name="theme-color" content="#f5f6f8" />
     <meta name="description" content="Personal site — projects, notes, and contact." />
     <title>Your Name — Creative Developer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -18,20 +18,12 @@
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <div class="ambient-bg" aria-hidden="true">
-      <div class="ambient-bg__glow ambient-bg__glow--magenta"></div>
-      <div class="ambient-bg__glow ambient-bg__glow--cyan"></div>
-      <div class="ambient-bg__sunset"></div>
-      <div class="ambient-bg__grid"></div>
-      <div class="ambient-bg__scanlines"></div>
-    </div>
-
     <header class="site-header">
       <div class="container header-inner">
         <div class="header-start">
           <a class="site-brand" href="index.html">
             <span class="site-brand__mark" aria-hidden="true"></span>
-            <span class="site-brand__text">YN<span class="site-brand__dot">.</span></span>
+            <span class="site-brand__text">Your Name</span>
           </a>
           <a class="admin-entry admin-entry--header" href="admin.html">Admin</a>
         </div>
@@ -39,7 +31,7 @@
           <nav id="site-nav" class="site-nav" aria-label="Primary">
             <ul class="nav-list">
               <li><a href="#work">Work</a></li>
-              <li><a href="#concepts">Lab</a></li>
+              <li><a href="#concepts">Capabilities</a></li>
               <li><a href="#about">About</a></li>
               <li><a href="#contact">Contact</a></li>
             </ul>
@@ -49,7 +41,7 @@
             href="client-flow.html"
             aria-label="Client portal login"
           >
-            <span class="client-portal-entry__full">Client Portal</span>
+            <span class="client-portal-entry__full">Client portal</span>
             <span class="client-portal-entry__short">Portal</span>
           </a>
           <button
@@ -69,42 +61,38 @@
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
         <div class="container hero-shell">
-          <div class="hero-chrome" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
           <div class="hero-layout">
             <div class="hero-copy-block">
               <p class="eyebrow">Creative developer</p>
               <h1 id="hero-title" class="hero-title">
-                <span class="hero-title__line">Retro-future</span>
-                <span class="hero-title__line hero-title__line--glow">interfaces</span>
-                <span class="hero-title__sub">for teams who want to stand out.</span>
+                <span class="hero-title__line">Clear product interfaces,</span>
+                <span class="hero-title__line hero-title__line--accent">built to ship.</span>
+                <span class="hero-title__sub"
+                  >Thoughtful UX, disciplined visual design, and maintainable front-end systems.</span
+                >
               </h1>
               <p class="hero-lede">
-                Polished web products with cinematic visuals, tight UX, and production-ready front ends. From
-                marketing drops to full client portals — built for clarity, speed, and conversion.
+                I help teams launch and refine web products — from marketing sites to client portals and internal
+                tools — with attention to performance, accessibility, and long-term maintainability.
               </p>
               <div class="hero-actions">
-                <a class="btn btn-primary" href="#work">Featured work</a>
-                <a class="btn btn-ghost" href="#contact">Open comms</a>
+                <a class="btn btn-primary" href="#work">View work</a>
+                <a class="btn btn-ghost" href="#contact">Get in touch</a>
               </div>
             </div>
-            <aside class="hero-side" aria-label="Highlights">
-              <div class="signal-stack">
-                <div class="signal-card signal-card--primary">
-                  <span class="signal-card__tag">Signal</span>
-                  <p class="signal-card__head">Current stack</p>
-                  <p class="signal-card__body">Portal UX, funnel flows, and admin tooling with real-time messaging.</p>
+            <aside class="hero-side" aria-label="Focus areas">
+              <div class="hero-summary">
+                <div class="hero-summary-card">
+                  <p class="hero-summary__label">Current focus</p>
+                  <p class="hero-summary__lead">
+                    Client portal UX, guided onboarding flows, and admin tooling with messaging in the loop.
+                  </p>
                 </div>
-                <ul class="signal-list">
-                  <li><span class="signal-list__dot"></span> Responsive UI systems</li>
-                  <li><span class="signal-list__dot"></span> Journey optimization</li>
-                  <li><span class="signal-list__dot"></span> Ship-ready implementation</li>
+                <ul class="hero-summary-list">
+                  <li><span class="hero-summary-list__bullet" aria-hidden="true"></span> Responsive UI systems</li>
+                  <li><span class="hero-summary-list__bullet" aria-hidden="true"></span> Funnel and journey optimization</li>
+                  <li><span class="hero-summary-list__bullet" aria-hidden="true"></span> Production-ready implementation</li>
                 </ul>
-                <div class="signal-meter" aria-hidden="true">
-                  <span class="signal-meter__label">Output</span>
-                  <div class="signal-meter__track"><span class="signal-meter__fill"></span></div>
-                </div>
               </div>
             </aside>
           </div>
@@ -115,39 +103,38 @@
         <div class="container">
           <header class="section-head section-head--rail">
             <div>
-              <p class="section-kicker">Portfolio</p>
-              <h2>Shipped systems</h2>
+              <p class="section-kicker">Selected work</p>
+              <h2>Recent systems</h2>
             </div>
             <p class="section-head__lede">
-              Product surfaces where usability meets unapologetic visual identity — dashboards, portals, and chat
-              experiences.
+              Interfaces and workflows where clarity for end users and operators matters as much as the visual layer.
             </p>
           </header>
           <ul class="work-bento">
             <li class="work-bento__cell work-bento__cell--feature">
               <article class="card card--feature">
-                <p class="card-kicker">Flagship</p>
-                <h3 class="card-title">Client portal + onboarding flow</h3>
+                <p class="card-kicker">Product</p>
+                <h3 class="card-title">Client portal and onboarding</h3>
                 <p class="card-desc">
-                  Guided onboarding, live messaging, and order lifecycle across portal and admin — one cohesive
-                  experience.
+                  Guided onboarding, secure profile lookup, live messaging, and order lifecycle across portal and admin
+                  views.
                 </p>
-                <a class="card-link" href="client-flow.html">Enter flow →</a>
+                <a class="card-link" href="client-flow.html">Open portal flow →</a>
               </article>
             </li>
             <li class="work-bento__cell">
               <article class="card">
                 <p class="card-kicker">Operations</p>
-                <h3 class="card-title">Admin order control room</h3>
-                <p class="card-desc">Metrics, status handling, cancellations, and cleanup for day-to-day ops.</p>
+                <h3 class="card-title">Admin order management</h3>
+                <p class="card-desc">Metrics, status updates, cancellations, and operational actions in one place.</p>
                 <a class="card-link" href="admin-orders.html">Open orders →</a>
               </article>
             </li>
             <li class="work-bento__cell">
               <article class="card">
-                <p class="card-kicker">Realtime</p>
-                <h3 class="card-title">Inbox + mobile chat UX</h3>
-                <p class="card-desc">Attachments, alerts, and mobile-first popups tuned for support teams.</p>
+                <p class="card-kicker">Support</p>
+                <h3 class="card-title">Inbox and chat experience</h3>
+                <p class="card-desc">Responsive messaging, attachments, and mobile-friendly interactions for teams.</p>
                 <a class="card-link" href="admin-inbox.html">Open inbox →</a>
               </article>
             </li>
@@ -159,47 +146,48 @@
         <div class="container">
           <header class="section-head section-head--rail">
             <div>
-              <p class="section-kicker">Visual lab</p>
-              <h2>Synthwave stream</h2>
+              <p class="section-kicker">Modules</p>
+              <h2>Reusable surface patterns</h2>
             </div>
             <p class="section-head__lede">
-              Neon-forward art direction blocks — drop-in heroes, campaign modules, and gallery treatments.
+              Building blocks for marketing pages, dashboards, and narrative sections — tuned for consistency and
+              readability.
             </p>
           </header>
           <ul class="synth-grid">
             <li>
               <article class="synth-tile synth-tile--01">
                 <div class="synth-tile-inner">
-                  <span class="synth-badge">Concept</span>
-                  <h3 class="synth-title">Neon Sentinel</h3>
-                  <p class="synth-note">Launch pages and campaign modules with horizon glow.</p>
+                  <span class="synth-badge">Pattern</span>
+                  <h3 class="synth-title">Hero emphasis</h3>
+                  <p class="synth-note">Headline-led regions with restrained accent and supporting metrics.</p>
                 </div>
               </article>
             </li>
             <li>
               <article class="synth-tile synth-tile--02">
                 <div class="synth-tile-inner">
-                  <span class="synth-badge">Concept</span>
-                  <h3 class="synth-title">Skyline Echo</h3>
-                  <p class="synth-note">Narrative strip for product storytelling and milestones.</p>
+                  <span class="synth-badge">Pattern</span>
+                  <h3 class="synth-title">Story strip</h3>
+                  <p class="synth-note">Timeline or milestone layout for product narrative and releases.</p>
                 </div>
               </article>
             </li>
             <li>
               <article class="synth-tile synth-tile--03">
                 <div class="synth-tile-inner">
-                  <span class="synth-badge">Concept</span>
-                  <h3 class="synth-title">Halo Unit</h3>
-                  <p class="synth-note">Portrait frame for case studies and feature callouts.</p>
+                  <span class="synth-badge">Pattern</span>
+                  <h3 class="synth-title">Feature frame</h3>
+                  <p class="synth-note">Portrait or split layout for case studies and deep-dive callouts.</p>
                 </div>
               </article>
             </li>
             <li>
               <article class="synth-tile synth-tile--04">
                 <div class="synth-tile-inner">
-                  <span class="synth-badge">Concept</span>
-                  <h3 class="synth-title">Afterglow Ridge</h3>
-                  <p class="synth-note">Cinematic gallery rails with grid-floor perspective.</p>
+                  <span class="synth-badge">Pattern</span>
+                  <h3 class="synth-title">Media rail</h3>
+                  <p class="synth-note">Gallery or asset row with even spacing and calm hover states.</p>
                 </div>
               </article>
             </li>
@@ -211,16 +199,16 @@
         <section id="about" class="section section-alt section--split">
           <div class="container narrow">
             <header class="section-head">
-              <p class="section-kicker">Background</p>
-              <h2>About</h2>
+              <p class="section-kicker">About</p>
+              <h2>Approach</h2>
             </header>
             <p>
-              I build digital products where strong visual language meets practical UX — interface design,
-              front-end implementation, and systems that stay maintainable as roadmaps evolve.
+              I work at the intersection of product design and front-end engineering — turning requirements into
+              interfaces that are easy to learn, hard to misuse, and straightforward to extend.
             </p>
             <p>
-              From neon-soaked marketing pages to complex portals, the goal is the same: responsive behavior,
-              obsessive detail, and foundations that scale.
+              Whether the surface is customer-facing or internal, the bar is the same: typographic hierarchy, predictable
+              layout, and implementation that your team can own after handoff.
             </p>
           </div>
         </section>
@@ -228,10 +216,10 @@
         <section id="contact" class="section section--split">
           <div class="container narrow">
             <header class="section-head">
-              <p class="section-kicker">Comms</p>
-              <h2>Contact</h2>
+              <p class="section-kicker">Contact</p>
+              <h2>Let’s talk</h2>
             </header>
-            <p class="contact-intro">Launch, redesign, or full product experience — let’s sync.</p>
+            <p class="contact-intro">Available for launches, redesigns, and ongoing product UI work.</p>
             <ul class="contact-list">
               <li><a href="mailto:you@example.com">you@example.com</a></li>
               <li><a href="https://github.com/" rel="noopener noreferrer">GitHub</a></li>
@@ -248,7 +236,7 @@
           <span class="site-brand__mark site-brand__mark--footer" aria-hidden="true"></span>
           <p>© <span id="year"></span> Your Name</p>
         </div>
-        <p class="footer-note">Synth-styled surface · performance-minded under the hood.</p>
+        <p class="footer-note">Built for clarity, accessibility, and maintainable front-end code.</p>
       </div>
     </footer>
 

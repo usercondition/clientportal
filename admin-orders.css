@@ -96,28 +96,28 @@
 }
 
 .admin-orders-item__badge--submitted {
-  border-color: color-mix(in srgb, #38bdf8 45%, var(--border));
-  color: #7dd3fc;
+  border-color: color-mix(in srgb, var(--accent-cyan) 38%, var(--border));
+  color: color-mix(in srgb, var(--accent-cyan) 72%, var(--text-muted));
 }
 
 .admin-orders-item__badge--in_progress {
-  border-color: color-mix(in srgb, #a78bfa 45%, var(--border));
-  color: #c4b5fd;
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  color: color-mix(in srgb, var(--accent) 78%, var(--text-muted));
 }
 
 .admin-orders-item__badge--awaiting_client {
-  border-color: color-mix(in srgb, #fbbf24 45%, var(--border));
-  color: #fcd34d;
+  border-color: color-mix(in srgb, var(--accent-hot) 42%, var(--border));
+  color: color-mix(in srgb, var(--accent-hot) 75%, var(--text-muted));
 }
 
 .admin-orders-item__badge--fulfilled {
-  border-color: color-mix(in srgb, #34d399 45%, var(--border));
-  color: #6ee7b7;
+  border-color: color-mix(in srgb, #15803d 28%, var(--border));
+  color: color-mix(in srgb, #15803d 62%, var(--text-muted));
 }
 
 .admin-orders-item__badge--cancelled {
-  border-color: color-mix(in srgb, #f87171 45%, var(--border));
-  color: #fca5a5;
+  border-color: color-mix(in srgb, #b91c1c 30%, var(--border));
+  color: color-mix(in srgb, #b91c1c 62%, var(--text-muted));
 }
 
 .admin-orders-item__badge--draft {

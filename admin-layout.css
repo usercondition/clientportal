@@ -101,7 +101,7 @@
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(5, 2, 12, 0.55);
+  background: var(--scrim, rgba(18, 21, 26, 0.4));
   backdrop-filter: blur(4px);
   border: 0;
   padding: 0;
@@ -371,8 +371,8 @@
   line-height: 1.45;
   color: var(--text);
   border-radius: var(--radius);
-  border: 1px solid color-mix(in srgb, #fbbf24 38%, var(--border));
-  background: color-mix(in srgb, #fbbf24 11%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent-hot) 10%, var(--bg));
 }
 
 .admin-metrics__banner code {
