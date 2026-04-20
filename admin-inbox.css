@@ -3,8 +3,10 @@
 .admin-inbox-view {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
   gap: 0.85rem;
 }
 
@@ -21,20 +23,27 @@
   font-size: 0.78em;
 }
 
-/* ——— Dashboard grid ——— */
+/* ——— Thread + chat split ——— */
 .admin-dashboard {
   display: grid;
   gap: 1rem;
   align-items: stretch;
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Grid items default to min-height:auto and refuse to shrink — required for inner scroll */
+.admin-dashboard > * {
+  min-height: 0;
+  min-width: 0;
 }
 
 @media (min-width: 880px) {
   .admin-dashboard {
-    grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
     gap: 1.15rem;
-    min-height: min(72vh, 760px);
   }
 }
 
@@ -88,14 +97,23 @@
 @media (min-width: 880px) {
   .admin-panel--threads {
     max-height: none;
+    height: 100%;
   }
 }
 
 .admin-panel--chat {
   flex: 1;
   min-height: 0;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 880px) {
+  .admin-panel--chat {
+    height: 100%;
+  }
 }
 
 /* ——— Thread list ——— */
@@ -191,14 +209,14 @@
 
 /* ——— Empty / active chat ——— */
 .admin-empty-state {
-  flex: 1;
+  flex: 1 1 0%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem;
-  min-height: 12rem;
+  padding: clamp(1.25rem, 3vw, 2rem) 1.25rem;
 }
 
 .admin-empty-state__title {
@@ -218,13 +236,16 @@
 }
 
 .admin-chat-workspace {
-  flex: 1;
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .admin-peer-header {
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -302,10 +323,13 @@
 }
 
 .admin-inbox-thread {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0.85rem 1rem 1rem;
   display: flex;
   flex-direction: column;
@@ -477,8 +501,10 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  resize: vertical;
+  resize: none;
   min-height: 3.75rem;
+  max-height: 10rem;
+  overflow-y: auto;
   margin-bottom: 0.55rem;
   transition:
     border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
@@ -572,15 +598,24 @@
 /* ——— Mobile ——— */
 @media (max-width: 879px) {
   .admin-dashboard {
-    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .admin-panel--threads {
-    max-height: min(38dvh, 280px);
+    flex: 0 0 auto;
+    max-height: min(38dvh, 300px);
+    width: 100%;
   }
 
   .admin-panel--chat {
-    min-height: 22rem;
+    flex: 1 1 0%;
+    min-height: 0;
+    max-height: none;
   }
 
   .admin-compose-actions {
