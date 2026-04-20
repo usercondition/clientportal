@@ -63,6 +63,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       sendResponse({ ok: false, error: (collected && collected.error) || "Could not read thread data from page." });
       return;
     }
+    if (!collected.threads || collected.threads.length === 0) {
+      sendResponse({
+        ok: false,
+        error:
+          "No threads in this tab. Open your inbox list, set profile to Meta/Facebook (or Custom JSON), reload the extension, then try again.",
+      });
+      return;
+    }
     let syncUrl;
     try {
       syncUrl = buildSyncUrl(cfg.apiBaseUrl);
