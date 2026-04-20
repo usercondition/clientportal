@@ -1,0 +1,17 @@
+---
+description: Handle image-generation requests with fallback flow
+alwaysApply: true
+---
+
+# Image Generation Workflow
+
+When the user asks to generate or regenerate images:
+
+- Before image requests, run a quick capability check for `GenerateImage`.
+- If `GenerateImage` is unavailable, warn in one line and instruct the user to switch to an image-capable model for this chat.
+- If `GenerateImage` is available, attempt image generation immediately.
+- If image generation is unavailable in the current model/session, do not fail silently.
+- Tell the user in one line that image generation is unavailable in the current model.
+- Ask the user to switch to an image-capable model, then retry the same prompts right away.
+- Reuse the latest approved prompts and references from the conversation unless the user asks for changes.
+- After generation, replace target asset files in-place (same filenames) so existing site references keep working.
