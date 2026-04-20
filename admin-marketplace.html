@@ -147,6 +147,12 @@
           Buyer threads from the sync extension. Each row shows the latest line until you open <strong>Show full history</strong>. Server:
           <code>MARKETPLACE_SYNC_ENABLED</code> + <code>MARKETPLACE_SYNC_TOKEN</code> — same token in the extension.
         </p>
+        <p class="admin-mp__page-actions">
+          <button type="button" class="admin-mp__purge" id="admin-mp-purge">
+            Erase synced Marketplace data…
+          </button>
+          <span class="admin-mp__purge-hint">Uses the same token as the extension; deletes every synced thread and message.</span>
+        </p>
       </header>
 
       <main id="admin-mp-main" class="admin-app__main">

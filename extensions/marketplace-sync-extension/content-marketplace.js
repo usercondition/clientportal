@@ -476,6 +476,87 @@
     );
   }
 
+  /**
+   * When Meta renders inbox rows without plain <a href> thread URLs, thread ids still appear in row HTML or nested links.
+   */
+  function mergeInboxRowBackfill(scope, seen, threads) {
+    var rowLike = scope.querySelectorAll('[role="row"], [role="listitem"]');
+    for (var i = 0; i < rowLike.length; i++) {
+      var row = rowLike[i];
+      if (row.closest('[role="log"]')) continue;
+      if (row.closest('[role="banner"]')) continue;
+      if (row.getAttribute("aria-hidden") === "true") continue;
+      var html = "";
+      try {
+        html = String(row.outerHTML || "");
+      } catch (_eH) {
+        html = "";
+      }
+      if (html.length > 120000) html = html.slice(0, 120000);
+      var threadId = "";
+      var mm = html.match(/\/(?:marketplace|messages)\/t\/(\d{10,})\b/);
+      if (mm) threadId = mm[1];
+      if (!threadId) {
+        var mmE = html.match(/\/messages\/e2ee\/t\/(\d{10,})\b/) || html.match(/\/e2ee\/t\/(\d{10,})\b/);
+        if (mmE) threadId = mmE[1];
+      }
+      if (!threadId) {
+        var links = row.querySelectorAll("a[href], [role='link'][href]");
+        for (var L = 0; L < links.length; L++) {
+          var href0 = links[L].getAttribute("href");
+          if (!href0) continue;
+          var innerAbs = unwrapFacebookRedirectHref(absolutize(href0));
+          var tid = extractThreadIdFromInboxHref(innerAbs) || extractThreadIdFromInboxHref(absolutize(href0));
+          if (
+            tid &&
+            (hrefLooksLikeMarketplaceInboxThread(innerAbs) ||
+              hrefLooksLikeMarketplaceInboxThread(href0) ||
+              hrefLooksLikeMarketplaceInboxThread(absolutize(href0)))
+          ) {
+            threadId = tid;
+            break;
+          }
+        }
+      }
+      if (!threadId || seen[threadId]) continue;
+      if (String(threadId).length < 10) continue;
+      seen[threadId] = true;
+      var buyerName = textOf(row).slice(0, 200).replace(/\s+/g, " ").trim();
+      var snippet = "";
+      var spans = row.querySelectorAll("span[dir='auto']");
+      for (var j = 0; j < spans.length; j++) {
+        var t = textOf(spans[j]);
+        if (t && t.length > 2 && t !== buyerName) {
+          snippet = t.slice(0, 500);
+          break;
+        }
+      }
+      threads.push({
+        threadId: threadId,
+        buyerName: buyerName,
+        snippet: snippet,
+        updatedAt: new Date().toISOString(),
+        messages: previewMessagesForThread(threadId, snippet),
+      });
+      if (threads.length >= 200) break;
+    }
+  }
+
+  function tagThreadsWithSyncPage(threads) {
+    var pageUrl = "";
+    try {
+      pageUrl = String(location.href || "").slice(0, 2000);
+    } catch (_eU) {
+      pageUrl = "";
+    }
+    var at = new Date().toISOString();
+    for (var t = 0; t < threads.length; t++) {
+      threads[t].syncSourceUrl = pageUrl;
+      threads[t].syncSourceCollectedAt = at;
+    }
+    return threads;
+  }
+
   function collectMetaCommerce() {
     var threads = [];
     var seen = Object.create(null);
@@ -553,8 +634,9 @@
         messages: previewMessagesForThread(threadId, snippet),
       });
     });
+    if (!threads.length) mergeInboxRowBackfill(scope, seen, threads);
     if (threads.length > 200) threads = threads.slice(0, 200);
-    return threads;
+    return tagThreadsWithSyncPage(threads);
   }
 
   function collectCustom(cfg) {
@@ -607,7 +689,7 @@
   }
 
   var META_EMPTY_HINT =
-    "No thread links found. Scroll so conversations load, hard-refresh the tab (Ctrl+Shift+R), then sync again. Stay on facebook.com/marketplace/inbox (or /marketplace/you/…). If Meta hides <a href> links, use Custom JSON in extension options (README).";
+    "No Marketplace conversations detected. Open facebook.com/marketplace/inbox, scroll the left list so rows load, hard-refresh (Ctrl+Shift+R), confirm Options → Extraction profile is **Meta / Facebook**, then Sync. If still empty, use Custom JSON (README). Old junk in the admin list can be removed with **Erase synced Marketplace data** (same token as sync).";
 
   var GENERIC_EMPTY_HINT =
     'No elements matched [data-thread-id]. For Meta/Facebook inbox, switch profile to “Meta / Facebook”, or use “Custom” JSON with rowSelector / idAttr.';
@@ -619,7 +701,7 @@
       if (!gate.ok) return gate;
       var openId = getOpenConversationThreadIdFromLocation();
       if (openId) {
-        return { ok: true, threads: collectOpenConversationThread(openId) };
+        return { ok: true, threads: tagThreadsWithSyncPage(collectOpenConversationThread(openId)) };
       }
       var mt = collectMetaCommerce();
       if (!mt.length) return { ok: false, error: META_EMPTY_HINT };
@@ -638,11 +720,11 @@
             "Custom profile matched no rows. Check rowSelector and idAttr in Options JSON against this page in DevTools.",
         };
       }
-      return { ok: true, threads: ct };
+      return { ok: true, threads: tagThreadsWithSyncPage(ct) };
     }
     var gt = collectGeneric();
     if (!gt.length) return { ok: false, error: GENERIC_EMPTY_HINT };
-    return { ok: true, threads: gt };
+    return { ok: true, threads: tagThreadsWithSyncPage(gt) };
   }
 
   chrome.runtime.onMessage.addListener(function (msg, _sender, sendResponse) {

@@ -2200,6 +2200,41 @@ app.get("/api/admin/marketplace/threads/:threadId/messages", async (req, res) =>
   }
 });
 
+/**
+ * Wipe all extension-synced Marketplace rows (threads cascade-delete messages).
+ * Same auth as POST /api/admin/marketplace/sync (Bearer MARKETPLACE_SYNC_TOKEN).
+ */
+app.post("/api/admin/marketplace/purge", async (req, res) => {
+  if (!requireMarketplaceSyncEnabled(req, res)) return;
+  if (!isMarketplaceSyncAuthorized(req)) {
+    return res.status(401).json({ error: "Unauthorized marketplace sync token." });
+  }
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const okConfirm = body.confirm === true || String(body.confirm || "").toLowerCase() === "yes";
+  if (!okConfirm) {
+    return res.status(400).json({ error: 'Send JSON body { "confirm": true } to delete all marketplace_threads rows.' });
+  }
+  try {
+    const del = await pool.query("delete from marketplace_threads");
+    const n = typeof del.rowCount === "number" ? del.rowCount : 0;
+    console.log(`[admin/marketplace/purge] deleted ${n} threads (messages cascade).`);
+    return res.json({ ok: true, deletedThreads: n });
+  } catch (e) {
+    const err = /** @type {{ message?: string; code?: string }} */ (e);
+    if (isPgUndefinedTable(err)) {
+      return res.status(503).json({
+        error: "Marketplace tables are missing. Run npm run db:migrate on the server environment.",
+        migrationNeeded: true,
+      });
+    }
+    console.error("[admin/marketplace/purge] failed:", err.message);
+    return res.status(500).json({ error: "Marketplace purge failed." });
+  }
+});
+
 app.use("/uploads", express.static(uploadsRoot));
 
 const staticDir = path.resolve(__dirname);

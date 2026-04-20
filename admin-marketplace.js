@@ -4,6 +4,7 @@
   var detailHead = document.getElementById("admin-mp-detail-head");
   var msgsEl = document.getElementById("admin-mp-msgs");
   var logoutBtn = document.getElementById("admin-logout");
+  var purgeBtn = document.getElementById("admin-mp-purge");
 
   /** @type {string | null} */
   var selectedId = null;
@@ -266,6 +267,44 @@
     logoutBtn.addEventListener("click", function () {
       if (window.AdminAuth) AdminAuth.clearAdminSession();
       location.href = "admin-login.html";
+    });
+  }
+
+  if (purgeBtn) {
+    purgeBtn.addEventListener("click", function () {
+      var tok = window.prompt(
+        "Paste MARKETPLACE_SYNC_TOKEN (same value as in extension options and Railway). All synced Marketplace threads and messages will be permanently deleted:"
+      );
+      if (tok == null || !String(tok).trim()) return;
+      if (
+        !window.confirm(
+          "Delete ALL Marketplace sync data from the database? This cannot be undone."
+        )
+      ) {
+        return;
+      }
+      fetch("/api/admin/marketplace/purge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + String(tok).trim(),
+        },
+        body: JSON.stringify({ confirm: true }),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error((j && j.error) || "Purge failed");
+            return j;
+          });
+        })
+        .then(function (j) {
+          showBanner("Removed " + (j.deletedThreads != null ? j.deletedThreads : "?") + " synced thread(s). Reloading list.");
+          selectedId = null;
+          loadList();
+        })
+        .catch(function (e) {
+          showBanner(e.message || "Purge failed.");
+        });
     });
   }
 
