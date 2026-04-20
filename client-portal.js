@@ -185,36 +185,75 @@
       return o.phase === "past";
     });
 
-    function card(o) {
+    function orderItem(o) {
+      var st = esc(o.statusLabel || "");
+      var cancelBtn = o.cancellable
+        ? '<button type="button" class="btn btn-ghost portal-order-cancel-btn" data-order-number="' +
+          esc(o.id) +
+          '">Cancel order</button>'
+        : "";
       return (
-        '<li><article class="portal-order-card">' +
-        '<p class="portal-order-id">' +
+        '<li><details class="portal-order-disclosure">' +
+        '<summary class="portal-order-summary">' +
+        '<span class="portal-order-summary__main">' +
+        '<span class="portal-order-summary__id">' +
         esc(o.id) +
-        "</p>" +
+        "</span>" +
+        '<span class="portal-order-summary__chevron" aria-hidden="true"></span>' +
+        "</span>" +
+        '<span class="portal-order-summary__status">' +
+        st +
+        "</span>" +
+        "</summary>" +
+        '<div class="portal-order-expanded">' +
         '<p class="portal-order-title">' +
         esc(o.title) +
         "</p>" +
-        '<p class="portal-order-meta">' +
+        '<div class="portal-order-body">' +
         esc(o.summary) +
-        "</p>" +
+        "</div>" +
         '<p class="portal-order-meta">' +
         esc(o.dateLabel) +
         "</p>" +
-        '<p class="portal-order-total">' +
+        '<p class="portal-order-total">Total: ' +
         esc(o.total) +
         "</p>" +
-        "</article></li>"
+        (cancelBtn ? '<div class="portal-order-actions">' + cancelBtn + "</div>" : "") +
+        "</div>" +
+        "</details></li>"
       );
     }
 
     if (curEl) {
-      curEl.innerHTML = current.map(card).join("");
+      curEl.innerHTML = current.map(orderItem).join("");
       if (curEmpty) curEmpty.hidden = current.length > 0;
     }
     if (pastEl) {
-      pastEl.innerHTML = past.map(card).join("");
+      pastEl.innerHTML = past.map(orderItem).join("");
       if (pastEmpty) pastEmpty.hidden = past.length > 0;
     }
+  }
+
+  var ordersPanel = document.querySelector(".portal-panel--orders");
+  if (ordersPanel) {
+    ordersPanel.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest && e.target.closest(".portal-order-cancel-btn");
+      if (!btn) return;
+      e.preventDefault();
+      var num = btn.getAttribute("data-order-number");
+      if (!num || !window.Portal) return;
+      if (!window.confirm("Cancel order " + num + "? This cannot be undone from the portal.")) return;
+      btn.disabled = true;
+      Portal.cancelOrder(num)
+        .then(function () {
+          showAppToast("Order cancelled.");
+          return renderOrders();
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          showAppToast((err && err.message) || "Could not cancel order.");
+        });
+    });
   }
 
   var firstMessageRender = true;

@@ -213,6 +213,24 @@ function mapOrderPhase(status) {
   return ["fulfilled", "cancelled"].includes(status) ? "past" : "current";
 }
 
+/** Client-initiated cancellation allowed only while the job is not closed out. */
+const CLIENT_CANCELABLE_STATUSES = new Set(["draft", "submitted", "in_progress", "awaiting_client"]);
+
+const ALL_ORDER_STATUSES = new Set([
+  "draft",
+  "submitted",
+  "in_progress",
+  "awaiting_client",
+  "fulfilled",
+  "cancelled",
+]);
+
+function previewSummary(text, max = 220) {
+  const s = String(text || "").replace(/\s+/g, " ").trim();
+  if (s.length <= max) return s;
+  return `${s.slice(0, max - 1)}…`;
+}
+
 function formatMoney(cents) {
   const n = Number(cents || 0) / 100;
   return n > 0 ? `$${n.toFixed(2)}` : "—";
@@ -467,6 +485,9 @@ app.get("/api/client/:clientId/orders", async (req, res) => {
       ? `Updated ${new Date(o.submitted_at).toLocaleDateString()}`
       : `Started ${new Date(o.created_at).toLocaleDateString()}`,
     total: formatMoney(o.total_cents),
+    status: o.status,
+    statusLabel: emailTemplates.humanStatus(o.status),
+    cancellable: CLIENT_CANCELABLE_STATUSES.has(o.status),
   }));
   res.json({ orders });
 });
@@ -669,6 +690,90 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
         ? `Submitted ${new Date(o.submitted_at).toLocaleDateString()}`
         : `Started ${new Date(o.created_at).toLocaleDateString()}`,
       total: formatMoney(o.total_cents),
+      status: "submitted",
+      statusLabel: emailTemplates.humanStatus("submitted"),
+      cancellable: true,
+    },
+  });
+});
+
+/**
+ * Client cancels their own order while it is still open (not fulfilled / already cancelled).
+ */
+app.post("/api/client/:clientId/orders/:orderNumber/cancel", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const { clientId, orderNumber } = req.params;
+  const dbClient = await pool.connect();
+  let previousStatus;
+  let row;
+  try {
+    await dbClient.query("BEGIN");
+    const sel = await dbClient.query(
+      `select id, client_id, order_number, status, title from orders where order_number = $1 and client_id = $2::uuid for update`,
+      [orderNumber, clientId]
+    );
+    if (!sel.rows.length) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ error: "Order not found." });
+    }
+    row = sel.rows[0];
+    previousStatus = row.status;
+    if (!CLIENT_CANCELABLE_STATUSES.has(previousStatus)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({ error: "This order can no longer be cancelled online." });
+    }
+    if (previousStatus === "cancelled") {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({ error: "Order is already cancelled." });
+    }
+    const upd = await dbClient.query(
+      `update orders set status = 'cancelled'::order_status, updated_at = now() where id = $1
+       returning id, order_number, status, title, summary, created_at, submitted_at, fulfilled_at, total_cents, updated_at`,
+      [row.id]
+    );
+    row = upd.rows[0];
+    await dbClient.query(
+      `insert into order_timeline_events (order_id, event_code, event_label, event_details, created_by)
+       values ($1, 'cancelled', 'Order cancelled', $2, 'client')`,
+      [row.id, "Cancelled by the client from the portal."]
+    );
+    await dbClient.query("COMMIT");
+  } catch (err) {
+    try {
+      await dbClient.query("ROLLBACK");
+    } catch (_e) {}
+    console.error("[orders] client cancel failed:", err && err.message);
+    return res.status(500).json({ error: "Could not cancel order." });
+  } finally {
+    dbClient.release();
+  }
+
+  await notifyOrderStatusChange(pool, {
+    clientId,
+    orderNumber: row.order_number,
+    title: row.title,
+    status: "cancelled",
+    previousStatus,
+  });
+
+  const o = row;
+  res.json({
+    order: {
+      id: o.order_number,
+      phase: mapOrderPhase(o.status),
+      title: o.title,
+      summary: o.summary || "",
+      dateLabel: o.updated_at
+        ? `Updated ${new Date(o.updated_at).toLocaleDateString()}`
+        : o.submitted_at
+        ? `Updated ${new Date(o.submitted_at).toLocaleDateString()}`
+        : `Started ${new Date(o.created_at).toLocaleDateString()}`,
+      total: formatMoney(o.total_cents),
+      status: o.status,
+      statusLabel: emailTemplates.humanStatus(o.status),
+      cancellable: false,
     },
   });
 });
@@ -727,6 +832,333 @@ app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, r
       attachments: chatAttachments.toApiAttachments(uploaded),
       at: msgRes.rows[0].created_at,
     },
+  });
+});
+
+app.get("/api/admin/orders", async (_req, res) => {
+  if (!DATABASE_URL) {
+    return res.json({
+      databaseConnected: false,
+      metrics: null,
+      orders: [],
+    });
+  }
+  try {
+    const mRes = await pool.query(`
+      select
+        count(*) filter (where status = 'submitted'::order_status)::int as new_requests,
+        count(*) filter (where status = 'in_progress'::order_status)::int as in_progress,
+        count(*) filter (where status = 'awaiting_client'::order_status)::int as awaiting_client,
+        count(*) filter (where status not in ('fulfilled'::order_status, 'cancelled'::order_status))::int
+          as open_pipeline,
+        count(*) filter (
+          where status = 'fulfilled'::order_status
+            and coalesce(fulfilled_at, updated_at) >= date_trunc('month', now())
+            and coalesce(fulfilled_at, updated_at) < date_trunc('month', now()) + interval '1 month'
+        )::int as fulfilled_mtd,
+        count(*) filter (
+          where status = 'cancelled'::order_status
+            and updated_at >= date_trunc('month', now())
+            and updated_at < date_trunc('month', now()) + interval '1 month'
+        )::int as cancelled_mtd,
+        coalesce(
+          sum(total_cents) filter (where status not in ('fulfilled'::order_status, 'cancelled'::order_status)),
+          0
+        )::bigint as pipeline_value_cents,
+        count(*) filter (where created_at >= now() - interval '7 days')::int as orders_created_7d,
+        (select count(*)::int from orders) as total_orders
+      from orders
+    `);
+    const m = mRes.rows[0] || {};
+    const listRes = await pool.query(`
+      select
+        o.id,
+        o.order_number,
+        o.status,
+        o.title,
+        o.summary,
+        o.total_cents,
+        o.created_at,
+        o.submitted_at,
+        o.fulfilled_at,
+        c.id as client_id,
+        c.first_name,
+        c.last_name,
+        c.email
+      from orders o
+      join clients c on c.id = o.client_id
+      order by o.created_at desc
+      limit 400
+    `);
+    const orders = listRes.rows.map((o) => ({
+      orderNumber: o.order_number,
+      status: o.status,
+      statusLabel: emailTemplates.humanStatus(o.status),
+      title: o.title,
+      summaryPreview: previewSummary(o.summary, 200),
+      total: formatMoney(o.total_cents),
+      totalCents: Number(o.total_cents || 0),
+      createdAt: o.created_at,
+      submittedAt: o.submitted_at,
+      fulfilledAt: o.fulfilled_at,
+      clientId: o.client_id,
+      clientName: `${o.first_name || ""} ${o.last_name || ""}`.trim() || "Client",
+      clientEmail: o.email || "",
+    }));
+    return res.json({
+      databaseConnected: true,
+      metrics: {
+        newRequests: Number(m.new_requests || 0),
+        inProgress: Number(m.in_progress || 0),
+        awaitingClient: Number(m.awaiting_client || 0),
+        openPipeline: Number(m.open_pipeline || 0),
+        fulfilledMtd: Number(m.fulfilled_mtd || 0),
+        cancelledMtd: Number(m.cancelled_mtd || 0),
+        pipelineValueCents: Number(m.pipeline_value_cents || 0),
+        ordersCreated7d: Number(m.orders_created_7d || 0),
+        totalOrders: Number(m.total_orders || 0),
+      },
+      orders,
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/orders] list failed:", err.message);
+    return res.status(500).json({ error: "Failed to load orders.", details: err.message });
+  }
+});
+
+app.get("/api/admin/orders/:orderNumber", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const { orderNumber } = req.params;
+  try {
+    const oRes = await pool.query(
+      `select o.*, c.id as client_id, c.first_name, c.last_name, c.email, c.phone
+       from orders o
+       join clients c on c.id = o.client_id
+       where o.order_number = $1
+       limit 1`,
+      [orderNumber]
+    );
+    if (!oRes.rows.length) return res.status(404).json({ error: "Order not found." });
+    const o = oRes.rows[0];
+    const tRes = await pool.query(
+      `select id, event_code, event_label, event_details, created_by, created_at
+       from order_timeline_events
+       where order_id = $1
+       order by created_at desc`,
+      [o.id]
+    );
+    return res.json({
+      order: {
+        id: o.id,
+        orderNumber: o.order_number,
+        status: o.status,
+        statusLabel: emailTemplates.humanStatus(o.status),
+        title: o.title,
+        summary: o.summary || "",
+        subtotalCents: o.subtotal_cents,
+        taxCents: o.tax_cents,
+        shippingCents: o.shipping_cents,
+        totalCents: o.total_cents,
+        total: formatMoney(o.total_cents),
+        createdAt: o.created_at,
+        submittedAt: o.submitted_at,
+        fulfilledAt: o.fulfilled_at,
+        updatedAt: o.updated_at,
+      },
+      client: {
+        id: o.client_id,
+        firstName: o.first_name,
+        lastName: o.last_name,
+        email: o.email || "",
+        phone: o.phone || "",
+      },
+      timeline: tRes.rows.map((t) => ({
+        id: t.id,
+        code: t.event_code,
+        label: t.event_label,
+        details: t.event_details || "",
+        createdBy: t.created_by || "",
+        createdAt: t.created_at,
+      })),
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/orders] detail failed:", err.message);
+    return res.status(500).json({ error: "Failed to load order." });
+  }
+});
+
+app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const { orderNumber } = req.params;
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const newStatus = String(body.status || "").trim();
+  if (!newStatus || !ALL_ORDER_STATUSES.has(newStatus)) {
+    return res.status(400).json({ error: "A valid status is required." });
+  }
+
+  const dbClient = await pool.connect();
+  let previousStatus;
+  let row;
+  let clientId;
+  try {
+    await dbClient.query("BEGIN");
+    const sel = await dbClient.query(
+      `select id, client_id, order_number, status, title from orders where order_number = $1 for update`,
+      [orderNumber]
+    );
+    if (!sel.rows.length) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ error: "Order not found." });
+    }
+    const cur = sel.rows[0];
+    previousStatus = cur.status;
+    clientId = cur.client_id;
+    if (previousStatus === newStatus) {
+      await dbClient.query("ROLLBACK");
+      const full = await pool.query(
+        `select o.*, c.id as client_id, c.first_name, c.last_name, c.email, c.phone
+         from orders o join clients c on c.id = o.client_id where o.order_number = $1`,
+        [orderNumber]
+      );
+      const o = full.rows[0];
+      const tRes = await pool.query(
+        `select id, event_code, event_label, event_details, created_by, created_at from order_timeline_events
+         where order_id = $1 order by created_at desc`,
+        [o.id]
+      );
+      return res.json({
+        order: {
+          id: o.id,
+          orderNumber: o.order_number,
+          status: o.status,
+          statusLabel: emailTemplates.humanStatus(o.status),
+          title: o.title,
+          summary: o.summary || "",
+          subtotalCents: o.subtotal_cents,
+          taxCents: o.tax_cents,
+          shippingCents: o.shipping_cents,
+          totalCents: o.total_cents,
+          total: formatMoney(o.total_cents),
+          createdAt: o.created_at,
+          submittedAt: o.submitted_at,
+          fulfilledAt: o.fulfilled_at,
+          updatedAt: o.updated_at,
+        },
+        client: {
+          id: o.client_id,
+          firstName: o.first_name,
+          lastName: o.last_name,
+          email: o.email || "",
+          phone: o.phone || "",
+        },
+        timeline: tRes.rows.map((t) => ({
+          id: t.id,
+          code: t.event_code,
+          label: t.event_label,
+          details: t.event_details || "",
+          createdBy: t.created_by || "",
+          createdAt: t.created_at,
+        })),
+      });
+    }
+
+    const upd = await dbClient.query(
+      `update orders set
+        status = $1::order_status,
+        updated_at = now(),
+        fulfilled_at = case
+          when $1::text = 'fulfilled' then coalesce(fulfilled_at, now())
+          else fulfilled_at
+        end
+      where order_number = $2
+      returning id, order_number, status, title, summary, subtotal_cents, tax_cents, shipping_cents, total_cents,
+        created_at, submitted_at, fulfilled_at, updated_at, client_id`,
+      [newStatus, orderNumber]
+    );
+    row = upd.rows[0];
+    const detail =
+      newStatus === "cancelled"
+        ? "Status updated by staff in the admin dashboard."
+        : `Status changed to ${emailTemplates.humanStatus(newStatus)}.`;
+    await dbClient.query(
+      `insert into order_timeline_events (order_id, event_code, event_label, event_details, created_by)
+       values ($1, $2, $3, $4, 'admin')`,
+      [
+        row.id,
+        newStatus,
+        emailTemplates.humanStatus(newStatus),
+        detail,
+      ]
+    );
+    await dbClient.query("COMMIT");
+  } catch (err) {
+    try {
+      await dbClient.query("ROLLBACK");
+    } catch (_e) {}
+    console.error("[admin/orders] patch failed:", err && err.message);
+    return res.status(500).json({ error: "Could not update order." });
+  } finally {
+    dbClient.release();
+  }
+
+  await notifyOrderStatusChange(pool, {
+    clientId,
+    orderNumber: row.order_number,
+    title: row.title,
+    status: newStatus,
+    previousStatus,
+  });
+
+  const cRow = await pool.query(
+    "select first_name, last_name, email, phone from clients where id = $1 limit 1",
+    [row.client_id]
+  );
+  const cli = cRow.rows[0] || {};
+
+  const tRes = await pool.query(
+    `select id, event_code, event_label, event_details, created_by, created_at from order_timeline_events
+     where order_id = $1 order by created_at desc`,
+    [row.id]
+  );
+  return res.json({
+    order: {
+      id: row.id,
+      orderNumber: row.order_number,
+      status: row.status,
+      statusLabel: emailTemplates.humanStatus(row.status),
+      title: row.title,
+      summary: row.summary || "",
+      subtotalCents: row.subtotal_cents,
+      taxCents: row.tax_cents,
+      shippingCents: row.shipping_cents,
+      totalCents: row.total_cents,
+      total: formatMoney(row.total_cents),
+      createdAt: row.created_at,
+      submittedAt: row.submitted_at,
+      fulfilledAt: row.fulfilled_at,
+      updatedAt: row.updated_at,
+    },
+    client: {
+      id: row.client_id,
+      firstName: cli.first_name || "",
+      lastName: cli.last_name || "",
+      email: cli.email || "",
+      phone: cli.phone || "",
+    },
+    timeline: tRes.rows.map((t) => ({
+      id: t.id,
+      code: t.event_code,
+      label: t.event_label,
+      details: t.event_details || "",
+      createdBy: t.created_by || "",
+      createdAt: t.created_at,
+    })),
   });
 });
 

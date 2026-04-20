@@ -1,0 +1,291 @@
+/* Admin orders — list + detail (loads with admin-layout.css) */
+
+.admin-app.admin-app--orders .admin-app__main--orders {
+  padding-left: clamp(0.45rem, 1.2vw, 1.35rem);
+  padding-right: clamp(0.45rem, 1.2vw, 1.35rem);
+}
+
+.admin-orders-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  gap: 0;
+}
+
+.admin-metrics--orders {
+  margin-bottom: 1rem;
+}
+
+.admin-metrics__grid--orders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0.65rem;
+}
+
+@media (min-width: 900px) {
+  .admin-metrics__grid--orders {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.admin-orders-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.admin-orders-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg) 58%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--dur-med) var(--ease-fluid),
+    border-color var(--dur-med) var(--ease-fluid);
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.admin-orders-item:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg));
+}
+
+.admin-orders-item.is-active {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+}
+
+.admin-orders-item__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.admin-orders-item__num {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.admin-orders-item__badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  color: var(--text-muted);
+}
+
+.admin-orders-item__badge--submitted {
+  border-color: color-mix(in srgb, #38bdf8 45%, var(--border));
+  color: #7dd3fc;
+}
+
+.admin-orders-item__badge--in_progress {
+  border-color: color-mix(in srgb, #a78bfa 45%, var(--border));
+  color: #c4b5fd;
+}
+
+.admin-orders-item__badge--awaiting_client {
+  border-color: color-mix(in srgb, #fbbf24 45%, var(--border));
+  color: #fcd34d;
+}
+
+.admin-orders-item__badge--fulfilled {
+  border-color: color-mix(in srgb, #34d399 45%, var(--border));
+  color: #6ee7b7;
+}
+
+.admin-orders-item__badge--cancelled {
+  border-color: color-mix(in srgb, #f87171 45%, var(--border));
+  color: #fca5a5;
+}
+
+.admin-orders-item__badge--draft {
+  border-color: color-mix(in srgb, var(--text-muted) 55%, var(--border));
+  color: var(--text-muted);
+}
+
+.admin-orders-item__title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.admin-orders-item__meta {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-orders-detail-head {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.admin-orders-detail-title {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.admin-orders-detail-num {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.admin-orders-detail-client {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.admin-orders-detail-client a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.admin-orders-detail-client a:hover {
+  text-decoration: underline;
+}
+
+.admin-orders-detail-body {
+  padding: 0.85rem 1rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-orders-summary {
+  margin: 0 0 1rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: color-mix(in srgb, var(--text) 94%, var(--text-muted));
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.admin-orders-money {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.admin-orders-money strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.admin-orders-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.admin-orders-actions label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 0.35rem;
+}
+
+.admin-orders-actions select {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--bg) 90%, var(--bg-elevated));
+  color: var(--text);
+}
+
+.admin-orders-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.admin-orders-timeline li {
+  padding-left: 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.admin-orders-timeline time {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.admin-orders-timeline strong {
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.admin-orders-timeline p {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.admin-orders-timeline .by {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.admin-panel--orders-list {
+  max-height: min(55vh, 520px);
+}
+
+@media (min-width: 880px) {
+  .admin-panel--orders-list {
+    max-height: none;
+    height: 100%;
+  }
+}

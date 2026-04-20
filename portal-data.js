@@ -108,6 +108,27 @@
     });
   }
 
+  /**
+   * Cancel an open order from the portal.
+   * @param {string} orderNumber
+   */
+  async function cancelOrder(orderNumber) {
+    var p = getProfile();
+    if (!p || !p.id) throw new Error("Sign in to manage orders.");
+    return requestJson(
+      "/api/client/" +
+        encodeURIComponent(p.id) +
+        "/orders/" +
+        encodeURIComponent(orderNumber) +
+        "/cancel",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      }
+    );
+  }
+
   async function getMessages() {
     var p = getProfile();
     if (!p || !p.id) return [];
@@ -188,6 +209,7 @@
     registerClient: registerClient,
     getOrders: getOrders,
     submitOrderRequest: submitOrderRequest,
+    cancelOrder: cancelOrder,
     getMessages: getMessages,
     appendClientMessage: appendClientMessage,
     formatAddress: formatAddress,
