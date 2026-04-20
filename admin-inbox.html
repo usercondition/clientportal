@@ -134,17 +134,50 @@
             Email relay: set <code>ADMIN_NOTIFY_EMAIL</code>, <code>SMTP_*</code>, and <code>MAIL_FROM</code> on the server.
           </p>
         </div>
-        <button type="button" class="admin-inbox-notify-btn" id="admin-enable-notify">
-          <svg class="admin-inbox-notify-btn__icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-          <span class="admin-inbox-notify-btn__label">Desktop Alerts</span>
-        </button>
+        <div class="admin-inbox-page-head__controls">
+          <label class="admin-show-archived admin-show-archived--global">
+            <input type="checkbox" id="admin-show-archived" />
+            <span>Show archived conversations</span>
+          </label>
+          <button type="button" class="admin-inbox-notify-btn" id="admin-enable-notify">
+            <svg class="admin-inbox-notify-btn__icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            <span class="admin-inbox-notify-btn__label">Desktop Alerts</span>
+          </button>
+        </div>
       </header>
 
       <main id="admin-inbox-main" class="admin-app__main admin-app__main--inbox">
         <div class="admin-inbox-view">
+          <section class="admin-panel admin-panel--tracker" aria-labelledby="admin-workflow-tracker-heading">
+            <div class="admin-panel__head">
+              <h2 class="admin-panel__h" id="admin-workflow-tracker-heading">Workflow tracker</h2>
+              <p class="admin-panel__meta">Action buckets generated from inbox activity and order status.</p>
+            </div>
+            <div class="admin-panel__body">
+              <div class="admin-tracker-grid">
+                <section class="admin-tracker-col">
+                  <h3 class="admin-tracker-col__title">Do now</h3>
+                  <ul class="admin-tracker-list" id="tracker-do-now"></ul>
+                </section>
+                <section class="admin-tracker-col">
+                  <h3 class="admin-tracker-col__title">Follow up</h3>
+                  <ul class="admin-tracker-list" id="tracker-follow-up"></ul>
+                </section>
+                <section class="admin-tracker-col">
+                  <h3 class="admin-tracker-col__title">Pending</h3>
+                  <ul class="admin-tracker-list" id="tracker-pending"></ul>
+                </section>
+                <section class="admin-tracker-col">
+                  <h3 class="admin-tracker-col__title">To-do</h3>
+                  <ul class="admin-tracker-list" id="tracker-todo"></ul>
+                </section>
+              </div>
+            </div>
+          </section>
+
           <div class="admin-dashboard">
             <aside class="admin-panel admin-panel--threads" aria-label="Conversation list">
               <div class="admin-panel__head">
@@ -177,10 +210,6 @@
                     <button type="button" class="admin-msg__btn" id="admin-thread-archive-toggle">
                       Archive conversation
                     </button>
-                    <label class="admin-show-archived">
-                      <input type="checkbox" id="admin-show-archived" />
-                      <span>Show archived conversations</span>
-                    </label>
                     <span class="admin-peer-header__badge">Client</span>
                   </div>
                 </header>

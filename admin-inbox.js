@@ -13,6 +13,10 @@
   var notifyPermBtn = document.getElementById("admin-enable-notify");
   var showArchivedEl = document.getElementById("admin-show-archived");
   var threadArchiveToggleBtn = document.getElementById("admin-thread-archive-toggle");
+  var trackerDoNowEl = document.getElementById("tracker-do-now");
+  var trackerFollowUpEl = document.getElementById("tracker-follow-up");
+  var trackerPendingEl = document.getElementById("tracker-pending");
+  var trackerTodoEl = document.getElementById("tracker-todo");
 
   /** @type {string | null} */
   var selectedThreadId = null;
@@ -22,6 +26,8 @@
 
   /** @type {Record<string, { updatedAt: string; preview: string; lastFrom: string; archived?: boolean }>} */
   var threadListSnapshot = {};
+  var latestThreads = [];
+  var latestOrders = [];
 
   /** @type {Record<string, Set<string | number>>} */
   var seenThreadMessageIdsByThread = {};
@@ -116,6 +122,171 @@
     var d = document.createElement("div");
     d.textContent = s;
     return d.innerHTML;
+  }
+
+  function listItemHtml(text, meta, empty) {
+    var cls = "admin-tracker-item" + (empty ? " admin-tracker-item--empty" : "");
+    return (
+      '<li class="' +
+      cls +
+      '">' +
+      esc(text || "No items") +
+      (meta ? '<span class="admin-tracker-item__meta">' + esc(meta) + "</span>" : "") +
+      "</li>"
+    );
+  }
+
+  function renderTrackerList(el, items) {
+    if (!el) return;
+    if (!items || !items.length) {
+      el.innerHTML = listItemHtml("No items", "", true);
+      return;
+    }
+    el.innerHTML = items
+      .slice(0, 6)
+      .map(function (x) {
+        return listItemHtml(x.text, x.meta, false);
+      })
+      .join("");
+  }
+
+  function dateMs(value) {
+    var ts = Date.parse(value || "");
+    return Number.isFinite(ts) ? ts : 0;
+  }
+
+  function ageHoursFrom(value) {
+    var ts = dateMs(value);
+    if (!ts) return 0;
+    return Math.max(0, (Date.now() - ts) / (1000 * 60 * 60));
+  }
+
+  function urgencyLabel(score) {
+    if (score >= 95) return "Urgent";
+    if (score >= 70) return "High";
+    if (score >= 45) return "Medium";
+    return "Low";
+  }
+
+  function pushRanked(bucket, item) {
+    bucket.push(item);
+  }
+
+  function mapRankedItems(items) {
+    return (items || [])
+      .sort(function (a, b) {
+        return b.score - a.score;
+      })
+      .map(function (item) {
+        var urgency = urgencyLabel(item.score);
+        return {
+          text: item.text,
+          meta: urgency + " · " + item.meta,
+        };
+      });
+  }
+
+  function buildTrackerBuckets(threads, orders) {
+    var doNow = [];
+    var followUp = [];
+    var pending = [];
+    var todo = [];
+
+    (threads || []).forEach(function (t) {
+      var unread = Number(t.unreadCount || 0);
+      var ageHours = ageHoursFrom(t.updatedAt);
+      var stale = ageHours >= 24;
+      if (t.archived) return;
+      if (unread > 0) {
+        pushRanked(doNow, {
+          text: "Reply to " + (t.clientLabel || "client"),
+          meta:
+            (unread > 1 ? unread + " unread messages" : "1 unread message") +
+            (stale ? " · stale thread" : ""),
+          score: 70 + Math.min(25, unread * 8) + (stale ? 10 : 0),
+        });
+      } else if (t.lastFrom === "admin") {
+        pushRanked(followUp, {
+          text: "Follow up with " + (t.clientLabel || "client"),
+          meta: stale ? "Awaiting client response · over 24h" : "Awaiting client response",
+          score: stale ? 72 : 48,
+        });
+      } else if (ageHours >= 36) {
+        pushRanked(todo, {
+          text: "Check dormant thread for " + (t.clientLabel || "client"),
+          meta: "No recent activity",
+          score: 38,
+        });
+      }
+    });
+
+    (orders || []).forEach(function (o) {
+      var status = String(o.status || "");
+      var orderAgeHours = ageHoursFrom(o.submittedAt || o.createdAt);
+      var orderStale = orderAgeHours >= 24;
+      if (status === "submitted") {
+        pushRanked(doNow, {
+          text: "Review new order " + o.orderNumber,
+          meta: (o.clientName || "Client") + (orderStale ? " · waiting over 24h" : ""),
+          score: 75 + (orderStale ? 18 : 0),
+        });
+      } else if (status === "awaiting_client") {
+        pushRanked(followUp, {
+          text: "Request update on " + o.orderNumber,
+          meta: (o.clientName || "Client") + (orderAgeHours >= 72 ? " · no client update 3d+" : ""),
+          score: orderAgeHours >= 72 ? 68 : 46,
+        });
+      } else if (status === "in_progress") {
+        pushRanked(pending, {
+          text: "Continue " + o.orderNumber,
+          meta: (o.clientName || "Client") + (orderAgeHours >= 120 ? " · long-running" : ""),
+          score: orderAgeHours >= 120 ? 55 : 40,
+        });
+      } else if (status === "draft") {
+        pushRanked(todo, {
+          text: "Finalize draft " + o.orderNumber,
+          meta: o.clientName || "Client",
+          score: 44,
+        });
+      } else if (status === "cancelled") {
+        pushRanked(todo, {
+          text: "Clean up cancelled " + o.orderNumber,
+          meta: "Delete from orders list when confirmed",
+          score: 42,
+        });
+      }
+    });
+
+    if (todo.length === 0 && pending.length > 0) {
+      pushRanked(todo, {
+        text: "Create progress updates",
+        meta: "Keep clients informed on active jobs",
+        score: 36,
+      });
+    }
+
+    return {
+      doNow: mapRankedItems(doNow),
+      followUp: mapRankedItems(followUp),
+      pending: mapRankedItems(pending),
+      todo: mapRankedItems(todo),
+    };
+  }
+
+  function renderWorkflowTracker() {
+    var buckets = buildTrackerBuckets(latestThreads, latestOrders);
+    renderTrackerList(trackerDoNowEl, buckets.doNow);
+    renderTrackerList(trackerFollowUpEl, buckets.followUp);
+    renderTrackerList(trackerPendingEl, buckets.pending);
+    renderTrackerList(trackerTodoEl, buckets.todo);
+  }
+
+  async function fetchAdminOrders() {
+    try {
+      var payload = await requestJson("/api/admin/orders");
+      latestOrders = payload && payload.orders ? payload.orders : [];
+      renderWorkflowTracker();
+    } catch (_e) {}
   }
 
   function renderAttachmentsHtml(attachments) {
@@ -244,6 +415,8 @@
       var qs = includeArchived ? "?includeArchived=1" : "";
       var payload = await requestJson("/api/admin/inbox" + qs);
       rows = payload.threads || [];
+      latestThreads = rows.slice();
+      renderWorkflowTracker();
     } catch (e) {
       rows = [];
     }
@@ -494,6 +667,7 @@
   }
 
   (async function init() {
+    await fetchAdminOrders();
     var rows = await renderList();
     if (rows.length && !selectedThreadId) {
       selectThread(rows[0].threadId);
@@ -505,6 +679,7 @@
     renderList();
     if (selectedThreadId) renderThread();
   }, 3000);
+  setInterval(fetchAdminOrders, 10000);
 
   if (adminFileInput && adminFileHint) {
     adminFileInput.addEventListener("change", function () {

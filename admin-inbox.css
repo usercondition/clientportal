@@ -10,6 +10,78 @@
   gap: 0;
 }
 
+.admin-inbox-page-head__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-show-archived--global {
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+}
+
+.admin-panel--tracker {
+  margin-bottom: 1rem;
+}
+
+.admin-tracker-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-tracker-col {
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  padding: 0.55rem 0.6rem 0.65rem;
+  min-height: 8.4rem;
+}
+
+.admin-tracker-col__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-tracker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-tracker-item {
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 62%, var(--bg));
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.admin-tracker-item__meta {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.admin-tracker-item--empty {
+  border-style: dashed;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg) 38%, transparent);
+}
+
 /* Slightly wider message column on the inbox page */
 .admin-app.admin-app--inbox .admin-app__main--inbox {
   padding-left: clamp(0.45rem, 1.2vw, 1.35rem);
@@ -693,6 +765,14 @@
 
 /* ——— Mobile ——— */
 @media (max-width: 879px) {
+  .admin-tracker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-inbox-page-head__controls {
+    justify-content: flex-start;
+  }
+
   .admin-dashboard {
     display: flex;
     flex-direction: column;
@@ -726,5 +806,11 @@
 
   .admin-compose textarea {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-tracker-grid {
+    grid-template-columns: 1fr;
   }
 }
