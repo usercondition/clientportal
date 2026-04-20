@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marketplace Sync</title>
+    <style>
+      body {
+        font-family: Inter, Arial, sans-serif;
+        margin: 0;
+        padding: 12px;
+        width: 280px;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: 12px;
+        margin: 0 0 10px;
+        color: #444;
+      }
+      button {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      #status {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #333;
+        min-height: 16px;
+      }
+      a {
+        font-size: 12px;
+        display: inline-block;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Marketplace Sync</h1>
+    <p>Run a manual sync from the current marketplace inbox tab.</p>
+    <button id="sync-btn" type="button">Sync now</button>
+    <div id="status" role="status" aria-live="polite"></div>
+    <a href="#" id="open-options">Open extension options</a>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -9,6 +9,8 @@ The app (`server.js`) uses PostgreSQL via **`DATABASE_URL`**. This folder holds 
   - Constraints, enums, and indexes for portal lookup and inbox performance
 - `database/migrations/002_compat.sql`
   - Idempotent `ADD COLUMN IF NOT EXISTS` patches for databases that already had tables but an older column set (the server applies this on every startup after bootstrap)
+- `database/migrations/003_marketplace_sync.sql`
+  - Tables `marketplace_threads` and `marketplace_messages` for the optional marketplace sync extension (applied on every startup after compat, same idempotent pattern)
 - `database/seed.sql`
   - Optional local demo seed data
 - `docker-compose.db.yml`
@@ -34,13 +36,13 @@ PowerShell:
 $env:DATABASE_URL="postgresql://clientportal:clientportal_dev_password@localhost:5432/clientportal"
 ```
 
-3) Apply migration (runs `001_init.sql` and `002_compat.sql`)
+3) Apply migration (runs `001_init.sql`, `002_compat.sql`, and `003_marketplace_sync.sql`)
 
 ```bash
 npm run db:migrate
 ```
 
-(or: `psql "$DATABASE_URL" -f database/migrations/001_init.sql` then `-f database/migrations/002_compat.sql`)
+(or: run each file under `database/migrations/` in order with `psql`)
 
 4) (Optional) Seed
 
@@ -74,7 +76,9 @@ If `DATABASE_URL` accidentally points at the public proxy, this repo’s server 
 
 ### Apply schema on Railway (first deploy)
 
-The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). It then applies **`002_compat.sql`** every boot (cheap idempotent column patches) so older databases pick up new columns without requiring a full table rebuild. Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after running migrations on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
+The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). It then applies **`002_compat.sql`** every boot (cheap idempotent column patches) so older databases pick up new columns without requiring a full table rebuild, then **`003_marketplace_sync.sql`** for marketplace mirror tables. Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after running migrations on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
+
+If **`SKIP_AUTO_SCHEMA=true`**, auto-apply of `001` / `002` / `003` on startup is skipped — run **`npm run db:migrate`** (or apply SQL manually) so marketplace tables exist before using the extension.
 
 If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually (this runs **001** and **002**):
 

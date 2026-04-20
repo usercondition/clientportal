@@ -12,6 +12,17 @@ const chatAttachments = require("./lib/chat-attachments");
 const ADMIN_NOTIFY_EMAIL_DEFAULT = "m.e.mercado@proton.me";
 const SUPPORT_BOT_SAMPLER_ENABLED =
   String(process.env.SUPPORT_BOT_SAMPLER_ENABLED || "").toLowerCase() === "true";
+const MARKETPLACE_SYNC_ENABLED =
+  String(process.env.MARKETPLACE_SYNC_ENABLED || "").toLowerCase() === "true";
+const MARKETPLACE_SYNC_TOKEN = String(process.env.MARKETPLACE_SYNC_TOKEN || "").trim();
+const MARKETPLACE_SYNC_MAX_PER_MIN = (() => {
+  const n = Number(process.env.MARKETPLACE_SYNC_MAX_PER_MIN || 120);
+  if (!Number.isFinite(n)) return 120;
+  return Math.max(0, Math.min(6000, Math.floor(n)));
+})();
+
+/** @type {Map<string, { count: number; startedAt: number }>} */
+const marketplaceSyncRateBuckets = new Map();
 
 function resolveAdminNotifyEmail() {
   const v = process.env.ADMIN_NOTIFY_EMAIL;
@@ -325,7 +336,11 @@ const pool = new Pool({
   ...(DATABASE_URL && sslOpt ? { ssl: sslOpt } : {}),
 });
 
-const { applyInitialSchemaIfNeeded, applySchemaCompat } = require("./lib/apply-initial-schema");
+const {
+  applyInitialSchemaIfNeeded,
+  applySchemaCompat,
+  applyMarketplaceSyncSchema,
+} = require("./lib/apply-initial-schema");
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -388,6 +403,67 @@ function isValidEmail(v) {
 function formatMoney(cents) {
   const n = Number(cents || 0) / 100;
   return n > 0 ? `$${n.toFixed(2)}` : "—";
+}
+
+function parseIsoTimestamp(input) {
+  const raw = String(input || "").trim();
+  if (!raw) return null;
+  const ms = Date.parse(raw);
+  if (!Number.isFinite(ms)) return null;
+  return new Date(ms).toISOString();
+}
+
+function isMarketplaceSyncAuthorized(req) {
+  if (!MARKETPLACE_SYNC_TOKEN) return false;
+  const auth = String(req.headers.authorization || "");
+  if (auth.startsWith("Bearer ")) {
+    return auth.slice(7).trim() === MARKETPLACE_SYNC_TOKEN;
+  }
+  const token = String(req.headers["x-marketplace-sync-token"] || "").trim();
+  return token === MARKETPLACE_SYNC_TOKEN;
+}
+
+function requireMarketplaceSyncEnabled(req, res) {
+  if (!MARKETPLACE_SYNC_ENABLED) {
+    res.status(404).json({ error: "Marketplace sync is disabled." });
+    return false;
+  }
+  return true;
+}
+
+function marketplaceSyncClientKey(req) {
+  const fwd = String(req.headers["x-forwarded-for"] || "").trim();
+  if (fwd) {
+    const first = fwd.split(",")[0].trim();
+    if (first) return first.slice(0, 200);
+  }
+  const ip = req.socket && req.socket.remoteAddress ? String(req.socket.remoteAddress) : "";
+  return ip ? ip.slice(0, 200) : "unknown";
+}
+
+function checkMarketplaceSyncRateLimit(req, res) {
+  if (MARKETPLACE_SYNC_MAX_PER_MIN <= 0) return true;
+  const key = marketplaceSyncClientKey(req);
+  const now = Date.now();
+  const windowMs = 60_000;
+  let bucket = marketplaceSyncRateBuckets.get(key);
+  if (!bucket || now - bucket.startedAt > windowMs) {
+    bucket = { count: 0, startedAt: now };
+    marketplaceSyncRateBuckets.set(key, bucket);
+  }
+  bucket.count += 1;
+  if (bucket.count > MARKETPLACE_SYNC_MAX_PER_MIN) {
+    res
+      .status(429)
+      .json({ error: "Too many marketplace sync requests. Wait a minute and try again." });
+    return false;
+  }
+  if (marketplaceSyncRateBuckets.size > 10_000) {
+    for (const [k, v] of marketplaceSyncRateBuckets) {
+      if (now - v.startedAt > windowMs) marketplaceSyncRateBuckets.delete(k);
+    }
+  }
+  return true;
 }
 
 const ORDER_SERVICE_TYPES = new Set([
@@ -1793,6 +1869,234 @@ app.post("/api/admin/threads/:threadId/messages", messageMultipartUpload, async 
   });
 });
 
+app.post("/api/admin/marketplace/sync", async (req, res) => {
+  if (!requireMarketplaceSyncEnabled(req, res)) return;
+  if (!checkMarketplaceSyncRateLimit(req, res)) return;
+  if (!isMarketplaceSyncAuthorized(req)) {
+    return res.status(401).json({ error: "Unauthorized marketplace sync token." });
+  }
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const payload = req.body && typeof req.body === "object" ? req.body : {};
+  const platformRaw = String(payload.platform || "").trim().toLowerCase() || "unknown";
+  const platform = platformRaw.slice(0, 80) || "unknown";
+  const threadsIn = Array.isArray(payload.threads) ? payload.threads : [];
+  if (!threadsIn.length) return res.status(400).json({ error: "No threads to sync." });
+  if (threadsIn.length > 200) {
+    return res.status(400).json({ error: "Too many threads in one sync payload." });
+  }
+
+  const warnings = [];
+  const pushWarning = (msg) => {
+    if (warnings.length < 40) warnings.push(String(msg || "").slice(0, 500));
+  };
+
+  let threadsSkippedMissingId = 0;
+  const threadByPlatformId = new Map();
+  for (const t of threadsIn) {
+    const rawThread = t && typeof t === "object" ? t : {};
+    const platformThreadId = String(rawThread.threadId || rawThread.platformThreadId || "")
+      .trim()
+      .slice(0, 512);
+    if (!platformThreadId) {
+      threadsSkippedMissingId += 1;
+      continue;
+    }
+    if (threadByPlatformId.has(platformThreadId)) {
+      pushWarning(`Duplicate thread id in payload; last occurrence wins: ${platformThreadId}`);
+    }
+    threadByPlatformId.set(platformThreadId, rawThread);
+  }
+  const threadsDedupedInRequest =
+    threadsIn.length - threadsSkippedMissingId - threadByPlatformId.size;
+
+  const client = await pool.connect();
+  let upsertedThreads = 0;
+  let upsertedMessages = 0;
+  let messagesReceived = 0;
+  let messagesSkippedMissingId = 0;
+  let messagesDedupedInRequest = 0;
+  try {
+    await client.query("BEGIN");
+    for (const [platformThreadId, rawThread] of threadByPlatformId) {
+      const buyerName = String(rawThread.buyerName || rawThread.participant || "").trim().slice(0, 200) || null;
+      const snippet = String(rawThread.snippet || "").trim().slice(0, 4000) || null;
+      const unreadCount = Number.isFinite(Number(rawThread.unreadCount))
+        ? Math.max(0, Math.min(9999, Number(rawThread.unreadCount)))
+        : 0;
+      const lastMessageAt = parseIsoTimestamp(rawThread.lastMessageAt || rawThread.updatedAt);
+      const threadIns = await client.query(
+        `insert into marketplace_threads
+          (platform, platform_thread_id, buyer_name, snippet, unread_count, last_message_at, raw_json, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7::jsonb, now())
+         on conflict (platform, platform_thread_id) do update set
+           buyer_name = excluded.buyer_name,
+           snippet = excluded.snippet,
+           unread_count = excluded.unread_count,
+           last_message_at = coalesce(excluded.last_message_at, marketplace_threads.last_message_at),
+           raw_json = excluded.raw_json,
+           updated_at = now()
+         returning id`,
+        [platform, platformThreadId, buyerName, snippet, unreadCount, lastMessageAt, JSON.stringify(rawThread)]
+      );
+      const threadDbId = threadIns.rows[0] && threadIns.rows[0].id;
+      if (!threadDbId) continue;
+      upsertedThreads += 1;
+
+      const messagesArr = Array.isArray(rawThread.messages) ? rawThread.messages : [];
+      const messageById = new Map();
+      for (const m of messagesArr) {
+        messagesReceived += 1;
+        const rawMsg = m && typeof m === "object" ? m : {};
+        const platformMessageId = String(rawMsg.messageId || rawMsg.platformMessageId || "")
+          .trim()
+          .slice(0, 512);
+        if (!platformMessageId) {
+          messagesSkippedMissingId += 1;
+          continue;
+        }
+        if (messageById.has(platformMessageId)) {
+          messagesDedupedInRequest += 1;
+          pushWarning(`Duplicate message id in thread ${platformThreadId}; last wins: ${platformMessageId}`);
+        }
+        messageById.set(platformMessageId, rawMsg);
+      }
+      const capped = Array.from(messageById.values()).slice(0, 500);
+      if (messageById.size > 500) {
+        pushWarning(
+          `Thread ${platformThreadId}: only first 500 messages were stored (${messageById.size} unique ids).`
+        );
+      }
+      for (const rawMsg of capped) {
+        const platformMessageId = String(rawMsg.messageId || rawMsg.platformMessageId || "")
+          .trim()
+          .slice(0, 512);
+        const senderLabel = String(rawMsg.senderLabel || rawMsg.from || "").trim().slice(0, 200) || null;
+        const body = String(rawMsg.body || "").slice(0, 12000) || null;
+        const sentAt = parseIsoTimestamp(rawMsg.sentAt || rawMsg.at || rawMsg.createdAt);
+        await client.query(
+          `insert into marketplace_messages
+            (thread_id, platform, platform_message_id, sender_label, body, sent_at, raw_json)
+           values ($1,$2,$3,$4,$5,$6,$7::jsonb)
+           on conflict (platform, platform_message_id) do update set
+             sender_label = excluded.sender_label,
+             body = excluded.body,
+             sent_at = coalesce(excluded.sent_at, marketplace_messages.sent_at),
+             raw_json = excluded.raw_json`,
+          [threadDbId, platform, platformMessageId, senderLabel, body, sentAt, JSON.stringify(rawMsg)]
+        );
+        upsertedMessages += 1;
+      }
+    }
+    await client.query("COMMIT");
+    console.log(
+      `[admin/marketplace/sync] ok platform=${platform} threads=${upsertedThreads} messages=${upsertedMessages} skippedThreadIds=${threadsSkippedMissingId} skippedMsgIds=${messagesSkippedMissingId}`
+    );
+    return res.status(202).json({
+      ok: true,
+      platform,
+      upsertedThreads,
+      upsertedMessages,
+      threadsReceived: threadsIn.length,
+      threadsSkippedMissingId,
+      threadsDedupedInRequest,
+      messagesReceived,
+      messagesSkippedMissingId,
+      messagesDedupedInRequest,
+      warnings,
+    });
+  } catch (e) {
+    try {
+      await client.query("ROLLBACK");
+    } catch (_rollbackErr) {}
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/marketplace/sync] failed:", err.message);
+    return res.status(500).json({ error: "Marketplace sync failed." });
+  } finally {
+    client.release();
+  }
+});
+
+app.get("/api/admin/marketplace/threads", async (_req, res) => {
+  if (!requireMarketplaceSyncEnabled(_req, res)) return;
+  if (!DATABASE_URL) {
+    return res.json({ databaseConnected: false, threads: [] });
+  }
+  try {
+    const platform = String(_req.query.platform || "").trim().toLowerCase();
+    const limitRaw = Number(_req.query.limit || 100);
+    const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(300, Math.floor(limitRaw))) : 100;
+    const sql =
+      "select id, platform, platform_thread_id, buyer_name, snippet, unread_count, last_message_at, updated_at from marketplace_threads " +
+      (platform ? "where platform = $1 " : "") +
+      "order by coalesce(last_message_at, updated_at) desc limit " +
+      String(limit);
+    const params = platform ? [platform] : [];
+    const { rows } = await pool.query(sql, params);
+    return res.json({
+      databaseConnected: true,
+      threads: rows.map((r) => ({
+        id: r.id,
+        platform: r.platform,
+        threadId: r.platform_thread_id,
+        buyerName: r.buyer_name || "",
+        snippet: r.snippet || "",
+        unreadCount: Number(r.unread_count || 0),
+        lastMessageAt: r.last_message_at,
+        updatedAt: r.updated_at,
+      })),
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/marketplace/threads] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load marketplace threads." });
+  }
+});
+
+app.get("/api/admin/marketplace/threads/:threadId/messages", async (req, res) => {
+  if (!requireMarketplaceSyncEnabled(req, res)) return;
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const { threadId } = req.params;
+  try {
+    const threadRes = await pool.query(
+      "select id, platform, platform_thread_id, buyer_name, snippet, unread_count, last_message_at, updated_at from marketplace_threads where id = $1 limit 1",
+      [threadId]
+    );
+    if (!threadRes.rows.length) return res.status(404).json({ error: "Marketplace thread not found." });
+    const msgRes = await pool.query(
+      "select id, platform_message_id, sender_label, body, sent_at, created_at from marketplace_messages where thread_id = $1 order by coalesce(sent_at, created_at) asc limit 1000",
+      [threadId]
+    );
+    const t = threadRes.rows[0];
+    return res.json({
+      thread: {
+        id: t.id,
+        platform: t.platform,
+        threadId: t.platform_thread_id,
+        buyerName: t.buyer_name || "",
+        snippet: t.snippet || "",
+        unreadCount: Number(t.unread_count || 0),
+        lastMessageAt: t.last_message_at,
+        updatedAt: t.updated_at,
+      },
+      messages: msgRes.rows.map((m) => ({
+        id: m.id,
+        messageId: m.platform_message_id,
+        senderLabel: m.sender_label || "",
+        body: m.body || "",
+        sentAt: m.sent_at || m.created_at,
+      })),
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/marketplace/messages] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load marketplace messages." });
+  }
+});
+
 app.use("/uploads", express.static(uploadsRoot));
 
 const staticDir = path.resolve(__dirname);
@@ -1818,7 +2122,11 @@ async function start() {
       if (compat.ran) {
         console.log(`[db] Applied compat migration (${compat.statements} statements).`);
       }
-      console.log("[db] Schema step complete (bootstrap + compat).");
+      const mp = await applyMarketplaceSyncSchema(pool);
+      if (mp.ran) {
+        console.log(`[db] Applied marketplace migration (${mp.statements} statements).`);
+      }
+      console.log("[db] Schema step complete (bootstrap + compat + marketplace).");
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
     }

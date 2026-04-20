@@ -1,5 +1,5 @@
 /**
- * Apply database/migrations/001_init.sql then 002_compat.sql.
+ * Apply database/migrations/001_init.sql, 002_compat.sql, then 003_marketplace_sync.sql.
  *
  * Usage:
  *   npm run db:migrate
