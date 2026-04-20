@@ -125,7 +125,7 @@
       var isImg = a.kind === "image" || (a.mime && String(a.mime).indexOf("image/") === 0);
       if (isImg) {
         return (
-          '<a class="admin-inbox-img-wrap" href="' +
+          '<a class="admin-msg__thumb" href="' +
           href +
           '" target="_blank" rel="noopener noreferrer">' +
           '<img src="' +
@@ -135,14 +135,14 @@
         );
       }
       return (
-        '<a class="admin-inbox-file-link" href="' +
+        '<a class="admin-msg__file" href="' +
         href +
         '" target="_blank" rel="noopener noreferrer">' +
         name +
         "</a>"
       );
     });
-    return '<div class="admin-inbox-attachments">' + parts.join("") + "</div>";
+    return '<div class="admin-msg__attachments">' + parts.join("") + "</div>";
   }
 
   function formatTime(iso) {
@@ -286,16 +286,16 @@
           '" data-key="' +
           esc(r.threadId) +
           '">' +
-          '<span class="admin-inbox-item-top">' +
-          '<span class="admin-inbox-item-name">' +
+          '<span class="admin-inbox-item__row">' +
+          '<span class="admin-inbox-item__name">' +
           esc(r.clientLabel) +
           "</span>" +
           badge +
           "</span>" +
-          '<span class="admin-inbox-item-preview">' +
+          '<span class="admin-inbox-item__preview">' +
           esc(r.preview || "(no messages)") +
           "</span>" +
-          '<span class="admin-inbox-item-meta">' +
+          '<span class="admin-inbox-item__time">' +
           esc(formatTime(r.updatedAt)) +
           "</span>" +
           "</button></li>"
@@ -393,22 +393,23 @@
           '" data-message-id="' +
           esc(String(m.id)) +
           '">' +
-          '<header class="admin-msg__head">' +
-          '<span class="admin-msg__who">' +
+          '<div class="admin-msg__shell">' +
+          '<div class="admin-msg__meta">' +
+          '<span class="admin-msg__role">' +
           esc(who) +
           "</span>" +
-          "<time datetime=\"" +
+          '<time class="admin-msg__time" datetime="' +
           esc(String(m.at || "")) +
           '">' +
           esc(formatTime(m.at)) +
           "</time>" +
-          "</header>" +
-          '<div class="admin-msg__body">' +
+          "</div>" +
+          '<div class="admin-msg__content">' +
           (bodyHtml ? '<p class="admin-msg__text">' + bodyHtml + "</p>" : "") +
           attHtml +
           "</div>" +
           actions +
-          "</article>"
+          "</div></article>"
         );
       })
       .join("");
