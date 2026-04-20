@@ -5,6 +5,8 @@
   var errEl = document.getElementById("order-form-error");
   var submitBtn = document.getElementById("order-submit");
   var neededInput = document.getElementById("order-needed");
+  var lineItemsHost = document.getElementById("order-line-items");
+  var addItemBtn = document.getElementById("order-add-item");
 
   var signOut = document.getElementById("portal-sign-out");
   if (signOut) {
@@ -43,6 +45,93 @@
 
   if (!form) return;
 
+  function createLineItemRow(seed) {
+    if (!lineItemsHost) return;
+    var row = document.createElement("div");
+    row.className = "portal-line-items__row";
+    row.setAttribute("data-line-item-row", "1");
+    row.innerHTML =
+      '<div class="portal-line-items__row-top">' +
+      '<span class="portal-line-items__index">Item</span>' +
+      '<button type="button" class="btn btn-ghost portal-line-items__remove" data-remove-line-item>Remove</button>' +
+      "</div>" +
+      '<textarea class="portal-field__textarea" data-line-item-description placeholder="Item description (part name, print spec, tolerances)" maxlength="1200"></textarea>' +
+      '<div class="portal-field__row">' +
+      '<div class="portal-field">' +
+      '<label class="portal-field__label">Quantity</label>' +
+      '<input class="portal-field__input" type="number" min="1" max="100000" step="1" inputmode="numeric" data-line-item-qty />' +
+      "</div>" +
+      '<div class="portal-field">' +
+      '<label class="portal-field__label">Unit (optional)</label>' +
+      '<input class="portal-field__input" type="text" maxlength="40" placeholder="e.g. pieces, sets" data-line-item-unit />' +
+      "</div>" +
+      "</div>";
+    lineItemsHost.appendChild(row);
+    if (seed) {
+      var d = row.querySelector("[data-line-item-description]");
+      var q = row.querySelector("[data-line-item-qty]");
+      var u = row.querySelector("[data-line-item-unit]");
+      if (d) d.value = String(seed.description || "");
+      if (q && Number.isFinite(seed.quantity)) q.value = String(seed.quantity);
+      if (u) u.value = String(seed.unit || "");
+    }
+    syncLineItemLabels();
+  }
+
+  function syncLineItemLabels() {
+    if (!lineItemsHost) return;
+    var rows = lineItemsHost.querySelectorAll("[data-line-item-row]");
+    rows.forEach(function (row, idx) {
+      var lab = row.querySelector(".portal-line-items__index");
+      if (lab) lab.textContent = "Item " + (idx + 1);
+      var rm = row.querySelector("[data-remove-line-item]");
+      if (rm) rm.hidden = rows.length <= 1;
+    });
+  }
+
+  function readLineItems() {
+    if (!lineItemsHost) return [];
+    var rows = Array.prototype.slice.call(lineItemsHost.querySelectorAll("[data-line-item-row]"));
+    return rows
+      .map(function (row) {
+        var descEl = row.querySelector("[data-line-item-description]");
+        var qtyEl = row.querySelector("[data-line-item-qty]");
+        var unitEl = row.querySelector("[data-line-item-unit]");
+        var description = String((descEl && descEl.value) || "").trim();
+        var qRaw = qtyEl ? qtyEl.value : "";
+        var quantity = qRaw === "" ? NaN : Number(qRaw);
+        var unit = String((unitEl && unitEl.value) || "").trim();
+        return { description: description, quantity: quantity, unit: unit };
+      })
+      .filter(function (x) {
+        return x.description || Number.isFinite(x.quantity) || x.unit;
+      });
+  }
+
+  if (lineItemsHost) {
+    createLineItemRow();
+    lineItemsHost.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t || !t.getAttribute) return;
+      if (t.hasAttribute("data-remove-line-item")) {
+        e.preventDefault();
+        var row = t.closest("[data-line-item-row]");
+        if (row) row.remove();
+        if (!lineItemsHost.querySelector("[data-line-item-row]")) createLineItemRow();
+        syncLineItemLabels();
+      }
+    });
+  }
+  if (addItemBtn) {
+    addItemBtn.addEventListener("click", function () {
+      createLineItemRow();
+      var rows = lineItemsHost ? lineItemsHost.querySelectorAll("[data-line-item-row]") : [];
+      var last = rows.length ? rows[rows.length - 1] : null;
+      var input = last ? last.querySelector("[data-line-item-description]") : null;
+      if (input) input.focus();
+    });
+  }
+
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     showError("");
@@ -51,9 +140,7 @@
     var title = String(fd.get("title") || "").trim();
     var serviceType = String(fd.get("serviceType") || "").trim();
     var description = String(fd.get("description") || "").trim();
-    var qtyRaw = fd.get("quantity");
-    var quantity = qtyRaw === "" || qtyRaw === null ? NaN : Number(qtyRaw);
-    var unit = String(fd.get("unit") || "").trim();
+    var lineItems = readLineItems();
     var dimensions = String(fd.get("dimensions") || "").trim();
     var materialPreference = String(fd.get("materialPreference") || "").trim();
     var intendedUse = String(fd.get("intendedUse") || "").trim();
@@ -76,8 +163,15 @@
       showError("Description must be at least 10 characters.");
       return;
     }
-    if (!Number.isFinite(quantity) || quantity < 1 || quantity > 100000) {
-      showError("Enter a valid quantity (1–100,000).");
+    if (!lineItems.length) {
+      showError("Add at least one line item.");
+      return;
+    }
+    var hasBadLine = lineItems.some(function (item) {
+      return item.description.length < 2 || !Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 100000;
+    });
+    if (hasBadLine) {
+      showError("Each line item needs a description and quantity (1–100,000).");
       return;
     }
     if (materialPreference.length < 2) {
@@ -117,8 +211,13 @@
       title: title,
       serviceType: serviceType,
       description: description,
-      quantity: Math.floor(quantity),
-      unit: unit || undefined,
+      lineItems: lineItems.map(function (item) {
+        return {
+          description: item.description,
+          quantity: Math.floor(item.quantity),
+          unit: item.unit || undefined,
+        };
+      }),
       dimensions: dimensions || undefined,
       materialPreference: materialPreference,
       intendedUse: intendedUse,

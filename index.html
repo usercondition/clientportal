@@ -508,6 +508,39 @@
       </div>
     </footer>
 
+    <section class="rh-assistant" aria-label="Website assistant">
+      <button
+        type="button"
+        class="rh-assistant__fab"
+        id="rh-assistant-open"
+        aria-expanded="false"
+        aria-controls="rh-assistant-panel"
+      >
+        Chat with us
+      </button>
+      <div class="rh-assistant__panel" id="rh-assistant-panel" hidden>
+        <header class="rh-assistant__head">
+          <h2 class="rh-assistant__title">Quick help assistant</h2>
+          <button type="button" class="rh-assistant__close" id="rh-assistant-close" aria-label="Close assistant">
+            Close
+          </button>
+        </header>
+        <div class="rh-assistant__thread" id="rh-assistant-thread" role="log" aria-live="polite"></div>
+        <form class="rh-assistant__compose" id="rh-assistant-form" novalidate>
+          <label class="rh-assistant__sr-only" for="rh-assistant-input">Ask a question</label>
+          <textarea
+            id="rh-assistant-input"
+            rows="2"
+            maxlength="700"
+            placeholder="Ask about quotes, timeline, or getting started..."
+          ></textarea>
+          <div class="rh-assistant__actions">
+            <button type="submit" class="rh-btn rh-btn--primary">Send</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <script src="script.js" defer></script>
     <script src="resin-home.js" defer></script>
   </body>

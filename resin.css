@@ -755,6 +755,142 @@ body.resin-home .rh-cta__fineprint a {
   font-weight: 600;
 }
 
+/* Website assistant sampler */
+body.resin-home .rh-assistant {
+  position: fixed;
+  right: clamp(0.75rem, 2.5vw, 1.25rem);
+  bottom: max(0.75rem, calc(0.75rem + env(safe-area-inset-bottom, 0px)));
+  z-index: 130;
+}
+
+body.resin-home .rh-assistant__fab {
+  border: 1px solid color-mix(in srgb, var(--rh-primary) 45%, var(--rh-border));
+  background: var(--rh-primary);
+  color: #fff;
+  border-radius: 999px;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--rh-shadow-md);
+}
+
+body.resin-home .rh-assistant__panel {
+  width: min(360px, calc(100vw - 1.5rem));
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow-md);
+  overflow: hidden;
+}
+
+body.resin-home .rh-assistant__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--rh-step-3);
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--rh-border);
+}
+
+body.resin-home .rh-assistant__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+body.resin-home .rh-assistant__close {
+  border: 1px solid var(--rh-border);
+  background: transparent;
+  color: var(--rh-text);
+  border-radius: var(--rh-radius-sm);
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+body.resin-home .rh-assistant__thread {
+  min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+body.resin-home .rh-assistant__msg {
+  margin: 0;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+body.resin-home .rh-assistant__msg--bot {
+  background: color-mix(in srgb, var(--rh-primary) 10%, var(--rh-surface));
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-assistant__msg--user {
+  background: color-mix(in srgb, var(--rh-copper) 15%, var(--rh-surface));
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-assistant__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+}
+
+body.resin-home .rh-assistant__links a {
+  font-size: 0.78rem;
+  text-decoration: none;
+  color: var(--rh-primary);
+  font-weight: 600;
+}
+
+body.resin-home .rh-assistant__compose {
+  border-top: 1px solid var(--rh-border);
+  padding: 0.6rem 0.7rem;
+}
+
+body.resin-home .rh-assistant__compose textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--rh-border);
+  background: var(--rh-bg);
+  color: var(--rh-text);
+  border-radius: var(--rh-radius-sm);
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.45rem 0.55rem;
+  resize: vertical;
+  min-height: 2.6rem;
+}
+
+body.resin-home .rh-assistant__actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+body.resin-home .rh-assistant__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Footer */
 body.resin-home .site-footer {
   border-top-color: var(--rh-border);
@@ -929,6 +1065,20 @@ body.resin-home #main {
 
   body.resin-home .site-footer {
     padding-bottom: max(1.75rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  body.resin-home .rh-assistant {
+    right: 0.65rem;
+    left: 0.65rem;
+    bottom: max(0.65rem, calc(0.65rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  body.resin-home .rh-assistant__panel {
+    width: 100%;
+  }
+
+  body.resin-home .rh-assistant__fab {
+    width: 100%;
   }
 }
 

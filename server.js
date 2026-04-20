@@ -408,6 +408,7 @@ function nextClientOrderNumber() {
 }
 
 function buildOrderRequestSummary(body) {
+  const items = Array.isArray(body.lineItems) ? body.lineItems : [];
   const lines = [
     `Service: ${body.serviceTypeLabel || body.serviceType || "—"}`,
     `Quantity: ${body.quantity != null ? body.quantity : "—"}`,
@@ -422,6 +423,17 @@ function buildOrderRequestSummary(body) {
     "Description:",
     String(body.description || "").trim() || "—",
   ];
+  if (items.length) {
+    lines.push("", "Line items:");
+    items.forEach((item, idx) => {
+      const qty = Number(item.quantity || 0);
+      const unit = String(item.unit || "").trim();
+      const desc = String(item.description || "").trim();
+      lines.push(
+        `${idx + 1}. ${qty > 0 ? qty : "—"}${unit ? " " + unit : ""} — ${desc || "No item description"}`
+      );
+    });
+  }
   if (body.unit && String(body.unit).trim()) {
     lines.splice(2, 0, `Unit: ${String(body.unit).trim()}`);
   }
@@ -701,6 +713,20 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
   const serviceType = String(body.serviceType || "").trim();
   const description = String(body.description || "").trim();
   const quantity = body.quantity != null ? Number(body.quantity) : NaN;
+  const lineItemsRaw = Array.isArray(body.lineItems) ? body.lineItems : [];
+  const lineItems = lineItemsRaw
+    .map((item) => {
+      const src = item && typeof item === "object" ? item : {};
+      const itemDescription = String(src.description || "").trim();
+      const qty = src.quantity != null ? Number(src.quantity) : NaN;
+      const itemUnit = String(src.unit || "").trim();
+      return {
+        description: itemDescription,
+        quantity: qty,
+        unit: itemUnit,
+      };
+    })
+    .filter((item) => item.description || Number.isFinite(item.quantity) || item.unit);
   const dimensions = String(body.dimensions || "").trim();
   const materialPreference = String(body.materialPreference || "").trim();
   const intendedUse = String(body.intendedUse || "").trim();
@@ -737,8 +763,27 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
       .status(400)
       .json({ error: "Description must be at least 10 characters (max 12,000)." });
   }
-  if (!Number.isFinite(quantity) || quantity < 1 || quantity > 100000) {
-    return res.status(400).json({ error: "Quantity must be a number from 1 to 100,000." });
+  if (lineItems.length > 50) {
+    return res.status(400).json({ error: "Add at most 50 line items per request." });
+  }
+  const invalidLineItem = lineItems.find(
+    (item) =>
+      item.description.length < 2 ||
+      item.description.length > 1200 ||
+      !Number.isFinite(item.quantity) ||
+      item.quantity < 1 ||
+      item.quantity > 100000 ||
+      item.unit.length > 40
+  );
+  if (invalidLineItem) {
+    return res.status(400).json({
+      error: "Each line item requires a description and quantity (1–100,000). Unit max length is 40.",
+    });
+  }
+  const derivedQuantity = lineItems.reduce((sum, item) => sum + Math.floor(Number(item.quantity || 0)), 0);
+  const effectiveQuantity = lineItems.length ? derivedQuantity : quantity;
+  if (!Number.isFinite(effectiveQuantity) || effectiveQuantity < 1 || effectiveQuantity > 1000000) {
+    return res.status(400).json({ error: "Total quantity must be between 1 and 1,000,000." });
   }
   if (materialPreference.length < 2 || materialPreference.length > 2000) {
     return res
@@ -798,7 +843,12 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
     title,
     serviceType,
     description,
-    quantity,
+    quantity: Math.floor(effectiveQuantity),
+    lineItems: lineItems.map((item) => ({
+      description: item.description,
+      quantity: Math.floor(item.quantity),
+      unit: item.unit || undefined,
+    })),
     dimensions,
     materialPreference,
     intendedUse,

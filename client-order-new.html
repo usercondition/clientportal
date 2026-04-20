@@ -93,33 +93,15 @@
                 ></textarea>
               </div>
 
-              <div class="portal-field__row">
-                <div class="portal-field">
-                  <label class="portal-field__label" for="order-qty">Quantity <span aria-hidden="true">*</span></label>
-                  <input
-                    class="portal-field__input"
-                    id="order-qty"
-                    name="quantity"
-                    type="number"
-                    required
-                    min="1"
-                    max="100000"
-                    step="1"
-                    inputmode="numeric"
-                  />
-                </div>
-                <div class="portal-field">
-                  <label class="portal-field__label" for="order-unit">Unit (optional)</label>
-                  <input
-                    class="portal-field__input"
-                    id="order-unit"
-                    name="unit"
-                    type="text"
-                    maxlength="40"
-                    placeholder="e.g. pieces, sets"
-                    autocomplete="off"
-                  />
-                </div>
+              <div class="portal-field">
+                <label class="portal-field__label">Line items <span aria-hidden="true">*</span></label>
+                <p class="portal-field__hint">
+                  Add each item with its own description, quantity, and unit (optional), then click "Add another item".
+                </p>
+                <div class="portal-line-items" id="order-line-items" aria-live="polite"></div>
+                <button type="button" class="btn btn-ghost portal-line-items__add" id="order-add-item">
+                  + Add another item
+                </button>
               </div>
 
               <div class="portal-field">
