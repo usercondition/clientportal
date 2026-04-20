@@ -1,6 +1,9 @@
 (function () {
   var KEY = "site_theme_mode";
   var root = document.documentElement;
+  /** Must match styles.css --bg for light / dark (prevents flash before CSS paints). */
+  var BG_PAGE_LIGHT = "#f5f6f8";
+  var BG_PAGE_DARK = "#0f1115";
 
   function applyTheme(mode) {
     if (mode === "dark") {
@@ -8,6 +11,7 @@
     } else {
       root.removeAttribute("data-theme");
     }
+    root.style.backgroundColor = mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;
   }
 
   function getSavedTheme() {
@@ -54,6 +58,7 @@
   }
 
   applyTheme(getSavedTheme() === "dark" ? "dark" : "light");
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", mountToggle);
   } else {
