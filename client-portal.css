@@ -1027,6 +1027,14 @@
   }
 }
 
+@media (pointer: coarse) {
+  .portal-thread {
+    scroll-behavior: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 @media (max-width: 560px) {
   .portal-header-inner {
     flex-wrap: wrap;

@@ -314,6 +314,7 @@
   }
 
   var firstMessageRender = true;
+  var lastMessageRenderSig = "";
 
   var notifyBtn = document.getElementById("portal-enable-notify");
   if (notifyBtn) {
@@ -379,6 +380,22 @@
     } catch (e) {
       messages = [];
     }
+
+    var renderSig = messages
+      .map(function (m) {
+        var attachmentCount = Array.isArray(m.attachments) ? m.attachments.length : 0;
+        return [
+          String(m.id || ""),
+          String(m.at || ""),
+          String(m.from || ""),
+          String(m.body || ""),
+          String(attachmentCount),
+        ].join("|");
+      })
+      .join("||");
+    var hasChanged = renderSig !== lastMessageRenderSig;
+    if (!hasChanged) return;
+    lastMessageRenderSig = renderSig;
 
     var hadSeen = seenMessageIds.size > 0;
     messages.forEach(function (m) {
