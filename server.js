@@ -14,7 +14,18 @@ const SUPPORT_BOT_SAMPLER_ENABLED =
   String(process.env.SUPPORT_BOT_SAMPLER_ENABLED || "").toLowerCase() === "true";
 const MARKETPLACE_SYNC_ENABLED =
   String(process.env.MARKETPLACE_SYNC_ENABLED || "").toLowerCase() === "true";
-const MARKETPLACE_SYNC_TOKEN = String(process.env.MARKETPLACE_SYNC_TOKEN || "").trim();
+/** Trim and strip accidental wrapping quotes from Railway / .env pastes. */
+function normalizeMarketplaceSyncToken(raw) {
+  let s = String(raw || "").trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"') && s.length >= 2) ||
+    (s.startsWith("'") && s.endsWith("'") && s.length >= 2)
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
+}
+const MARKETPLACE_SYNC_TOKEN = normalizeMarketplaceSyncToken(process.env.MARKETPLACE_SYNC_TOKEN);
 const MARKETPLACE_SYNC_MAX_PER_MIN = (() => {
   const n = Number(process.env.MARKETPLACE_SYNC_MAX_PER_MIN || 120);
   if (!Number.isFinite(n)) return 120;
@@ -446,9 +457,9 @@ function isMarketplaceSyncAuthorized(req) {
   if (!MARKETPLACE_SYNC_TOKEN) return false;
   const auth = String(req.headers.authorization || "");
   if (auth.startsWith("Bearer ")) {
-    return auth.slice(7).trim() === MARKETPLACE_SYNC_TOKEN;
+    return normalizeMarketplaceSyncToken(auth.slice(7)) === MARKETPLACE_SYNC_TOKEN;
   }
-  const token = String(req.headers["x-marketplace-sync-token"] || "").trim();
+  const token = normalizeMarketplaceSyncToken(String(req.headers["x-marketplace-sync-token"] || ""));
   return token === MARKETPLACE_SYNC_TOKEN;
 }
 

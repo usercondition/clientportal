@@ -11,6 +11,17 @@
     if (statusEl) statusEl.textContent = text || "";
   }
 
+  function normalizeSyncToken(v) {
+    var s = String(v || "").trim();
+    if (
+      (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"' && s.length >= 2) ||
+      (s.charAt(0) === "'" && s.charAt(s.length - 1) === "'" && s.length >= 2)
+    ) {
+      return s.slice(1, -1).trim();
+    }
+    return s;
+  }
+
   function load() {
     chrome.storage.sync.get(
       {
@@ -45,7 +56,7 @@
       chrome.storage.sync.set(
         {
           apiBaseUrl: String(apiInput.value || "").trim(),
-          syncToken: String(tokenInput.value || "").trim(),
+          syncToken: normalizeSyncToken(tokenInput.value),
           platform: String(platformInput.value || "").trim() || "marketplace",
           selectorProfile: profile || "generic",
           customSelectorsJson: customRaw,

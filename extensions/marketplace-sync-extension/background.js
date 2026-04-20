@@ -17,6 +17,17 @@ function buildSyncUrl(apiBaseRaw) {
   return new URL("/api/admin/marketplace/sync", base).href;
 }
 
+function normalizeSyncToken(v) {
+  const s = String(v || "").trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"') && s.length >= 2) ||
+    (s.startsWith("'") && s.endsWith("'") && s.length >= 2)
+  ) {
+    return s.slice(1, -1).trim();
+  }
+  return s;
+}
+
 function describeFetchError(err) {
   const msg = (err && err.message) || String(err);
   if (/Failed to fetch|NetworkError|Load failed|network error/i.test(msg)) {
@@ -65,7 +76,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       credentials: "omit",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + String(cfg.syncToken).trim(),
+        Authorization: "Bearer " + normalizeSyncToken(cfg.syncToken),
       },
       body: JSON.stringify({
         platform: cfg.platform || "marketplace",
