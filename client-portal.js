@@ -146,15 +146,15 @@
 
   function setMobileChatOpen(on) {
     if (!mobileChatMq || !mobileChatMq.matches) return;
+    if (!chatPanel) return;
     document.body.classList.toggle("portal-body--chat-open", !!on);
     if (chatBackdrop) chatBackdrop.hidden = !on;
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", on ? "true" : "false");
-    if (chatPanel) {
-      if (on) {
-        chatPanel.removeAttribute("aria-hidden");
-      } else {
-        chatPanel.setAttribute("aria-hidden", "true");
-      }
+    chatPanel.hidden = !on;
+    if (on) {
+      chatPanel.removeAttribute("aria-hidden");
+    } else {
+      chatPanel.setAttribute("aria-hidden", "true");
     }
     if (on && chatInput) {
       window.setTimeout(function () {
@@ -173,11 +173,23 @@
       document.body.classList.remove("portal-body--chat-open");
       if (chatBackdrop) chatBackdrop.hidden = true;
       if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", "false");
-      if (chatPanel) chatPanel.setAttribute("aria-hidden", "false");
+      if (chatPanel) {
+        chatPanel.hidden = false;
+        chatPanel.removeAttribute("aria-hidden");
+      }
       return;
     }
-    if (chatPanel) chatPanel.setAttribute("aria-hidden", "true");
-    if (chatBackdrop) chatBackdrop.hidden = true;
+    var open = document.body.classList.contains("portal-body--chat-open");
+    if (chatPanel) {
+      chatPanel.hidden = !open;
+      if (open) {
+        chatPanel.removeAttribute("aria-hidden");
+      } else {
+        chatPanel.setAttribute("aria-hidden", "true");
+      }
+    }
+    if (chatBackdrop) chatBackdrop.hidden = !open;
+    if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   var fn = typeof p.firstName === "string" ? p.firstName : "";
