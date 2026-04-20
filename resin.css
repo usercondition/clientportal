@@ -377,6 +377,12 @@ body.resin-home .rh-gallery__thumb img {
   display: block;
 }
 
+/* Prototype tile: preserve full object geometry without edge cropping. */
+body.resin-home .rh-gallery__item--prototype .rh-gallery__thumb img {
+  object-fit: contain;
+  padding: 8%;
+}
+
 body.resin-home .rh-gallery__cap {
   padding: var(--rh-step-3);
   font-size: 0.8125rem;
