@@ -9,6 +9,15 @@ Manual bridge from a marketplace inbox tab into the admin portal.
 3. Open **Admin → Marketplace** to view synced threads.
 4. After deploy, `GET /api/health` includes `marketplace.enabled`, `marketplace.tokenConfigured`, and `marketplace.tablesPresent` when the database is reachable — use that to confirm the stack is ready before syncing.
 
+## How to sync (Chrome)
+
+1. **Options**: set API base URL (site origin), **same** token as `MARKETPLACE_SYNC_TOKEN`, choose **Extraction profile** (try **Meta / Facebook** on Meta inbox).
+2. In Chrome, open your **marketplace / messages inbox** page (the tab that lists conversations).
+3. Click the extension icon → **Sync now**.
+4. In the portal, open **Admin → Marketplace** — threads refresh on load / every 45s.
+
+Each thread sends an **inbox preview** line as one message when the list row had visible snippet text. Full back-and-forth history only appears if you later add deeper DOM scraping (or export) for your specific inbox; Meta markup changes often, so **Custom** JSON is there for stable selectors when you tune it.
+
 ## Load in Chrome
 
 1. Open `chrome://extensions`

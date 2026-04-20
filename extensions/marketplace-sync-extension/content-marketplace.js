@@ -3,6 +3,20 @@
     return el ? String(el.textContent || "").trim() : "";
   }
 
+  /** One stable row per thread so admin “messages” is not empty when only the inbox list is visible. */
+  function previewMessagesForThread(threadId, snippet) {
+    var s = String(snippet || "").trim();
+    if (!s) return [];
+    return [
+      {
+        messageId: "__inbox_preview__:" + String(threadId),
+        senderLabel: "Inbox preview",
+        body: s.slice(0, 12000),
+        sentAt: new Date().toISOString(),
+      },
+    ];
+  }
+
   function collectGeneric() {
     var threadEls = Array.prototype.slice.call(document.querySelectorAll("[data-thread-id]"));
     return threadEls
@@ -17,7 +31,7 @@
           buyerName: buyerName,
           snippet: snippet,
           updatedAt: new Date().toISOString(),
-          messages: [],
+          messages: previewMessagesForThread(threadId, snippet),
         };
       })
       .filter(function (t) {
@@ -64,7 +78,7 @@
         buyerName: buyerName,
         snippet: snippet,
         updatedAt: new Date().toISOString(),
-        messages: [],
+        messages: previewMessagesForThread(threadId, snippet),
       });
     }
     return threads;
@@ -95,12 +109,13 @@
       }
       if (!threadId || seen[threadId]) continue;
       seen[threadId] = true;
+      var sn = snippetSel ? textOf(row.querySelector(snippetSel)).slice(0, 500) : "";
       threads.push({
         threadId: threadId.slice(0, 512),
         buyerName: buyerSel ? textOf(row.querySelector(buyerSel)).slice(0, 200) : "",
-        snippet: snippetSel ? textOf(row.querySelector(snippetSel)).slice(0, 500) : "",
+        snippet: sn,
         updatedAt: new Date().toISOString(),
-        messages: [],
+        messages: previewMessagesForThread(threadId, sn),
       });
     }
     return threads;
