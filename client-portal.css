@@ -901,7 +901,7 @@
     position: fixed;
     right: 0.9rem;
     bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
-    z-index: 102;
+    z-index: 90;
     border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
     background: color-mix(in srgb, var(--bg-elevated) 92%, var(--accent-soft));
     color: var(--text);
@@ -915,7 +915,7 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Must not use display:block alone — it overrides the [hidden] attribute and traps the whole UI */
+  /* Legacy backdrop retained in DOM; disabled for the mobile chat-view pattern. */
   .portal-chat-backdrop {
     display: none;
     position: fixed;
@@ -927,19 +927,9 @@
     margin: 0;
   }
 
-  .portal-body--chat-open .portal-chat-backdrop {
-    display: block;
-  }
-
   .portal-panel--messages {
-    position: fixed;
-    left: 0.55rem;
-    right: 0.55rem;
-    top: calc(0.55rem + env(safe-area-inset-top, 0px));
-    bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
-    z-index: 101;
-    border-radius: 16px;
-    max-height: none;
+    position: static;
+    border-radius: var(--radius-lg, 20px);
     display: none;
     flex-direction: column;
     min-height: 0;
@@ -994,17 +984,32 @@
     letter-spacing: 0.04em;
   }
 
-  .portal-body--chat-open .portal-panel--messages {
+  .portal-body--chat-view .portal-panel--messages {
     display: flex;
   }
 
-  .portal-body--chat-open {
-    overflow: hidden;
+  .portal-body--chat-view .portal-panel--welcome,
+  .portal-body--chat-view .portal-dashboard__aside {
+    display: none;
   }
 
-  .portal-body--chat-open .portal-chat-fab {
-    visibility: hidden;
-    pointer-events: none;
+  .portal-body--chat-view .portal-main {
+    padding-block: 0.65rem;
+  }
+
+  .portal-body--chat-view .portal-layout,
+  .portal-body--chat-view .portal-dashboard {
+    gap: 0;
+    animation: none;
+    transform: none;
+  }
+
+  .portal-body--chat-view .portal-chat-fab {
+    display: none;
+  }
+
+  .portal-body--chat-view .portal-panel--messages .portal-card-messages {
+    max-height: calc(100dvh - 12.5rem);
   }
 }
 
@@ -1037,8 +1042,8 @@
   }
 }
 
-/* Full-height chat sheet: undo narrow max-height from breakpoint above */
-body.portal-body--chat-open .portal-panel--messages .portal-card-messages {
+/* Ensure chat view is not capped by narrow-screen card max-heights. */
+body.portal-body--chat-view .portal-panel--messages .portal-card-messages {
   max-height: none;
 }
 

@@ -147,8 +147,7 @@
   function setMobileChatOpen(on) {
     if (!mobileChatMq || !mobileChatMq.matches) return;
     if (!chatPanel) return;
-    document.body.classList.toggle("portal-body--chat-open", !!on);
-    if (chatBackdrop) chatBackdrop.hidden = !on;
+    document.body.classList.toggle("portal-body--chat-view", !!on);
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", on ? "true" : "false");
     chatPanel.hidden = !on;
     if (on) {
@@ -170,7 +169,7 @@
   function syncMobileChatState() {
     var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
     if (!isMobile) {
-      document.body.classList.remove("portal-body--chat-open");
+      document.body.classList.remove("portal-body--chat-view");
       if (chatBackdrop) chatBackdrop.hidden = true;
       if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", "false");
       if (chatPanel) {
@@ -179,7 +178,7 @@
       }
       return;
     }
-    var open = document.body.classList.contains("portal-body--chat-open");
+    var open = document.body.classList.contains("portal-body--chat-view");
     if (chatPanel) {
       chatPanel.hidden = !open;
       if (open) {
@@ -188,7 +187,7 @@
         chatPanel.setAttribute("aria-hidden", "true");
       }
     }
-    if (chatBackdrop) chatBackdrop.hidden = !open;
+    if (chatBackdrop) chatBackdrop.hidden = true;
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
@@ -450,7 +449,7 @@
   }
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
-    if (!document.body.classList.contains("portal-body--chat-open")) return;
+    if (!document.body.classList.contains("portal-body--chat-view")) return;
     setMobileChatOpen(false);
   });
   if (mobileChatMq) {
