@@ -1,4 +1,7 @@
 (function () {
+  if (window.__MARKETPLACE_SYNC_CONTENT__) return;
+  window.__MARKETPLACE_SYNC_CONTENT__ = true;
+
   function textOf(el) {
     return el ? String(el.textContent || "").trim() : "";
   }

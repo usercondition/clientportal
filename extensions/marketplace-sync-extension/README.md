@@ -9,6 +9,10 @@ Manual bridge from a marketplace inbox tab into the admin portal.
 3. Open **Admin → Marketplace** to view synced threads.
 4. After deploy, `GET /api/health` includes `marketplace.enabled`, `marketplace.tokenConfigured`, and `marketplace.tablesPresent` when the database is reachable — use that to confirm the stack is ready before syncing.
 
+## If the popup says “Receiving end does not exist”
+
+That means the **active tab** had no inbox helper script attached. **Fix:** click your **Facebook / Messages / Marketplace inbox** tab so it is focused (not the extension Options page, not `chrome://…`). Reload that inbox tab (**F5**), then **Reload** the extension on `chrome://extensions` and **Sync** again. The extension will try to inject the helper automatically once if needed.
+
 ## If the popup says “Failed to fetch”
 
 1. Open **`https://YOUR-RAILWAY-URL.up.railway.app/api/health`** in a normal tab — it must load JSON (not a browser error page).

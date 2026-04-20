@@ -41,6 +41,48 @@ function describeFetchError(err) {
   return msg;
 }
 
+function isInjectableWebUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const u = url.trim().toLowerCase();
+  if (
+    u.startsWith("chrome://") ||
+    u.startsWith("chrome-extension://") ||
+    u.startsWith("edge://") ||
+    u.startsWith("about:") ||
+    u.startsWith("devtools:") ||
+    u.startsWith("view-source:")
+  ) {
+    return false;
+  }
+  return /^https?:\/\//i.test(u);
+}
+
+function sendMessageToTab(tabId, payload) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, payload, (response) => {
+      const err = chrome.runtime.lastError;
+      if (err) reject(new Error(err.message));
+      else resolve(response);
+    });
+  });
+}
+
+async function collectThreadsFromTab(tabId, payload) {
+  try {
+    return await sendMessageToTab(tabId, payload);
+  } catch (firstErr) {
+    const msg = String(firstErr && firstErr.message);
+    if (!/Receiving end does not exist|Could not establish connection/i.test(msg)) {
+      throw firstErr;
+    }
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["content-marketplace.js"],
+    });
+    return await sendMessageToTab(tabId, payload);
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (!msg || msg.type !== "runMarketplaceSync") return;
   (async () => {
@@ -54,11 +96,46 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       sendResponse({ ok: false, error: "No active tab found." });
       return;
     }
-    const collected = await chrome.tabs.sendMessage(tab.id, {
+    const url = tab.url || "";
+    if (url.startsWith("chrome-extension://")) {
+      sendResponse({
+        ok: false,
+        error:
+          "The active tab is this extension (e.g. Options). Switch to your Facebook/Messages inbox tab in the main browser window, then open the extension popup and click Sync again.",
+      });
+      return;
+    }
+    if (!isInjectableWebUrl(url)) {
+      sendResponse({
+        ok: false,
+        error:
+          "This page cannot run the inbox helper (internal browser URL). Open https://www.facebook.com or your marketplace inbox in a normal tab, then Sync.",
+      });
+      return;
+    }
+
+    const collectPayload = {
       type: "collectMarketplaceThreads",
       selectorProfile: cfg.selectorProfile || "generic",
       customSelectorsJson: cfg.customSelectorsJson || "",
-    });
+    };
+
+    let collected;
+    try {
+      collected = await collectThreadsFromTab(tab.id, collectPayload);
+    } catch (e) {
+      const m = String((e && e.message) || e);
+      if (/Receiving end does not exist|Could not establish connection/i.test(m)) {
+        sendResponse({
+          ok: false,
+          error:
+            "Could not talk to this tab after injecting the helper. Reload the inbox page (F5), then Sync again. If you use Messenger only inside another app, open it in a normal Chrome tab.",
+        });
+        return;
+      }
+      throw e;
+    }
+
     if (!collected || !collected.ok) {
       sendResponse({ ok: false, error: (collected && collected.error) || "Could not read thread data from page." });
       return;
