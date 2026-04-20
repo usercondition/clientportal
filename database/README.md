@@ -10,7 +10,7 @@ The app (`server.js`) uses PostgreSQL via **`DATABASE_URL`**. This folder holds 
 - `database/migrations/002_compat.sql`
   - Idempotent `ADD COLUMN IF NOT EXISTS` patches for databases that already had tables but an older column set (the server applies this on every startup after bootstrap)
 - `database/migrations/003_marketplace_sync.sql`
-  - Tables `marketplace_threads` and `marketplace_messages` for the optional marketplace sync extension (applied on every startup after compat, same idempotent pattern)
+  - Tables `marketplace_threads` and `marketplace_messages` for the optional marketplace sync API (applied on every startup after compat, same idempotent pattern)
 - `database/seed.sql`
   - Optional local demo seed data
 - `docker-compose.db.yml`
@@ -50,12 +50,9 @@ npm run db:migrate
 psql "$DATABASE_URL" -f database/seed.sql
 ```
 
-### Marketplace sync (deploy checklist)
+### Optional marketplace API tables (`003_marketplace_sync.sql`)
 
-1. **Web service variables**: `MARKETPLACE_SYNC_ENABLED=true`, `MARKETPLACE_SYNC_TOKEN` = long random secret (same value in the Chrome extension options).
-2. **Database**: ensure **`003_marketplace_sync.sql`** ran (`npm run db:migrate` in Railway Shell on the web service, or rely on server startup auto-apply unless `SKIP_AUTO_SCHEMA=true`).
-3. **Verify**: `GET /api/health` should show `"marketplace": { "enabled": true, "tokenConfigured": true, "tablesPresent": true }` when Postgres is connected.
-4. **Extension**: load unpacked from `extensions/marketplace-sync-extension`, set API base URL to your public site origin, paste the token, sync from an inbox tab, then open **Admin → Marketplace**.
+If you use `POST /api/admin/marketplace/sync` (automation), set `MARKETPLACE_SYNC_ENABLED` + `MARKETPLACE_SYNC_TOKEN` on the web service and ensure migration **003** ran. Check `GET /api/health` → `marketplace.tablesPresent`.
 
 ## How this maps to your portal
 
@@ -85,7 +82,7 @@ If `DATABASE_URL` accidentally points at the public proxy, this repo’s server 
 
 The **Node server auto-applies** `001_init.sql` on startup when **any core portal table** is missing (`clients`, `client_addresses`, `orders`, `message_threads`, `messages`, etc.). It then applies **`002_compat.sql`** every boot (cheap idempotent column patches) so older databases pick up new columns without requiring a full table rebuild, then **`003_marketplace_sync.sql`** for marketplace mirror tables. Statements run **one at a time** (not one big transaction), and benign “already exists” errors are skipped so a half-finished run can finish on the next boot. If bootstrap still fails, check deploy logs for `[db] Auto-schema failed`. Registration retries once after running migrations on missing table/column/function errors. API errors may include **`postgresCode`** for debugging.
 
-If **`SKIP_AUTO_SCHEMA=true`**, auto-apply of `001` / `002` / `003` on startup is skipped — run **`npm run db:migrate`** (or apply SQL manually) so marketplace tables exist before using the extension.
+If **`SKIP_AUTO_SCHEMA=true`**, auto-apply of `001` / `002` / `003` on startup is skipped — run **`npm run db:migrate`** (or apply SQL manually) so optional marketplace tables exist if you use those API routes.
 
 If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually (this runs **001**, **002**, and **003**):
 

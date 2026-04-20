@@ -366,7 +366,7 @@ const {
   applyMarketplaceSyncSchema,
 } = require("./lib/apply-initial-schema");
 
-// CORS + preflight for marketplace routes (browser extensions and tooling may preflight POST + Authorization).
+// CORS + preflight for marketplace API routes (POST + Authorization from scripts / tools).
 app.use((req, res, next) => {
   const p = req.path || "";
   if (!p.startsWith("/api/admin/marketplace")) return next();
