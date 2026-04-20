@@ -273,16 +273,22 @@ html:has(.client-flow-body) {
   box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.28));
   width: 100%;
   max-width: 100%;
-  height: min(132px, 21svh, 24dvh);
-  max-height: min(132px, 21svh, 24dvh);
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Letterbox behind image when aspect ratios differ */
+  background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
   flex-shrink: 0;
 }
 
 .flow-welcome-hero img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(200px, 30svh, 34dvh);
+  object-fit: contain;
   object-position: center;
 }
 
@@ -565,11 +571,10 @@ html:has(.client-flow-body) {
   }
 }
 
-/* Narrow phones: slightly smaller hero; keep centered via safe center on .flow-slide */
+/* Narrow phones: slightly smaller max box; image still fully visible (contain) */
 @media (max-width: 699px) {
-  .flow-welcome-hero {
-    height: min(118px, 20svh, 22dvh);
-    max-height: min(118px, 20svh, 22dvh);
+  .flow-welcome-hero img {
+    max-height: min(168px, 28svh, 32dvh);
   }
 
   #slide-welcome .flow-eyebrow {
