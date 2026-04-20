@@ -4,9 +4,9 @@
   /** Default app shell (admin / portal) — must match styles.css --bg */
   var BG_PAGE_LIGHT = "#f5f6f8";
   var BG_PAGE_DARK = "#0f1115";
-  /** Resin marketing homepage (index) — must match resin.css */
-  var RESIN_BG_LIGHT = "#F5F1EA";
-  var RESIN_BG_DARK = "#1c1b18";
+  /** Resin marketing homepage (index) — must match resin.css --rh-bg light/dark */
+  var RESIN_BG_LIGHT = "#e8e4dc";
+  var RESIN_BG_DARK = "#171511";
 
   function isResinMarketing() {
     return root.getAttribute("data-marketing") === "resin";

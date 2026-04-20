@@ -3,19 +3,20 @@
  * Does not alter global :root tokens used by admin / client portal.
  */
 
+/* Light: warm paper tones — slightly muted vs pure cream to reduce glare for long reading */
 body.resin-home {
-  --rh-bg: #f5f1ea;
-  --rh-surface: #eae4db;
-  --rh-surface-2: #e0d8cd;
-  --rh-text: #232323;
-  --rh-muted: #5c5852;
-  --rh-primary: #0f6b6f;
-  --rh-primary-hover: #0c5558;
-  --rh-copper: #b86a3b;
-  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
-  --rh-border: rgba(35, 35, 35, 0.12);
-  --rh-shadow: 0 2px 8px rgba(35, 35, 35, 0.06);
-  --rh-shadow-md: 0 8px 28px rgba(35, 35, 35, 0.08);
+  --rh-bg: #e8e4dc;
+  --rh-surface: #dfdad0;
+  --rh-surface-2: #d3cec3;
+  --rh-text: #2a2723;
+  --rh-muted: #5f5a54;
+  --rh-primary: #0d5f63;
+  --rh-primary-hover: #094a4e;
+  --rh-copper: #a6602f;
+  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 16%, transparent);
+  --rh-border: rgba(42, 39, 35, 0.1);
+  --rh-shadow: 0 2px 10px rgba(35, 32, 28, 0.05);
+  --rh-shadow-md: 0 10px 32px rgba(35, 32, 28, 0.07);
   --rh-radius: 10px;
   --rh-radius-sm: 6px;
   --rh-max: 1080px;
@@ -29,29 +30,38 @@ body.resin-home {
   --rh-step-7: 3.25rem;
 }
 
+/* Dark: warm charcoal + eggshell text — matches grey resin + cream photo backdrops */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #1c1b18;
-  --rh-surface: #252320;
-  --rh-surface-2: #2e2c28;
-  --rh-text: #f2efe8;
-  --rh-muted: #a8a29a;
-  --rh-primary: #4a9ea2;
-  --rh-primary-hover: #5cb0b4;
-  --rh-copper: #c9956a;
-  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 22%, transparent);
-  --rh-border: rgba(242, 239, 232, 0.12);
-  --rh-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-  --rh-shadow-md: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --rh-bg: #171511;
+  --rh-surface: #201e1a;
+  --rh-surface-2: #2a2722;
+  --rh-text: #ebe7df;
+  --rh-muted: #9a948a;
+  --rh-primary: #5fa3a7;
+  --rh-primary-hover: #72b3b7;
+  --rh-copper: #c49b72;
+  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
+  --rh-border: rgba(235, 231, 223, 0.1);
+  --rh-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+  --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.42);
 }
 
 body.resin-home {
   margin: 0;
   font-family: var(--rh-font);
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.62;
   color: var(--rh-text);
   background-color: var(--rh-bg) !important;
   -webkit-font-smoothing: antialiased;
+  color-scheme: light;
+  transition:
+    background-color 0.22s ease,
+    color 0.18s ease;
+}
+
+html[data-theme="dark"] body.resin-home {
+  color-scheme: dark;
 }
 
 body.resin-home .skip-link {
@@ -732,4 +742,41 @@ body.resin-home .footer-note {
   body.resin-home .site-nav {
     background: color-mix(in srgb, var(--rh-bg) 96%, var(--rh-surface));
   }
+}
+
+/* Photo harmony in dark mode — pulls bright cream highlights in images toward page warmth */
+html[data-theme="dark"] body.resin-home .rh-hero-visual__img,
+html[data-theme="dark"] body.resin-home .rh-gallery__thumb img {
+  filter: brightness(0.94) saturate(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.resin-home {
+    transition: none;
+  }
+}
+
+/* Focus — keyboard visibility without harsh rings */
+body.resin-home .rh-btn:focus-visible {
+  outline: 2px solid var(--rh-primary);
+  outline-offset: 2px;
+}
+
+body.resin-home main a:focus-visible {
+  outline: 2px solid var(--rh-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+html[data-theme="dark"] body.resin-home .rh-btn--primary {
+  color: #12110e;
+}
+
+html[data-theme="dark"] body.resin-home .rh-btn--primary:hover {
+  color: #12110e;
+}
+
+body.resin-home .skip-link:focus {
+  outline: 2px solid var(--rh-copper);
+  outline-offset: 2px;
 }
