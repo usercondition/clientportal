@@ -355,6 +355,21 @@ const {
   applyMarketplaceSyncSchema,
 } = require("./lib/apply-initial-schema");
 
+// CORS + preflight for marketplace routes (browser extensions and tooling may preflight POST + Authorization).
+app.use((req, res, next) => {
+  const p = req.path || "";
+  if (!p.startsWith("/api/admin/marketplace")) return next();
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Marketplace-Sync-Token"
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
+  if (req.method === "OPTIONS") return res.status(204).end();
+  next();
+});
+
 // Slightly higher than default: marketplace sync payloads may include many thread rows.
 app.use(express.json({ limit: "2mb" }));
 

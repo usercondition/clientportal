@@ -9,6 +9,13 @@ Manual bridge from a marketplace inbox tab into the admin portal.
 3. Open **Admin → Marketplace** to view synced threads.
 4. After deploy, `GET /api/health` includes `marketplace.enabled`, `marketplace.tokenConfigured`, and `marketplace.tablesPresent` when the database is reachable — use that to confirm the stack is ready before syncing.
 
+## If the popup says “Failed to fetch”
+
+1. Open **`https://YOUR-RAILWAY-URL.up.railway.app/api/health`** in a normal tab — it must load JSON (not a browser error page).
+2. In **`chrome://extensions`**, open **Service worker** (for this extension) → **Console**, click **Sync now** again and read any red errors.
+3. **API base URL** must include **`https://`** (Railway serves HTTPS). No spaces or extra path like `/admin`.
+4. Reload the extension after changing options.
+
 ## How to sync (Chrome)
 
 1. **Options**: set API base URL (site origin), **same** token as `MARKETPLACE_SYNC_TOKEN`, choose **Extraction profile** (try **Meta / Facebook** on Meta inbox).
