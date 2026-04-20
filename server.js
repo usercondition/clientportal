@@ -39,6 +39,93 @@ function createMailTransport() {
   });
 }
 
+const EMAIL_RETRY_BASE_MS = 15_000;
+const EMAIL_MAX_ATTEMPTS = 5;
+/** @type {Array<{to:string; subject:string; text:string; replyTo?:string; attempts:number; nextAttemptAt:number}>} */
+const pendingNotifyEmails = [];
+var notifyWorkerTimer = null;
+var notifyWorkerBusy = false;
+
+function scheduleNotifyWorker(delayMs = 0) {
+  const wait = Math.max(0, Number(delayMs || 0));
+  if (notifyWorkerTimer) clearTimeout(notifyWorkerTimer);
+  notifyWorkerTimer = setTimeout(() => {
+    notifyWorkerTimer = null;
+    processNotifyQueue().catch((err) => {
+      console.error("[notify] worker failure:", err && err.message);
+      scheduleNotifyWorker(EMAIL_RETRY_BASE_MS);
+    });
+  }, wait);
+}
+
+async function processNotifyQueue() {
+  if (notifyWorkerBusy) return;
+  notifyWorkerBusy = true;
+  try {
+    if (!pendingNotifyEmails.length) return;
+    const now = Date.now();
+    const due = pendingNotifyEmails.filter((job) => job.nextAttemptAt <= now);
+    if (!due.length) {
+      const nextAt = pendingNotifyEmails.reduce((min, job) => Math.min(min, job.nextAttemptAt), Infinity);
+      if (Number.isFinite(nextAt)) scheduleNotifyWorker(Math.max(250, nextAt - now));
+      return;
+    }
+    const transport = createMailTransport();
+    if (!transport) {
+      console.warn("[notify] SMTP not configured; queued emails are waiting for SMTP settings.");
+      pendingNotifyEmails.forEach((job) => {
+        job.nextAttemptAt = now + EMAIL_RETRY_BASE_MS;
+      });
+      scheduleNotifyWorker(EMAIL_RETRY_BASE_MS);
+      return;
+    }
+    const from = process.env.MAIL_FROM || process.env.SMTP_USER;
+    for (const job of due) {
+      /** @type {{ from: string; to: string; subject: string; text: string; replyTo?: string }} */
+      const mail = { from, to: job.to, subject: job.subject, text: job.text };
+      if (job.replyTo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(job.replyTo)) {
+        mail.replyTo = job.replyTo;
+      }
+      try {
+        await transport.sendMail(mail);
+        const idx = pendingNotifyEmails.indexOf(job);
+        if (idx >= 0) pendingNotifyEmails.splice(idx, 1);
+        console.log(
+          "[notify] email sent:",
+          job.subject,
+          "→",
+          job.to,
+          job.replyTo ? `(Reply-To ${job.replyTo})` : ""
+        );
+      } catch (err) {
+        job.attempts += 1;
+        if (job.attempts >= EMAIL_MAX_ATTEMPTS) {
+          const idx = pendingNotifyEmails.indexOf(job);
+          if (idx >= 0) pendingNotifyEmails.splice(idx, 1);
+          console.error("[notify] dropped after retries:", err && err.message, "to:", job.to);
+          continue;
+        }
+        const backoffMs = EMAIL_RETRY_BASE_MS * Math.pow(2, Math.max(0, job.attempts - 1));
+        job.nextAttemptAt = Date.now() + backoffMs;
+        console.warn(
+          "[notify] send failed, retrying:",
+          err && err.message,
+          "attempt",
+          job.attempts,
+          "to:",
+          job.to
+        );
+      }
+    }
+    if (pendingNotifyEmails.length) {
+      const nextAt = pendingNotifyEmails.reduce((min, job) => Math.min(min, job.nextAttemptAt), Infinity);
+      if (Number.isFinite(nextAt)) scheduleNotifyWorker(Math.max(250, nextAt - Date.now()));
+    }
+  } finally {
+    notifyWorkerBusy = false;
+  }
+}
+
 /**
  * @param {string} to
  * @param {string} subject
@@ -48,24 +135,16 @@ function createMailTransport() {
 function queueNotifyEmail(to, subject, text, options) {
   if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return;
   const opts = options && typeof options === "object" ? options : {};
-  setImmediate(() => {
-    const transport = createMailTransport();
-    if (!transport) {
-      console.warn("[notify] SMTP not configured; set SMTP_HOST, SMTP_USER, SMTP_PASS — cannot email", to);
-      return;
-    }
-    const from = process.env.MAIL_FROM || process.env.SMTP_USER;
-    /** @type {{ from: string; to: string; subject: string; text: string; replyTo?: string }} */
-    const mail = { from, to, subject, text };
-    const rt = opts.replyTo && String(opts.replyTo).trim();
-    if (rt && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rt)) {
-      mail.replyTo = rt;
-    }
-    transport
-      .sendMail(mail)
-      .then(() => console.log("[notify] email sent:", subject, "→", to, opts.replyTo ? `(Reply-To ${opts.replyTo})` : ""))
-      .catch((err) => console.error("[notify] send failed:", err && err.message));
+  const rt = opts.replyTo && String(opts.replyTo).trim();
+  pendingNotifyEmails.push({
+    to: String(to).trim(),
+    subject: String(subject || ""),
+    text: String(text || ""),
+    replyTo: rt && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rt) ? rt : undefined,
+    attempts: 0,
+    nextAttemptAt: Date.now(),
   });
+  scheduleNotifyWorker(0);
 }
 
 /**

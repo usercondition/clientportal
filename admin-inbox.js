@@ -31,6 +31,12 @@
 
   /** @type {Record<string, Set<string | number>>} */
   var seenThreadMessageIdsByThread = {};
+  var latestInboxRows = [];
+  /** @type {{ thread: any; messages: any[] } | null} */
+  var lastSelectedThreadPayload = null;
+  var adminPollTimer = null;
+  var inboxPollInFlight = false;
+  var adminSendInFlight = false;
 
   var baseTitle = document.title;
 
@@ -466,15 +472,18 @@
 
   async function renderList() {
     if (!listEl) return;
-    var rows = [];
+    var rows = latestInboxRows.slice();
     try {
       var qs = includeArchived ? "?includeArchived=1" : "";
       var payload = await requestJson("/api/admin/inbox" + qs);
       rows = payload.threads || [];
+      latestInboxRows = rows.slice();
       latestThreads = rows.slice();
       renderWorkflowTracker();
     } catch (e) {
-      rows = [];
+      if (latestInboxRows.length === 0) {
+        rows = [];
+      }
     }
 
     var hadSnapshot = Object.keys(threadListSnapshot).length > 0;
@@ -571,16 +580,21 @@
       return;
     }
 
-    var payload;
+    var payload = null;
     try {
       payload = await requestJson(
         "/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages"
       );
+      lastSelectedThreadPayload = payload;
     } catch (e) {
-      selectedThreadId = null;
-      renderList();
-      renderThread();
-      return;
+      if (!lastSelectedThreadPayload) {
+        selectedThreadId = null;
+        renderList();
+        renderThread();
+        return;
+      }
+      payload = lastSelectedThreadPayload;
+      showAppToast("Live refresh paused. Showing last synced thread.");
     }
     var t = payload.thread;
     var messages = payload.messages || [];
@@ -662,6 +676,7 @@
 
   function selectThread(threadId) {
     selectedThreadId = threadId;
+    lastSelectedThreadPayload = null;
     renderList();
     renderThread();
     if (replyInput) replyInput.focus();
@@ -731,10 +746,27 @@
       renderThread();
     }
   })();
-  setInterval(function () {
-    renderList();
-    if (selectedThreadId) renderThread();
-  }, 3000);
+  function queueAdminPoll(delayMs) {
+    if (adminPollTimer) window.clearTimeout(adminPollTimer);
+    adminPollTimer = window.setTimeout(async function () {
+      if (inboxPollInFlight) {
+        queueAdminPoll(1500);
+        return;
+      }
+      inboxPollInFlight = true;
+      try {
+        await renderList();
+        if (selectedThreadId) await renderThread();
+      } finally {
+        inboxPollInFlight = false;
+        queueAdminPoll(document.hidden ? 10000 : 3000);
+      }
+    }, delayMs);
+  }
+  queueAdminPoll(3000);
+  document.addEventListener("visibilitychange", function () {
+    queueAdminPoll(document.hidden ? 10000 : 500);
+  });
   setInterval(fetchAdminOrders, 10000);
 
   if (adminFileInput && adminFileHint) {
@@ -745,23 +777,43 @@
   }
 
   if (form && replyInput) {
+    var sendBtn =
+      typeof form.querySelector === "function" ? form.querySelector('button[type="submit"]') : null;
+    var sendBtnDefaultLabel = sendBtn ? sendBtn.textContent : "Send reply";
+    function setAdminComposeSendingState(on) {
+      adminSendInFlight = !!on;
+      if (sendBtn) {
+        sendBtn.disabled = adminSendInFlight;
+        sendBtn.textContent = adminSendInFlight ? "Sending..." : sendBtnDefaultLabel;
+        sendBtn.setAttribute("aria-busy", adminSendInFlight ? "true" : "false");
+      }
+      if (replyInput) replyInput.disabled = adminSendInFlight;
+      if (adminFileInput) adminFileInput.disabled = adminSendInFlight;
+    }
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
+      if (adminSendInFlight) return;
       if (!selectedThreadId) return;
       var text = String(replyInput.value || "").trim();
       var files = adminFileInput && adminFileInput.files ? adminFileInput.files : null;
       if (!text && (!files || !files.length)) return;
+      setAdminComposeSendingState(true);
       try {
         await postThreadMessage(selectedThreadId, text, files);
       } catch (err) {
         showAppToast((err && err.message) || "Could not send reply.");
+        setAdminComposeSendingState(false);
         return;
       }
       replyInput.value = "";
       if (adminFileInput) adminFileInput.value = "";
       if (adminFileHint) adminFileHint.textContent = "";
-      renderList();
-      renderThread();
+      try {
+        await renderList();
+        await renderThread();
+      } finally {
+        setAdminComposeSendingState(false);
+      }
     });
   }
 

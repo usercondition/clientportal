@@ -148,6 +148,8 @@
   var MESSAGE_POLL_MS_ACTIVE = 3000;
   var MESSAGE_POLL_MS_HIDDEN = 12000;
   var lockedPageScrollY = 0;
+  var lastSuccessfulMessages = [];
+  var hadMessageRefreshError = false;
 
   function getChatThreadEl() {
     return document.getElementById("portal-thread");
@@ -432,11 +434,16 @@
       var thread = document.getElementById("portal-thread");
       if (!thread) return;
       var shouldStickToBottom = firstMessageRender || isNearBottom(thread);
-      var messages = [];
+      var messages = lastSuccessfulMessages.slice();
       try {
         messages = await Portal.getMessages();
+        lastSuccessfulMessages = messages.slice();
+        hadMessageRefreshError = false;
       } catch (e) {
-        messages = [];
+        if (!hadMessageRefreshError && lastSuccessfulMessages.length > 0) {
+          showAppToast("Live refresh paused. Showing last synced messages.");
+        }
+        hadMessageRefreshError = true;
       }
 
       var renderSig = messages
