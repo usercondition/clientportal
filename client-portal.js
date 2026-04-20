@@ -147,6 +147,7 @@
   var messageRenderInFlight = false;
   var MESSAGE_POLL_MS_ACTIVE = 3000;
   var MESSAGE_POLL_MS_HIDDEN = 12000;
+  var lockedPageScrollY = 0;
 
   function getChatThreadEl() {
     return document.getElementById("portal-thread");
@@ -158,10 +159,39 @@
     thread.scrollTop = thread.scrollHeight;
   }
 
+  function lockPageScrollForMobileChat() {
+    if (!document.body) return;
+    if (document.body.classList.contains("portal-body--chat-locked")) return;
+    lockedPageScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add("portal-body--chat-locked");
+    document.body.style.position = "fixed";
+    document.body.style.top = -lockedPageScrollY + "px";
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+  }
+
+  function unlockPageScrollForMobileChat() {
+    if (!document.body) return;
+    if (!document.body.classList.contains("portal-body--chat-locked")) return;
+    document.body.classList.remove("portal-body--chat-locked");
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    window.scrollTo(0, lockedPageScrollY || 0);
+  }
+
   function setMobileChatOpen(on) {
     if (!mobileChatMq || !mobileChatMq.matches) return;
     if (!chatPanel) return;
     document.body.classList.toggle("portal-body--chat-view", !!on);
+    if (on) {
+      lockPageScrollForMobileChat();
+    } else {
+      unlockPageScrollForMobileChat();
+    }
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", on ? "true" : "false");
     chatPanel.hidden = !on;
     if (on) {
@@ -189,6 +219,7 @@
     var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
     if (!isMobile) {
       document.body.classList.remove("portal-body--chat-view");
+      unlockPageScrollForMobileChat();
       if (chatBackdrop) chatBackdrop.hidden = true;
       if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", "false");
       if (chatPanel) {
@@ -205,6 +236,11 @@
       } else {
         chatPanel.setAttribute("aria-hidden", "true");
       }
+    }
+    if (open) {
+      lockPageScrollForMobileChat();
+    } else {
+      unlockPageScrollForMobileChat();
     }
     if (chatBackdrop) chatBackdrop.hidden = true;
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", open ? "true" : "false");

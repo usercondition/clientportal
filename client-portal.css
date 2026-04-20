@@ -995,6 +995,16 @@
 
   .portal-body--chat-view .portal-panel--messages {
     display: flex;
+    position: fixed;
+    inset: max(0px, env(safe-area-inset-top, 0px)) 0 0 0;
+    z-index: 120;
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
   }
 
   .portal-body--chat-view .portal-panel--welcome,
@@ -1003,13 +1013,14 @@
   }
 
   .portal-body--chat-view .portal-main {
-    padding-block: 0.65rem;
+    padding-block: 0;
     overflow: hidden;
   }
 
   .portal-body--chat-view .portal-layout,
   .portal-body--chat-view .portal-dashboard {
     gap: 0;
+    padding: 0;
     animation: none;
     transform: none;
     min-height: 0;
@@ -1020,7 +1031,8 @@
   }
 
   .portal-body--chat-view .portal-panel--messages .portal-card-messages {
-    max-height: calc(100dvh - 12.5rem - env(safe-area-inset-bottom, 0px));
+    max-height: none;
+    height: 100%;
   }
 
   .portal-body--chat-view .portal-panel--messages,
@@ -1079,6 +1091,10 @@ body.portal-body--chat-view .portal-panel--messages .portal-card-messages {
 }
 
 body.portal-body--chat-view {
+  overflow: hidden;
+}
+
+body.portal-body--chat-locked {
   overflow: hidden;
 }
 
