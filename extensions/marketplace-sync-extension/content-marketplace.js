@@ -123,11 +123,16 @@
       h = String(location.hostname || "").replace(/^www\./i, "");
     }
     return (
-      /^(m\.)?facebook\.com$/i.test(h) || /^facebook\.com$/i.test(h) || /^messenger\.com$/i.test(h)
+      /^(m\.|mbasic\.)?facebook\.com$/i.test(h) ||
+      /^facebook\.com$/i.test(h) ||
+      /^messenger\.com$/i.test(h)
     );
   }
 
-  /** Facebook Marketplace inbox / selling — not generic Messenger. */
+  /**
+   * Any Marketplace section except obvious browse-only / product / open-thread URLs.
+   * Meta changes paths often (comet, feed, etc.) — default to permissive under /marketplace/.
+   */
   function isMarketplaceInboxListUrl() {
     var path = "";
     try {
@@ -139,18 +144,13 @@
     if (!/\/marketplace\b/i.test(path)) return false;
     if (/\/marketplace\/t\/\d/i.test(path)) return false;
     if (/\/marketplace\/item\/\d/i.test(path)) return false;
-    if (/\/marketplace\/(category|categories|search|vehicles|property|groups)\b/i.test(path))
+    if (
+      /\/marketplace\/(category|categories|search|vehicles|property|groups|create|learn|help|saved)\b/i.test(
+        path
+      )
+    )
       return false;
-    return (
-      /\/marketplace\/inbox/i.test(path) ||
-      /\/marketplace\/you\//i.test(path) ||
-      /\/marketplace\/selling/i.test(path) ||
-      /\/marketplace\/buying/i.test(path) ||
-      /\/marketplace\/messages/i.test(path) ||
-      /\/marketplace\/chats/i.test(path) ||
-      path === "/marketplace" ||
-      /\/marketplace$/i.test(path)
-    );
+    return true;
   }
 
   /** Open chat is clearly Marketplace (thread URL). */
@@ -467,20 +467,92 @@
     );
   }
 
-  /** Meta uses role=main on non-divs; inbox list often sits under role=navigation — do not skip those on Marketplace URLs. */
+  /** Prefer main/feed/mount roots; Meta often mounts inbox outside a literal <main>. */
   function getMarketplaceDomScope() {
     return (
       document.querySelector('[role="main"]') ||
+      document.querySelector('[role="feed"]') ||
       document.querySelector("main") ||
+      document.getElementById("react-root") ||
+      document.querySelector('[id^="mount_"]') ||
       document.body
     );
+  }
+
+  function stripScriptsAndStyles(html) {
+    return String(html || "")
+      .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+      .replace(/<noscript\b[\s\S]*?<\/noscript>/gi, " ");
+  }
+
+  /**
+   * Last resort: unique thread ids embedded in serialized HTML (Meta hides real <a> in some builds).
+   * Runs only on Marketplace-gated pages; strips scripts to avoid junk from bundles.
+   */
+  function mergeThreadIdsFromHtmlDump(scope, seen, threads) {
+    if (!scope) return;
+    var roots = [];
+    try {
+      if (scope !== document.body) roots.push(scope);
+      var main = document.querySelector('[role="main"]');
+      if (main && main !== scope) roots.push(main);
+      roots.push(document.body);
+    } catch (_eR) {
+      roots = [scope];
+    }
+    var seenRoot = Object.create(null);
+    for (var r = 0; r < roots.length; r++) {
+      var el = roots[r];
+      if (!el || seenRoot[el]) continue;
+      seenRoot[el] = true;
+      var raw = "";
+      try {
+        raw = el.innerHTML || "";
+      } catch (_eI) {
+        raw = "";
+      }
+      if (raw.length > 1_800_000) raw = raw.slice(0, 1_800_000);
+      var html = stripScriptsAndStyles(raw);
+      var re = /\/(?:marketplace|messages)\/t\/(\d{8,})\b/g;
+      var m;
+      while ((m = re.exec(html)) !== null) {
+        var tid = m[1];
+        if (seen[tid]) continue;
+        seen[tid] = true;
+        threads.push({
+          threadId: tid,
+          buyerName: "Thread " + tid.slice(-6),
+          snippet: "",
+          updatedAt: new Date().toISOString(),
+          messages: previewMessagesForThread(tid, ""),
+        });
+        if (threads.length >= 200) return;
+      }
+      var reE = /\/(?:messages\/e2ee|e2ee)\/t\/(\d{8,})\b/g;
+      while ((m = reE.exec(html)) !== null) {
+        var tid2 = m[1];
+        if (seen[tid2]) continue;
+        seen[tid2] = true;
+        threads.push({
+          threadId: tid2,
+          buyerName: "Thread " + tid2.slice(-6),
+          snippet: "",
+          updatedAt: new Date().toISOString(),
+          messages: previewMessagesForThread(tid2, ""),
+        });
+        if (threads.length >= 200) return;
+      }
+    }
   }
 
   /**
    * When Meta renders inbox rows without plain <a href> thread URLs, thread ids still appear in row HTML or nested links.
    */
   function mergeInboxRowBackfill(scope, seen, threads) {
-    var rowLike = scope.querySelectorAll('[role="row"], [role="listitem"]');
+    var rowLike = scope.querySelectorAll(
+      '[role="row"], [role="listitem"], li[role="presentation"], div[role="presentation"]'
+    );
     for (var i = 0; i < rowLike.length; i++) {
       var row = rowLike[i];
       if (row.closest('[role="log"]')) continue;
@@ -494,10 +566,10 @@
       }
       if (html.length > 120000) html = html.slice(0, 120000);
       var threadId = "";
-      var mm = html.match(/\/(?:marketplace|messages)\/t\/(\d{10,})\b/);
+      var mm = html.match(/\/(?:marketplace|messages)\/t\/(\d{8,})\b/);
       if (mm) threadId = mm[1];
       if (!threadId) {
-        var mmE = html.match(/\/messages\/e2ee\/t\/(\d{10,})\b/) || html.match(/\/e2ee\/t\/(\d{10,})\b/);
+        var mmE = html.match(/\/messages\/e2ee\/t\/(\d{8,})\b/) || html.match(/\/e2ee\/t\/(\d{8,})\b/);
         if (mmE) threadId = mmE[1];
       }
       if (!threadId) {
@@ -519,7 +591,7 @@
         }
       }
       if (!threadId || seen[threadId]) continue;
-      if (String(threadId).length < 10) continue;
+      if (String(threadId).length < 8) continue;
       seen[threadId] = true;
       var buyerName = textOf(row).slice(0, 200).replace(/\s+/g, " ").trim();
       var snippet = "";
@@ -635,6 +707,7 @@
       });
     });
     if (!threads.length) mergeInboxRowBackfill(scope, seen, threads);
+    if (!threads.length) mergeThreadIdsFromHtmlDump(scope, seen, threads);
     if (threads.length > 200) threads = threads.slice(0, 200);
     return tagThreadsWithSyncPage(threads);
   }
@@ -689,7 +762,7 @@
   }
 
   var META_EMPTY_HINT =
-    "No Marketplace conversations detected. Open facebook.com/marketplace/inbox, scroll the left list so rows load, hard-refresh (Ctrl+Shift+R), confirm Options → Extraction profile is **Meta / Facebook**, then Sync. If still empty, use Custom JSON (README). Old junk in the admin list can be removed with **Erase synced Marketplace data** (same token as sync).";
+    "Still no threads parsed from this tab. Try: (1) URL must stay under **facebook.com/marketplace/…** (any subpath except item/search). (2) Scroll the inbox list slowly. (3) Open **one** buyer chat in the same tab, then Sync — we read that thread’s bubbles. (4) Options → **Meta / Facebook**. (5) Custom JSON (README). Clear bad data: Admin → **Erase synced Marketplace data**.";
 
   var GENERIC_EMPTY_HINT =
     'No elements matched [data-thread-id]. For Meta/Facebook inbox, switch profile to “Meta / Facebook”, or use “Custom” JSON with rowSelector / idAttr.';

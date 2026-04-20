@@ -29,6 +29,8 @@ That means the **active tab** had no inbox helper script attached. **Fix:** clic
 **v0.2.9+:** Each scraped message gets a stable **`sortOrder`** (top-to-bottom in the transcript) and monotonic **`sentAt`** when Meta does not expose a real time, so the admin portal lists messages in chat order. **`isOutgoing` / `direction`** are best-effort from layout + aria so the admin UI can show left (buyer) vs right (you) bubbles.
 
 **v0.3.0+:** If the inbox list has **no visible `<a href>` thread links**, the extension falls back to scanning **`role="row"` / `role="listitem"`** row HTML for `/messages/t/…` and `/marketplace/t/…` (skips `role="log"` chat bubbles). Payloads include **`syncSourceUrl`** for auditing. To remove bad historical syncs, use **Admin → Marketplace → “Erase synced Marketplace data…”** (or `POST /api/admin/marketplace/purge` with `{ "confirm": true }` and the same **Bearer** token as sync).
+
+**v0.3.1+:** Treats almost any **`/marketplace/…`** path as eligible (except item/search/categories/etc.), adds **`react-root` / `mount_*` / `role="feed"`** scope roots, widened row selectors, and a **stripped innerHTML** pass to discover thread ids when Meta does not render normal links. **`mbasic.facebook.com`** is allowed.
 4. Click the extension icon → **Sync now**.
 5. In the portal, open **Admin → Marketplace** — threads refresh on load / every 45s.
 
