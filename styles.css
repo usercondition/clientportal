@@ -50,6 +50,49 @@
   --page-tint: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+/* Client flow + portal: match resin marketing site (resin.css / index.html palette) */
+html[data-marketing="resin"] body.client-flow-body,
+html[data-marketing="resin"] body.portal-body {
+  --bg: #e8e4dc;
+  --bg-elevated: #dfdad0;
+  --text: #2a2723;
+  --text-muted: #5f5a54;
+  --accent: #0d5f63;
+  --accent-cyan: #0a6b70;
+  --accent-hot: #a6602f;
+  --accent-soft: rgba(13, 95, 99, 0.12);
+  --border: rgba(42, 39, 35, 0.1);
+  --shadow: 0 20px 50px rgba(35, 32, 28, 0.07);
+  --shadow-sm: 0 4px 16px rgba(35, 32, 28, 0.06);
+  --shadow-neon: 0 8px 24px rgba(35, 32, 28, 0.06);
+  --scrim: rgba(35, 32, 28, 0.42);
+  --page-tint: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+html[data-marketing="resin"][data-theme="dark"] body.client-flow-body,
+html[data-marketing="resin"][data-theme="dark"] body.portal-body {
+  --bg: #171511;
+  --bg-elevated: #201e1a;
+  --text: #ebe7df;
+  --text-muted: #9a948a;
+  --accent: #5fa3a7;
+  --accent-cyan: #72b3b7;
+  --accent-hot: #c49b72;
+  --accent-soft: rgba(95, 163, 167, 0.16);
+  --border: rgba(235, 231, 223, 0.1);
+  --shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
+  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.32);
+  --shadow-neon: 0 12px 32px rgba(0, 0, 0, 0.38);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --page-tint: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Primary buttons on resin-dark portal/flow: match marketing contrast */
+html[data-marketing="resin"][data-theme="dark"] body.client-flow-body .btn-primary,
+html[data-marketing="resin"][data-theme="dark"] body.portal-body .btn-primary {
+  color: #12110e;
+}
+
 *,
 *::before,
 *::after {
