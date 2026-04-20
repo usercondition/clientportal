@@ -538,6 +538,107 @@ app.get("/api/admin/inbox", async (_req, res) => {
   });
 });
 
+/**
+ * Dashboard KPIs: revenue/profit from orders (MTD), portal activity. Profit is optional margin on revenue via
+ * ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT (0–100) until you add real COGS.
+ */
+app.get("/api/admin/metrics", async (_req, res) => {
+  if (!DATABASE_URL) {
+    return res.json({
+      periodLabel: "This month",
+      databaseConnected: false,
+      revenueCents: null,
+      estimatedProfitCents: null,
+      profitNote: "Set DATABASE_URL to load order and portal metrics.",
+      ordersCountMtd: null,
+      averageOrderValueCents: null,
+      openOrdersCount: null,
+      clientsCount: null,
+      messageThreadsCount: null,
+      messagesLast30Days: null,
+    });
+  }
+  const marginRaw = process.env.ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT;
+  const marginPct = marginRaw != null && String(marginRaw).trim() !== "" ? Number(marginRaw) : NaN;
+  const useMargin = Number.isFinite(marginPct) && marginPct >= 0 && marginPct <= 100;
+
+  try {
+    const { rows } = await pool.query(`
+      with month_bounds as (
+        select
+          date_trunc('month', now()) as start,
+          date_trunc('month', now()) + interval '1 month' as excl_end
+      )
+      select
+        (
+          select coalesce(sum(o.total_cents), 0)::bigint
+          from orders o
+          cross join month_bounds b
+          where o.created_at >= b.start
+            and o.created_at < b.excl_end
+            and o.status <> 'cancelled'::order_status
+        ) as revenue_mtd_cents,
+        (
+          select count(*)::int
+          from orders o
+          cross join month_bounds b
+          where o.created_at >= b.start
+            and o.created_at < b.excl_end
+            and o.status <> 'cancelled'::order_status
+        ) as orders_mtd,
+        (
+          select count(*)::int
+          from orders
+          where status not in ('fulfilled'::order_status, 'cancelled'::order_status)
+        ) as open_orders,
+        (select count(*)::int from clients) as clients_count,
+        (select count(*)::int from message_threads) as threads_count,
+        (
+          select count(*)::int
+          from messages
+          where deleted_at is null
+            and created_at >= now() - interval '30 days'
+        ) as messages_30d
+    `);
+    const r = rows[0] || {};
+    const revenueCents = Number(r.revenue_mtd_cents || 0);
+    const ordersMtd = Number(r.orders_mtd || 0);
+    const avgCents = ordersMtd > 0 ? Math.round(revenueCents / ordersMtd) : null;
+    const estimatedProfitCents = useMargin ? Math.round(revenueCents * (marginPct / 100)) : null;
+
+    return res.json({
+      periodLabel: "Month to date (server time)",
+      databaseConnected: true,
+      revenueCents,
+      estimatedProfitCents,
+      profitNote: useMargin
+        ? `Estimated using ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT (${marginPct}%). Replace with real COGS when available.`
+        : "Set ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT (0–100) for a rough profit estimate, or add COGS later.",
+      ordersCountMtd: ordersMtd,
+      averageOrderValueCents: avgCents === null ? null : avgCents,
+      openOrdersCount: Number(r.open_orders || 0),
+      clientsCount: Number(r.clients_count || 0),
+      messageThreadsCount: Number(r.threads_count || 0),
+      messagesLast30Days: Number(r.messages_30d || 0),
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    return res.status(200).json({
+      periodLabel: "This month",
+      databaseConnected: false,
+      revenueCents: null,
+      estimatedProfitCents: null,
+      profitNote: err.message || "Could not load metrics.",
+      ordersCountMtd: null,
+      averageOrderValueCents: null,
+      openOrdersCount: null,
+      clientsCount: null,
+      messageThreadsCount: null,
+      messagesLast30Days: null,
+    });
+  }
+});
+
 app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   const { threadId } = req.params;
   const includeArchived =

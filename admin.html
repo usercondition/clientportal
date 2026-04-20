@@ -126,12 +126,70 @@
       <header class="admin-page-header">
         <h1 class="admin-page-header__h">Dashboard</h1>
         <p class="admin-page-header__lede">
-          Manage client conversations and future storefront tools from one place. Live features are linked below; other tiles are
-          placeholders until you wire them to your backend.
+          Track revenue, orders, and portal activity in one place. Financial figures use your <code>orders</code> data; profit can
+          use a simple margin estimate until you add real cost tracking.
         </p>
       </header>
 
       <main class="admin-app__main" id="admin-dashboard-main">
+        <section class="admin-metrics" aria-labelledby="metrics-heading">
+          <div class="admin-metrics__head">
+            <h2 id="metrics-heading" class="admin-metrics__title">Business overview</h2>
+            <p class="admin-metrics__period">
+              <span class="admin-metrics__period-label">Period:</span>
+              <span id="metric-period">Loading…</span>
+            </p>
+          </div>
+          <p class="admin-metrics__banner" id="metric-db-banner" hidden role="status">
+            Database not configured or unreachable — connect <code>DATABASE_URL</code> to populate metrics.
+          </p>
+          <div class="admin-metrics__grid">
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Revenue (MTD)</h3>
+              <p class="admin-metric__value" id="metric-revenue">—</p>
+              <p class="admin-metric__hint">Sum of order totals this month (excludes cancelled).</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Est. gross profit (MTD)</h3>
+              <p class="admin-metric__value" id="metric-profit">—</p>
+              <p class="admin-metric__hint" id="metric-profit-hint">
+                Optional: set <code>ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT</code> (0–100) for a rough estimate.
+              </p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Orders (MTD)</h3>
+              <p class="admin-metric__value" id="metric-orders">—</p>
+              <p class="admin-metric__hint">Non-cancelled orders created this month.</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Avg order value (MTD)</h3>
+              <p class="admin-metric__value" id="metric-avg-order">—</p>
+              <p class="admin-metric__hint">Revenue ÷ order count for the month.</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Open orders</h3>
+              <p class="admin-metric__value" id="metric-open-orders">—</p>
+              <p class="admin-metric__hint">Not fulfilled or cancelled.</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Portal clients</h3>
+              <p class="admin-metric__value" id="metric-clients">—</p>
+              <p class="admin-metric__hint">Rows in <code>clients</code>.</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Message threads</h3>
+              <p class="admin-metric__value" id="metric-threads">—</p>
+              <p class="admin-metric__hint">Active inbox conversations.</p>
+            </article>
+            <article class="admin-metric">
+              <h3 class="admin-metric__label">Messages (30 days)</h3>
+              <p class="admin-metric__value" id="metric-messages-30d">—</p>
+              <p class="admin-metric__hint">All non-deleted messages in the rolling window.</p>
+            </article>
+          </div>
+        </section>
+
+        <h2 class="admin-section-heading">Shortcuts</h2>
         <div class="admin-dash-grid">
           <a class="admin-dash-card" href="admin-inbox.html">
             <span class="admin-dash-card__icon" aria-hidden="true">
@@ -185,6 +243,7 @@
     </div>
 
     <script src="admin-layout.js" defer></script>
+    <script src="admin-dashboard.js" defer></script>
     <script>
       var lo = document.getElementById("admin-logout");
       if (lo) {
