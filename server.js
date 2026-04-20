@@ -231,6 +231,10 @@ function previewSummary(text, max = 220) {
   return `${s.slice(0, max - 1)}…`;
 }
 
+function isValidEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+}
+
 function formatMoney(cents) {
   const n = Number(cents || 0) / 100;
   return n > 0 ? `$${n.toFixed(2)}` : "—";
@@ -306,6 +310,46 @@ app.get("/api/health", async (_req, res) => {
       smtp: smtpConfigured ? "configured" : "missing",
     });
   }
+});
+
+app.post("/api/contact", async (req, res) => {
+  if (!createMailTransport()) {
+    return res.status(503).json({
+      error: "Contact email is not configured yet. Please set SMTP settings on the server.",
+    });
+  }
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const name = String(body.name || "").trim();
+  const email = String(body.email || "").trim();
+  const scope = String(body.scope || "").trim();
+
+  if (name.length < 2 || name.length > 120) {
+    return res.status(400).json({ error: "Name must be between 2 and 120 characters." });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Enter a valid email address." });
+  }
+  if (scope.length < 10 || scope.length > 4000) {
+    return res.status(400).json({ error: "Project details must be between 10 and 4000 characters." });
+  }
+
+  const subject = `Website contact form — ${name}`;
+  const text = [
+    "New contact form submission",
+    "",
+    `Name: ${name}`,
+    `Email: ${email}`,
+    "",
+    "Project details:",
+    scope,
+    "",
+    emailTemplates.baseUrl() ? `Website: ${emailTemplates.baseUrl()}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, { replyTo: email });
+
+  return res.status(202).json({ ok: true });
 });
 
 app.post("/api/client/login", async (req, res) => {

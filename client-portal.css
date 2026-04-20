@@ -948,6 +948,8 @@
   .portal-panel--messages .portal-panel__header {
     padding-bottom: 0.7rem;
     flex-shrink: 0;
+    background: var(--bg-elevated);
+    backdrop-filter: none;
   }
 
   .portal-panel--messages .portal-panel__body--flush {

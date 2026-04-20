@@ -470,15 +470,14 @@
               <p class="rh-kicker">Contact</p>
               <h2 id="contact-title" class="rh-h2">Request a quote</h2>
               <p class="rh-lede">
-                Tell us about scale, quantity, resin preference, and timeline. This form opens your email client with a
-                pre-filled message — you can attach STLs there. For guided intake and order tracking, use the client
-                portal instead.
+                Tell us about scale, quantity, resin preference, and timeline. This sends directly to our inbox. For
+                guided intake and order tracking, use the client portal instead.
               </p>
               <p class="rh-cta__fineprint">
                 Staff sign-in: <a href="admin.html">admin</a> · Existing jobs: <a href="client-flow.html">client portal</a>
               </p>
             </div>
-            <form id="rh-quote-form" class="rh-cta__form" action="mailto:you@example.com" method="get" novalidate>
+            <form id="rh-quote-form" class="rh-cta__form" action="/api/contact" method="post" novalidate>
               <label for="q-name">Name</label>
               <input id="q-name" name="name" type="text" autocomplete="name" required maxlength="120" />
 
@@ -489,9 +488,10 @@
               <textarea id="q-scope" name="scope" required maxlength="4000" placeholder="Scale, models or parts, quantity, deadline…"></textarea>
 
               <div class="rh-cta__actions">
-                <button type="submit" class="rh-btn rh-btn--primary">Compose email</button>
+                <button type="submit" class="rh-btn rh-btn--primary">Send request</button>
                 <a class="rh-btn rh-btn--ghost" href="client-flow.html">Use portal instead</a>
               </div>
+              <p id="rh-quote-status" class="rh-cta__status" role="status" aria-live="polite"></p>
             </form>
           </div>
         </div>
