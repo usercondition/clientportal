@@ -1,18 +1,18 @@
 /* Theme — tweak these variables to re-skin quickly */
 :root {
-  --bg: #160a24;
-  --bg-elevated: #211136;
-  --text: #f5e8ff;
-  --text-muted: #bca4d6;
-  --accent: #ff4fc3;
-  --accent-soft: rgba(255, 79, 195, 0.16);
-  --border: rgba(222, 168, 255, 0.18);
+  --bg: #0e0818;
+  --bg-elevated: #171127;
+  --text: #f4efff;
+  --text-muted: #b7a8cd;
+  --accent: #74f0ff;
+  --accent-soft: rgba(116, 240, 255, 0.14);
+  --border: rgba(205, 174, 255, 0.2);
   --radius: 12px;
   --radius-lg: 20px;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Manrope", "Inter", system-ui, sans-serif;
-  --shadow: 0 26px 72px rgba(9, 2, 17, 0.56);
-  --shadow-sm: 0 12px 30px rgba(8, 1, 14, 0.4);
+  --shadow: 0 28px 76px rgba(6, 2, 14, 0.58);
+  --shadow-sm: 0 12px 34px rgba(6, 2, 12, 0.46);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.18s;
@@ -28,8 +28,8 @@
   --bg-elevated: #150a24;
   --text: #f8eeff;
   --text-muted: #ad95c7;
-  --accent: #43e6ff;
-  --accent-soft: rgba(67, 230, 255, 0.2);
+  --accent: #67e8ff;
+  --accent-soft: rgba(103, 232, 255, 0.2);
   --border: rgba(149, 229, 255, 0.2);
   --shadow: 0 28px 76px rgba(3, 6, 16, 0.62);
   --shadow-sm: 0 12px 32px rgba(2, 6, 14, 0.45);
@@ -64,9 +64,9 @@ body {
   color: var(--text);
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 58%),
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(82, 241, 255, 0.16), transparent 60%),
-    radial-gradient(ellipse 65% 45% at 0% 85%, rgba(143, 78, 255, 0.22), transparent 62%);
+    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(101, 220, 255, 0.15), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 90%, rgba(180, 102, 255, 0.2), transparent 62%);
   min-height: 100vh;
   min-height: 100dvh;
   /* Notched phones / home indicator: keep content off system UI */
@@ -124,9 +124,9 @@ code {
   top: 0;
   z-index: 50;
   isolation: isolate;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(16px);
   /* Ensure mobile menu dropdown anchors to full header width */
   padding-top: max(0px, env(safe-area-inset-top, 0px));
 }
@@ -136,7 +136,7 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 0.65rem;
-  min-height: 4rem;
+  min-height: 4.35rem;
   min-width: 0;
 }
 
@@ -156,15 +156,19 @@ code {
   flex-shrink: 0;
   padding: 0.5rem 0.95rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
-  background: color-mix(in srgb, var(--accent) 18%, #ffffff);
-  color: color-mix(in srgb, var(--accent) 88%, #18382c);
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 24%, var(--bg-elevated)) 0%,
+    color-mix(in srgb, var(--accent) 12%, var(--bg)) 100%
+  );
+  color: color-mix(in srgb, var(--text) 94%, var(--accent));
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
   text-decoration: none;
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 16%, transparent);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
@@ -392,13 +396,13 @@ code {
 
 /* Hero */
 .hero {
-  padding: clamp(3rem, 8vw, 5rem) 0 clamp(4rem, 10vw, 6rem);
+  padding: clamp(3.2rem, 8vw, 5.4rem) 0 clamp(3.8rem, 8vw, 5.8rem);
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: clamp(1.4rem, 4vw, 3rem);
   align-items: center;
 }
 
@@ -420,18 +424,19 @@ code {
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.5vw, 2.85rem);
+  font-size: clamp(2.05rem, 5vw, 3.2rem);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.02em;
   margin: 0 0 1.25rem;
-  max-width: 18ch;
+  max-width: 17ch;
 }
 
 .hero-lede {
   color: var(--text-muted);
-  margin: 0 0 2rem;
-  max-width: 52ch;
+  margin: 0 0 1.8rem;
+  max-width: 56ch;
+  font-size: 1.02rem;
 }
 
 .hero-lede code {
@@ -448,7 +453,7 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem 1.25rem;
+  padding: 0.76rem 1.28rem;
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
@@ -476,15 +481,23 @@ code {
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: var(--bg);
-  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--accent) 88%, #ffffff) 0%,
+    color-mix(in srgb, var(--accent) 74%, #8bc6ff) 100%
+  );
+  color: #08111e;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .btn-primary:hover {
-  background: #d4b88a;
-  color: var(--bg);
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 28%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--accent) 100%, #ffffff) 0%,
+    color-mix(in srgb, var(--accent) 84%, #9ad2ff) 100%
+  );
+  color: #08111e;
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .btn-ghost {
@@ -521,11 +534,29 @@ code {
 
 .hero-card {
   width: min(100%, 320px);
-  padding: 1.5rem 1.5rem 1.75rem;
+  padding: 1.25rem 1.25rem 1.35rem;
   border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, var(--bg-elevated), color-mix(in srgb, var(--bg-elevated) 70%, var(--bg)));
-  border: 1px solid var(--border);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--bg-elevated) 95%, #ffffff) 0%,
+    color-mix(in srgb, var(--bg-elevated) 72%, var(--accent-soft)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   box-shadow: var(--shadow);
+}
+
+.hero-card--metric {
+  position: relative;
+}
+
+.hero-card--metric::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -24% 42%;
+  height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%);
+  pointer-events: none;
 }
 
 .hero-card-label {
@@ -540,13 +571,22 @@ code {
 
 .hero-card-text {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.02rem;
   font-weight: 500;
+}
+
+.hero-points {
+  margin: 0.85rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-muted);
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
 }
 
 /* Sections */
 .section {
-  padding: clamp(3rem, 6vw, 4.5rem) 0;
+  padding: clamp(2.8rem, 6vw, 4.4rem) 0;
 }
 
 .section-alt {
@@ -570,6 +610,7 @@ code {
   margin: 0;
   color: var(--text-muted);
   max-width: 42ch;
+  font-size: 0.96rem;
 }
 
 .card-grid {
@@ -590,7 +631,11 @@ code {
   height: 100%;
   padding: 1.5rem;
   border-radius: var(--radius);
-  background: var(--bg-elevated);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--bg-elevated) 95%, #ffffff) 0%,
+    color-mix(in srgb, var(--bg-elevated) 76%, var(--accent-soft)) 100%
+  );
   border: 1px solid var(--border);
   transition:
     border-color var(--dur-med) var(--ease-fluid),
@@ -614,6 +659,19 @@ code {
   font-size: 1.15rem;
   font-weight: 600;
   margin: 0 0 0.75rem;
+}
+
+.card-kicker {
+  display: inline-block;
+  margin: 0 0 0.6rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 .card-desc {
@@ -728,6 +786,19 @@ code {
 
 .contact-list li + li {
   margin-top: 0.75rem;
+}
+
+.contact-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text) 96%, var(--accent));
+  padding: 0.2rem 0;
+}
+
+.contact-list a:hover {
+  color: var(--accent);
 }
 
 /* Footer */
