@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#160a24" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Analytics — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin-layout.css" />
+    <link rel="stylesheet" href="admin-analytics.css" />
+    <script src="theme.js" defer></script>
+    <script src="admin-auth.js"></script>
+    <script>
+      (function () {
+        if (!window.AdminAuth) {
+          location.replace("admin-login.html?next=admin-analytics.html");
+          return;
+        }
+        if (!AdminAuth.isAdminSession()) {
+          location.replace("admin-login.html?next=" + encodeURIComponent("admin-analytics.html"));
+        }
+      })();
+    </script>
+  </head>
+  <body class="admin-app admin-app--analytics">
+    <a class="skip-link" href="#admin-analytics-main">Skip to analytics</a>
+
+    <button type="button" class="admin-app__drawer-btn" id="admin-drawer-open" aria-label="Open navigation" aria-expanded="false" aria-controls="admin-sidebar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6" />
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="18" x2="20" y2="18" />
+      </svg>
+    </button>
+
+    <button type="button" class="admin-app__backdrop" id="admin-drawer-backdrop" hidden tabindex="-1" aria-label="Close navigation"></button>
+
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Staff navigation">
+      <div class="admin-sidebar__brand">
+        <span class="admin-sidebar__logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </span>
+        <div class="admin-sidebar__brand-text">
+          <span class="admin-sidebar__title">Staff</span>
+          <span class="admin-sidebar__subtitle">Portal</span>
+        </div>
+      </div>
+
+      <nav class="admin-sidebar__nav" aria-label="Primary">
+        <a class="admin-nav-item" href="admin.html">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9" rx="1" />
+            <rect x="14" y="3" width="7" height="5" rx="1" />
+            <rect x="14" y="12" width="7" height="9" rx="1" />
+            <rect x="3" y="16" width="7" height="5" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a class="admin-nav-item" href="admin-inbox.html">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+            <path d="M5.45 5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-7A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1z" />
+          </svg>
+          Messages
+        </a>
+        <a class="admin-nav-item" href="admin-orders.html">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M16.5 9.4 7.55 4.24" />
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <polyline points="3.29 7 12 12 20.71 7" />
+            <line x1="12" y1="22" x2="12" y2="12" />
+          </svg>
+          Orders
+        </a>
+        <a class="admin-nav-item" href="admin-analytics.html" aria-current="page">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 3v18h18" />
+            <rect x="7" y="12" width="3" height="5" rx="1" />
+            <rect x="12" y="9" width="3" height="8" rx="1" />
+            <rect x="17" y="6" width="3" height="11" rx="1" />
+          </svg>
+          Analytics
+        </a>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <a class="admin-sidebar__footer-btn" href="index.html">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          Public site
+        </a>
+        <button type="button" class="admin-sidebar__footer-btn" id="admin-logout">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Log out
+        </button>
+      </div>
+    </aside>
+
+    <div class="admin-app__content">
+      <header class="admin-page-header">
+        <h1 class="admin-page-header__h">Analytics</h1>
+        <p class="admin-page-header__lede">
+          Live operational charts for leads, messages, orders, and volume. Data refreshes automatically from the current portal APIs.
+        </p>
+      </header>
+
+      <main id="admin-analytics-main" class="admin-app__main">
+        <p class="admin-metrics__banner" id="admin-analytics-db-banner" hidden role="status"></p>
+        <section class="admin-analytics-grid" aria-label="Analytics charts">
+          <article class="admin-analytics-card">
+            <h2 class="admin-analytics-card__title">Funnel overview</h2>
+            <p class="admin-analytics-card__meta">Leads, conversation activity, and open orders.</p>
+            <div class="admin-analytics-bars" id="analytics-funnel-bars"></div>
+          </article>
+
+          <article class="admin-analytics-card">
+            <h2 class="admin-analytics-card__title">Order flow distribution</h2>
+            <p class="admin-analytics-card__meta">Current workload by status.</p>
+            <div class="admin-analytics-bars" id="analytics-order-flow-bars"></div>
+          </article>
+
+          <article class="admin-analytics-card admin-analytics-card--wide">
+            <h2 class="admin-analytics-card__title">Revenue and pipeline volume</h2>
+            <p class="admin-analytics-card__meta">Month-to-date and open-pipeline values.</p>
+            <div class="admin-analytics-bars" id="analytics-value-bars"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="admin-layout.js" defer></script>
+    <script src="admin-analytics.js" defer></script>
+    <script>
+      var lo = document.getElementById("admin-logout");
+      if (lo) {
+        lo.addEventListener("click", function () {
+          if (window.AdminAuth) AdminAuth.clearAdminSession();
+          location.href = "admin-login.html";
+        });
+      }
+    </script>
+  </body>
+</html>
