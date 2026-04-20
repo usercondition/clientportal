@@ -20,3 +20,5 @@ ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS admin_archived_at timestamptz;
 
 ALTER TABLE public.message_threads ADD COLUMN IF NOT EXISTS admin_last_read_at timestamptz;
+
+ALTER TABLE public.message_threads ADD COLUMN IF NOT EXISTS admin_archived_at timestamptz;

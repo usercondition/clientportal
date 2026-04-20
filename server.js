@@ -802,7 +802,7 @@ app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, r
   }
 
   const threadRes = await pool.query(
-    "insert into message_threads (client_id, subject, last_message_at) values ($1,$2, now()) on conflict (client_id) do update set last_message_at = now() returning id",
+    "insert into message_threads (client_id, subject, last_message_at) values ($1,$2, now()) on conflict (client_id) do update set last_message_at = now(), admin_archived_at = null returning id",
     [clientId, "General support"]
   );
   const threadId = threadRes.rows[0].id;
@@ -810,7 +810,7 @@ app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, r
     "insert into messages (thread_id, sender, sender_ref, body, attachments, delivered_at) values ($1,'client',$2,$3,$4::jsonb, now()) returning id, created_at",
     [threadId, clientId, bodyText, JSON.stringify(uploaded)]
   );
-  await pool.query("update message_threads set last_message_at = now(), updated_at = now() where id = $1", [threadId]);
+  await pool.query("update message_threads set last_message_at = now(), updated_at = now(), admin_archived_at = null where id = $1", [threadId]);
   const infoRes = await pool.query(
     "select first_name, last_name, email from clients where id = $1 limit 1",
     [clientId]
@@ -1188,11 +1188,14 @@ app.delete("/api/admin/orders/:orderNumber", async (req, res) => {
 });
 
 app.get("/api/admin/inbox", async (_req, res) => {
+  const includeArchived =
+    String(_req.query.includeArchived || "").toLowerCase() === "true" || String(_req.query.includeArchived || "") === "1";
   const sql = `
     select
       t.id as thread_id,
       t.last_message_at,
       t.admin_last_read_at,
+      t.admin_archived_at,
       c.id as client_id,
       c.first_name,
       c.last_name,
@@ -1221,9 +1224,10 @@ app.get("/api/admin/inbox", async (_req, res) => {
       order by created_at desc
       limit 1
     ) m on true
+    where ($1::boolean = true or t.admin_archived_at is null)
     order by coalesce(t.last_message_at, t.updated_at, t.created_at) desc
   `;
-  const { rows } = await pool.query(sql);
+  const { rows } = await pool.query(sql, [includeArchived]);
   res.json({
     threads: rows.map((r) => ({
       threadId: r.thread_id,
@@ -1235,6 +1239,7 @@ app.get("/api/admin/inbox", async (_req, res) => {
         chatAttachments.inboxPreviewLine(r.preview, r.preview_attachments) || "(no messages)",
       lastFrom: r.last_sender || "",
       unreadCount: Number(r.unread_count || 0),
+      archived: Boolean(r.admin_archived_at),
     })),
   });
 });
@@ -1342,10 +1347,8 @@ app.get("/api/admin/metrics", async (_req, res) => {
 
 app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   const { threadId } = req.params;
-  const includeArchived =
-    String(req.query.includeArchived || "").toLowerCase() === "true" || String(req.query.includeArchived || "") === "1";
   const threadSql = `
-    select t.id as thread_id, c.id as client_id, c.first_name, c.last_name, c.email
+    select t.id as thread_id, t.admin_archived_at, c.id as client_id, c.first_name, c.last_name, c.email
     from message_threads t
     join clients c on c.id = t.client_id
     where t.id = $1
@@ -1354,11 +1357,8 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
   const threadRes = await pool.query(threadSql, [threadId]);
   if (!threadRes.rows.length) return res.status(404).json({ error: "Thread not found." });
   const info = threadRes.rows[0];
-  const msgSql = includeArchived
-    ? `select id, sender, body, attachments, created_at, admin_archived_at from messages
-       where thread_id = $1 and deleted_at is null order by created_at asc`
-    : `select id, sender, body, attachments, created_at, admin_archived_at from messages
-       where thread_id = $1 and deleted_at is null and admin_archived_at is null order by created_at asc`;
+  const msgSql = `select id, sender, body, attachments, created_at, admin_archived_at from messages
+       where thread_id = $1 and deleted_at is null order by created_at asc`;
   const msgRes = await pool.query(msgSql, [threadId]);
   await pool.query("update message_threads set admin_last_read_at = now(), updated_at = updated_at where id = $1", [
     threadId,
@@ -1369,10 +1369,26 @@ app.get("/api/admin/threads/:threadId/messages", async (req, res) => {
       clientId: info.client_id,
       clientLabel: `${info.first_name || ""} ${info.last_name || ""}`.trim() || "Client",
       clientEmail: info.email || "",
+      archived: Boolean(info.admin_archived_at),
     },
     messages: msgRes.rows.map(mapMessageRow),
-    includeArchived,
   });
+});
+
+app.patch("/api/admin/threads/:threadId", async (req, res) => {
+  const { threadId } = req.params;
+  const action = String((req.body && req.body.action) || "").toLowerCase();
+  if (!["archive", "restore"].includes(action)) {
+    return res.status(400).json({ error: "action must be archive or restore." });
+  }
+  const exists = await pool.query("select id from message_threads where id = $1 limit 1", [threadId]);
+  if (!exists.rows.length) return res.status(404).json({ error: "Thread not found." });
+  if (action === "archive") {
+    await pool.query("update message_threads set admin_archived_at = now(), updated_at = now() where id = $1", [threadId]);
+  } else {
+    await pool.query("update message_threads set admin_archived_at = null, updated_at = now() where id = $1", [threadId]);
+  }
+  return res.json({ ok: true });
 });
 
 app.patch("/api/admin/threads/:threadId/messages/:messageId", async (req, res) => {

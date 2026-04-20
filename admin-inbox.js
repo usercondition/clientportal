@@ -12,14 +12,15 @@
   var logoutBtn = document.getElementById("admin-logout");
   var notifyPermBtn = document.getElementById("admin-enable-notify");
   var showArchivedEl = document.getElementById("admin-show-archived");
+  var threadArchiveToggleBtn = document.getElementById("admin-thread-archive-toggle");
 
   /** @type {string | null} */
   var selectedThreadId = null;
 
-  /** When true, GET thread messages includes rows with admin_archived_at set. */
+  /** When true, GET /api/admin/inbox includes archived conversations. */
   var includeArchived = false;
 
-  /** @type {Record<string, { updatedAt: string; preview: string; lastFrom: string }>} */
+  /** @type {Record<string, { updatedAt: string; preview: string; lastFrom: string; archived?: boolean }>} */
   var threadListSnapshot = {};
 
   /** @type {Record<string, Set<string | number>>} */
@@ -186,6 +187,15 @@
     });
   }
 
+  async function patchThreadArchive(threadId, action) {
+    var url = "/api/admin/threads/" + encodeURIComponent(threadId);
+    return requestJson(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: action }),
+    });
+  }
+
   async function postThreadMessage(threadId, text, fileList) {
     var url = "/api/admin/threads/" + encodeURIComponent(threadId) + "/messages";
     var bodyText = String(text || "").trim();
@@ -231,7 +241,8 @@
     if (!listEl) return;
     var rows = [];
     try {
-      var payload = await requestJson("/api/admin/inbox");
+      var qs = includeArchived ? "?includeArchived=1" : "";
+      var payload = await requestJson("/api/admin/inbox" + qs);
       rows = payload.threads || [];
     } catch (e) {
       rows = [];
@@ -245,6 +256,7 @@
         preview: r.preview || "",
         lastFrom: r.lastFrom || "",
         unreadCount: Number(r.unreadCount || 0),
+        archived: Boolean(r.archived),
       };
     });
     if (hadSnapshot) {
@@ -272,6 +284,9 @@
       .map(function (r) {
         var active = r.threadId === selectedThreadId ? " is-active" : "";
         var unread = Number(r.unreadCount || 0);
+        var archivedChip = r.archived
+          ? '<span class="admin-inbox-unread" aria-label="Archived" title="Archived">Archived</span>'
+          : "";
         var badge =
           unread > 0
             ? '<span class="admin-inbox-unread" aria-label="' +
@@ -290,6 +305,7 @@
           '<span class="admin-inbox-item__name">' +
           esc(r.clientLabel) +
           "</span>" +
+          archivedChip +
           badge +
           "</span>" +
           '<span class="admin-inbox-item__preview">' +
@@ -328,9 +344,8 @@
 
     var payload;
     try {
-      var qs = includeArchived ? "?includeArchived=1" : "";
       payload = await requestJson(
-        "/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages" + qs
+        "/api/admin/threads/" + encodeURIComponent(selectedThreadId) + "/messages"
       );
     } catch (e) {
       selectedThreadId = null;
@@ -356,6 +371,10 @@
     chatWrap.hidden = false;
     nameEl.textContent = t.clientLabel || "Client";
     emailEl.textContent = t.clientEmail ? t.clientEmail : "";
+    if (threadArchiveToggleBtn) {
+      threadArchiveToggleBtn.textContent = t.archived ? "Unarchive conversation" : "Archive conversation";
+      threadArchiveToggleBtn.setAttribute("data-thread-archived", t.archived ? "1" : "0");
+    }
 
     threadEl.innerHTML = messages
       .map(function (m) {
@@ -368,24 +387,12 @@
         if (!isAdmin && m.archived) rowCls += " admin-msg--archived";
         var actions = "";
         if (!isAdmin) {
-          if (m.archived) {
-            actions =
-              '<div class="admin-msg__actions">' +
-              '<button type="button" class="admin-msg__btn" data-msg-action="restore" data-msg-id="' +
-              esc(String(m.id)) +
-              '">Restore</button>' +
-              "</div>";
-          } else {
-            actions =
-              '<div class="admin-msg__actions">' +
-              '<button type="button" class="admin-msg__btn" data-msg-action="archive" data-msg-id="' +
-              esc(String(m.id)) +
-              '">Archive</button>' +
-              '<button type="button" class="admin-msg__btn admin-msg__btn--danger" data-msg-action="delete" data-msg-id="' +
-              esc(String(m.id)) +
-              '">Delete</button>' +
-              "</div>";
-          }
+          actions =
+            '<div class="admin-msg__actions">' +
+            '<button type="button" class="admin-msg__btn admin-msg__btn--danger" data-msg-action="delete" data-msg-id="' +
+            esc(String(m.id)) +
+            '">Delete</button>' +
+            "</div>";
         }
         return (
           '<article class="' +
@@ -441,9 +448,7 @@
       ev.preventDefault();
       try {
         await patchThreadMessage(selectedThreadId, mid, act);
-        showAppToast(
-          act === "archive" ? "Message archived." : act === "delete" ? "Message deleted." : "Message restored."
-        );
+        showAppToast(act === "delete" ? "Message deleted." : "Message updated.");
         await renderList();
         await renderThread();
       } catch (err) {
@@ -455,7 +460,36 @@
   if (showArchivedEl) {
     showArchivedEl.addEventListener("change", function () {
       includeArchived = Boolean(showArchivedEl.checked);
-      renderThread();
+      if (!includeArchived && selectedThreadId) {
+        var active = threadListSnapshot[selectedThreadId];
+        if (active && active.archived) {
+          selectedThreadId = null;
+          renderThread();
+        }
+      }
+      renderList();
+      if (selectedThreadId) renderThread();
+    });
+  }
+
+  if (threadArchiveToggleBtn) {
+    threadArchiveToggleBtn.addEventListener("click", async function () {
+      if (!selectedThreadId) return;
+      var archivedNow = threadArchiveToggleBtn.getAttribute("data-thread-archived") === "1";
+      var nextAction = archivedNow ? "restore" : "archive";
+      try {
+        await patchThreadArchive(selectedThreadId, nextAction);
+        showAppToast(archivedNow ? "Conversation unarchived." : "Conversation archived.");
+        await renderList();
+        if (!includeArchived && nextAction === "archive") {
+          selectedThreadId = null;
+          renderThread();
+          return;
+        }
+        await renderThread();
+      } catch (err) {
+        showAppToast((err && err.message) || "Could not update conversation archive state.");
+      }
     });
   }
 
