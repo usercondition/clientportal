@@ -14,9 +14,119 @@
     }
   }
 
+  /** Thread id when the address bar is a single open chat, e.g. /messages/t/2524944237900437/ */
+  function getOpenConversationThreadIdFromLocation() {
+    var path = "";
+    try {
+      path = new URL(location.href).pathname || "";
+    } catch (_e) {
+      path = location.pathname || "";
+    }
+    var m = path.match(/\/(?:messages|marketplace)\/t\/(\d{6,})\/?$/i);
+    return m ? m[1] : "";
+  }
+
+  function djb2Hash(str) {
+    var s = String(str || "");
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) {
+      h = (h << 5) + h + s.charCodeAt(i);
+    }
+    return String(h >>> 0);
+  }
+
+  function pageTitleAsBuyer() {
+    var t = textOf(document.querySelector("title")) || "";
+    return t.replace(/\s*\|\s*Facebook.*$/i, "").replace(/\s*\|\s*Messenger.*$/i, "").trim().slice(0, 200);
+  }
+
+  function findLargestMessageGridInMain() {
+    var main = document.querySelector('div[role="main"]');
+    if (!main) return null;
+    var grids = main.querySelectorAll('[role="grid"]');
+    var best = null;
+    var bestN = 0;
+    for (var g = 0; g < grids.length; g++) {
+      var gr = grids[g];
+      if (gr.closest('[role="navigation"]')) continue;
+      var rows = gr.querySelectorAll('[role="row"]');
+      var n = rows.length;
+      if (n > bestN && n < 600) {
+        bestN = n;
+        best = gr;
+      }
+    }
+    return best;
+  }
+
+  var SKIP_BODY = /^(write a reply|message|search|active now|online|more options|enter)$/i;
+
+  /**
+   * One thread + messages from the open conversation only (matches visible chat area best-effort).
+   */
+  function collectOpenConversationThread(threadId) {
+    var buyerName = pageTitleAsBuyer() || "Conversation";
+    var grid = findLargestMessageGridInMain();
+    var messages = [];
+    if (!grid) {
+      return [
+        {
+          threadId: String(threadId),
+          buyerName: buyerName,
+          snippet: "",
+          updatedAt: new Date().toISOString(),
+          messages: previewMessagesForThread(threadId, buyerName),
+        },
+      ];
+    }
+    var rows = grid.querySelectorAll('[role="row"]');
+    var seenBodies = Object.create(null);
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.closest('[role="navigation"]')) continue;
+      var cell = row.querySelector('[role="gridcell"]') || row;
+      var divAutos = cell.querySelectorAll("div[dir='auto']");
+      var body = "";
+      for (var d = 0; d < divAutos.length; d++) {
+        var piece = textOf(divAutos[d]);
+        if (piece.length > body.length) body = piece;
+      }
+      if (!body) body = textOf(cell).replace(/\s+/g, " ").trim().slice(0, 4000);
+      body = body.trim().slice(0, 12000);
+      if (body.length < 2) continue;
+      if (SKIP_BODY.test(body)) continue;
+      var norm = body.slice(0, 300);
+      if (seenBodies[norm]) continue;
+      seenBodies[norm] = true;
+      var midEl = row.querySelector("[data-mid],[data-message-id],[id*='mid_']");
+      var mid =
+        (midEl && (midEl.getAttribute("data-mid") || midEl.getAttribute("data-message-id"))) || "";
+      var msgId = mid
+        ? String(mid).trim().slice(0, 512)
+        : "__open__:" + threadId + ":" + djb2Hash(body.slice(0, 500) + ":" + i);
+      var who = textOf(row.querySelector("h4,[aria-label*='sent'],[aria-label*='Sent']")).slice(0, 200);
+      messages.push({
+        messageId: msgId,
+        senderLabel: who || "—",
+        body: body,
+        sentAt: new Date().toISOString(),
+      });
+      if (messages.length >= 200) break;
+    }
+    var snippet = messages.length ? messages[messages.length - 1].body.slice(0, 500) : "";
+    return [
+      {
+        threadId: String(threadId),
+        buyerName: buyerName,
+        snippet: snippet,
+        updatedAt: new Date().toISOString(),
+        messages: messages.length ? messages : previewMessagesForThread(threadId, buyerName),
+      },
+    ];
+  }
+
   /**
    * Thread id from absolute URL (Facebook / Messenger / Marketplace / legacy query strings).
-   * Meta changes URLs often — several patterns are tried.
    */
   function extractThreadIdFromInboxHref(absUrl) {
     var s = String(absUrl || "");
@@ -45,7 +155,6 @@
     return "";
   }
 
-  /** One stable row per thread so admin “messages” is not empty when only the inbox list is visible. */
   function previewMessagesForThread(threadId, snippet) {
     var sn = String(snippet || "").trim();
     if (!sn) return [];
@@ -81,6 +190,12 @@
       });
   }
 
+  /** Inbox list only: anchors that look like real thread links (avoids pulling unrelated /t/ links site-wide). */
+  function hrefLooksLikeThreadLink(href) {
+    if (!href) return false;
+    return /\/(?:messages|marketplace)\/t\/\d|thread_id=|tid=id\.|tid=id%2e/i.test(href);
+  }
+
   function collectMetaCommerce() {
     var threads = [];
     var seen = Object.create(null);
@@ -89,19 +204,23 @@
       var list = document.querySelectorAll(sel);
       for (var i = 0; i < list.length; i++) anchorSet.add(list[i]);
     }
-    addAnchors('a[href*="/t/"]');
-    addAnchors('a[href*="thread_id"]');
-    addAnchors('a[href*="tid="]');
-    addAnchors('a[href*="messages"]');
-    addAnchors('a[href*="marketplace"]');
-    addAnchors('a[href*="messenger"]');
-    addAnchors('[role="row"] a[href]');
-    addAnchors('[role="listitem"] a[href]');
-    addAnchors('[role="grid"] a[href]');
-    addAnchors("div[role='grid'] a[href]");
+    addAnchors('a[href*="/messages/t/"]');
+    addAnchors('a[href*="/marketplace/t/"]');
+    addAnchors('a[href*="/messages/e/"]');
+    addAnchors('a[href*="thread_id="]');
+    addAnchors('a[href*="tid=id"]');
+    addAnchors('[role="row"] a[href*="/t/"]');
+    addAnchors('[role="listitem"] a[href*="/t/"]');
+    addAnchors('[role="grid"] a[href*="/t/"]');
+
     var allA = document.querySelectorAll("a[href]");
-    var cap = Math.min(allA.length, 5000);
-    for (var k = 0; k < cap; k++) anchorSet.add(allA[k]);
+    var cap = Math.min(allA.length, 4000);
+    for (var k = 0; k < cap; k++) {
+      var a1 = allA[k];
+      var h1 = a1.getAttribute("href") || "";
+      if (!hrefLooksLikeThreadLink(h1)) continue;
+      anchorSet.add(a1);
+    }
 
     anchorSet.forEach(function (a) {
       var href = a.getAttribute("href");
@@ -186,7 +305,7 @@
   }
 
   var META_EMPTY_HINT =
-    "No threads found on this tab. Use normal Chrome on facebook.com (Messages or Marketplace inbox), not only Comet/other shells. Scroll the conversation list so rows load. Options → profile “Meta / Facebook”. If still 0: open DevTools → pick one conversation row → use “Custom” JSON (rowSelector + id from a link’s href or data-*).";
+    "No threads found. For the inbox list: scroll conversations. For a single chat URL (/messages/t/123…): stay on that page — we sync only that thread’s visible bubbles. Options → Meta / Facebook. If still empty, use Custom JSON from DevTools.";
 
   var GENERIC_EMPTY_HINT =
     'No elements matched [data-thread-id]. For Meta/Facebook inbox, switch profile to “Meta / Facebook”, or use “Custom” JSON with rowSelector / idAttr.';
@@ -194,6 +313,10 @@
   function collectFromPage(msg) {
     var profile = String((msg && msg.selectorProfile) || "generic").trim().toLowerCase();
     if (profile === "meta" || profile === "meta_commerce" || profile === "facebook") {
+      var openId = getOpenConversationThreadIdFromLocation();
+      if (openId) {
+        return { ok: true, threads: collectOpenConversationThread(openId) };
+      }
       var mt = collectMetaCommerce();
       if (!mt.length) return { ok: false, error: META_EMPTY_HINT };
       return { ok: true, threads: mt };

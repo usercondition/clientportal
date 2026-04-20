@@ -23,9 +23,10 @@ That means the **active tab** had no inbox helper script attached. **Fix:** clic
 ## How to sync (Chrome)
 
 1. **Options**: set API base URL (site origin), **same** token as `MARKETPLACE_SYNC_TOKEN`, choose **Extraction profile** (try **Meta / Facebook** on Meta inbox).
-2. In Chrome, open your **marketplace / messages inbox** page (the tab that lists conversations).
-3. Click the extension icon → **Sync now**.
-4. In the portal, open **Admin → Marketplace** — threads refresh on load / every 45s.
+2. **Inbox list** (`/messages` or Marketplace inbox): syncs one row per visible conversation (thread links only — not every link on Facebook).
+3. **Single open chat** (URL like `https://www.facebook.com/messages/t/THREAD_ID/`): syncs **only that thread** and tries to read **visible message bubbles** in the main chat grid (best-effort; Meta DOM varies).
+4. Click the extension icon → **Sync now**.
+5. In the portal, open **Admin → Marketplace** — threads refresh on load / every 45s.
 
 Each thread sends an **inbox preview** line as one message when the list row had visible snippet text. Full back-and-forth history only appears if you later add deeper DOM scraping (or export) for your specific inbox; Meta markup changes often, so **Custom** JSON is there for stable selectors when you tune it.
 
