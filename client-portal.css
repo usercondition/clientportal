@@ -577,6 +577,8 @@
   min-height: 8rem;
   overflow-y: auto;
   scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  scroll-padding-bottom: 1rem;
   padding: 0.95rem 1rem;
   display: flex;
   flex-direction: column;
@@ -710,7 +712,7 @@
 /* Compose */
 .portal-compose {
   border-top: 1px solid var(--border);
-  padding: 0.85rem 1rem 1rem;
+  padding: 0.85rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
   background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
 }
 
@@ -894,6 +896,7 @@
   .portal-compose textarea {
     font-size: 1rem;
     min-height: 3.35rem;
+    resize: none;
   }
 
   .portal-chat-fab {
@@ -1011,7 +1014,7 @@
   }
 
   .portal-body--chat-view .portal-panel--messages .portal-card-messages {
-    max-height: calc(100dvh - 12.5rem);
+    max-height: calc(100dvh - 12.5rem - env(safe-area-inset-bottom, 0px));
   }
 
   .portal-body--chat-view .portal-panel--messages,

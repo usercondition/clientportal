@@ -143,6 +143,20 @@
   var chatCloseBtn = document.getElementById("portal-chat-close");
   var chatBackdrop = document.getElementById("portal-chat-backdrop");
   var chatInput = document.getElementById("portal-msg-input");
+  var messagePollTimer = null;
+  var messageRenderInFlight = false;
+  var MESSAGE_POLL_MS_ACTIVE = 3000;
+  var MESSAGE_POLL_MS_HIDDEN = 12000;
+
+  function getChatThreadEl() {
+    return document.getElementById("portal-thread");
+  }
+
+  function scrollChatThreadToEnd() {
+    var thread = getChatThreadEl();
+    if (!thread) return;
+    thread.scrollTop = thread.scrollHeight;
+  }
 
   function setMobileChatOpen(on) {
     if (!mobileChatMq || !mobileChatMq.matches) return;
@@ -162,7 +176,12 @@
         } catch (_e) {
           chatInput.focus();
         }
+        window.requestAnimationFrame(function () {
+          scrollChatThreadToEnd();
+        });
       }, 120);
+    } else if (!on && chatInput && document.activeElement === chatInput) {
+      chatInput.blur();
     }
   }
 
@@ -371,92 +390,113 @@
   }
 
   async function renderMessages() {
-    var thread = document.getElementById("portal-thread");
-    if (!thread) return;
-    var shouldStickToBottom = firstMessageRender || isNearBottom(thread);
-    var messages = [];
+    if (messageRenderInFlight) return;
+    messageRenderInFlight = true;
     try {
-      messages = await Portal.getMessages();
-    } catch (e) {
-      messages = [];
-    }
-
-    var renderSig = messages
-      .map(function (m) {
-        var attachmentCount = Array.isArray(m.attachments) ? m.attachments.length : 0;
-        return [
-          String(m.id || ""),
-          String(m.at || ""),
-          String(m.from || ""),
-          String(m.body || ""),
-          String(attachmentCount),
-        ].join("|");
-      })
-      .join("||");
-    var hasChanged = renderSig !== lastMessageRenderSig;
-    if (!hasChanged) return;
-    lastMessageRenderSig = renderSig;
-
-    var hadSeen = seenMessageIds.size > 0;
-    messages.forEach(function (m) {
-      if (seenMessageIds.has(m.id)) return;
-      seenMessageIds.add(m.id);
-      if (hadSeen && m.from === "admin") {
-        showAppToast("New reply from staff");
-        maybeBrowserNotify("Client portal", "You have a new reply from staff.");
-        if (document.title === baseTitle) {
-          document.title = "(!) " + baseTitle;
-          window.setTimeout(function () {
-            document.title = baseTitle;
-          }, 4000);
-        }
+      var thread = document.getElementById("portal-thread");
+      if (!thread) return;
+      var shouldStickToBottom = firstMessageRender || isNearBottom(thread);
+      var messages = [];
+      try {
+        messages = await Portal.getMessages();
+      } catch (e) {
+        messages = [];
       }
-    });
 
-    thread.innerHTML = messages
-      .map(function (m) {
-        var isClient = m.from === "client";
-        var bodyText = String(m.body || "").trim();
-        var bodyHtml = bodyText ? esc(bodyText) : "";
-        var attHtml = renderAttachmentsHtml(m.attachments);
-        return (
-          '<div class="portal-bubble portal-bubble--' +
-          (isClient ? "client" : "admin") +
-          '">' +
-          (bodyHtml ? "<p class=\"portal-bubble-text\">" + bodyHtml + "</p>" : "") +
-          attHtml +
-          "<time>" +
-          esc(formatTime(m.at)) +
-          "</time></div>"
-        );
-      })
-      .join("");
-    if (!firstMessageRender) {
-      thread.querySelectorAll(".portal-bubble").forEach(function (el) {
-        el.style.animation = "none";
-      });
-      var all = thread.querySelectorAll(".portal-bubble");
-      var last = all[all.length - 1];
-      if (last) last.classList.add("portal-bubble--fresh");
-    }
-    firstMessageRender = false;
+      var renderSig = messages
+        .map(function (m) {
+          var attachmentCount = Array.isArray(m.attachments) ? m.attachments.length : 0;
+          return [
+            String(m.id || ""),
+            String(m.at || ""),
+            String(m.from || ""),
+            String(m.body || ""),
+            String(attachmentCount),
+          ].join("|");
+        })
+        .join("||");
+      var hasChanged = renderSig !== lastMessageRenderSig;
+      if (!hasChanged) return;
+      lastMessageRenderSig = renderSig;
 
-    if (shouldStickToBottom) {
-      var scrollToEnd = function () {
-        var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
-        if (prefersReducedMotion() || isMobile) {
-          thread.scrollTop = thread.scrollHeight;
-        } else {
-          thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
+      var hadSeen = seenMessageIds.size > 0;
+      messages.forEach(function (m) {
+        if (seenMessageIds.has(m.id)) return;
+        seenMessageIds.add(m.id);
+        if (hadSeen && m.from === "admin") {
+          showAppToast("New reply from staff");
+          maybeBrowserNotify("Client portal", "You have a new reply from staff.");
+          if (document.title === baseTitle) {
+            document.title = "(!) " + baseTitle;
+            window.setTimeout(function () {
+              document.title = baseTitle;
+            }, 4000);
+          }
         }
-      };
-      window.requestAnimationFrame(scrollToEnd);
+      });
+
+      thread.innerHTML = messages
+        .map(function (m) {
+          var isClient = m.from === "client";
+          var bodyText = String(m.body || "").trim();
+          var bodyHtml = bodyText ? esc(bodyText) : "";
+          var attHtml = renderAttachmentsHtml(m.attachments);
+          return (
+            '<div class="portal-bubble portal-bubble--' +
+            (isClient ? "client" : "admin") +
+            '">' +
+            (bodyHtml ? "<p class=\"portal-bubble-text\">" + bodyHtml + "</p>" : "") +
+            attHtml +
+            "<time>" +
+            esc(formatTime(m.at)) +
+            "</time></div>"
+          );
+        })
+        .join("");
+      if (!firstMessageRender) {
+        thread.querySelectorAll(".portal-bubble").forEach(function (el) {
+          el.style.animation = "none";
+        });
+        var all = thread.querySelectorAll(".portal-bubble");
+        var last = all[all.length - 1];
+        if (last) last.classList.add("portal-bubble--fresh");
+      }
+      firstMessageRender = false;
+
+      if (shouldStickToBottom) {
+        var scrollToEnd = function () {
+          var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
+          if (prefersReducedMotion() || isMobile) {
+            thread.scrollTop = thread.scrollHeight;
+          } else {
+            thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
+          }
+        };
+        window.requestAnimationFrame(scrollToEnd);
+      }
+    } finally {
+      messageRenderInFlight = false;
     }
+  }
+
+  function queueNextMessagePoll() {
+    if (messagePollTimer) window.clearTimeout(messagePollTimer);
+    var delay = document.hidden ? MESSAGE_POLL_MS_HIDDEN : MESSAGE_POLL_MS_ACTIVE;
+    messagePollTimer = window.setTimeout(function () {
+      renderMessages()
+        .catch(function () {})
+        .finally(function () {
+          queueNextMessagePoll();
+        });
+    }, delay);
   }
 
   renderOrders();
   renderMessages();
-  setInterval(renderMessages, 3000);
+  queueNextMessagePoll();
+  document.addEventListener("visibilitychange", function () {
+    queueNextMessagePoll();
+  });
 
   syncMobileChatState();
   if (chatOpenBtn) {
@@ -492,10 +532,20 @@
     window.clearTimeout(resizeChatTid);
     resizeChatTid = window.setTimeout(function () {
       syncMobileChatState();
+      if (document.body.classList.contains("portal-body--chat-view")) {
+        scrollChatThreadToEnd();
+      }
     }, 120);
   }
   window.addEventListener("orientationchange", scheduleSyncChatLayout);
   window.addEventListener("resize", scheduleSyncChatLayout);
+  if (chatInput) {
+    chatInput.addEventListener("focus", function () {
+      window.setTimeout(function () {
+        scrollChatThreadToEnd();
+      }, 140);
+    });
+  }
 
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");
@@ -522,9 +572,16 @@
       input.value = "";
       if (fileInput) fileInput.value = "";
       if (fileHint) fileHint.textContent = "";
-      renderMessages();
+      await renderMessages();
+      window.requestAnimationFrame(function () {
+        scrollChatThreadToEnd();
+      });
+      try {
+        input.focus({ preventScroll: true });
+      } catch (_e) {
+        input.focus();
+      }
       if (mobileChatMq && mobileChatMq.matches) {
-        setMobileChatOpen(false);
         showAppToast("Message sent.");
       }
     });
