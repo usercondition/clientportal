@@ -6,6 +6,10 @@
 
   var seenMessageIds = new Set();
   var baseTitle = document.title;
+  var mobileChatMq =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 899px)")
+      : null;
 
   function showAppToast(text) {
     var host = document.getElementById("app-toast-host");
@@ -132,6 +136,42 @@
     } catch (e) {
       return iso;
     }
+  }
+
+  var chatPanel = document.getElementById("portal-messages-panel");
+  var chatOpenBtn = document.getElementById("portal-chat-open");
+  var chatCloseBtn = document.getElementById("portal-chat-close");
+  var chatBackdrop = document.getElementById("portal-chat-backdrop");
+  var chatInput = document.getElementById("portal-msg-input");
+
+  function setMobileChatOpen(on) {
+    if (!mobileChatMq || !mobileChatMq.matches) return;
+    document.body.classList.toggle("portal-body--chat-open", !!on);
+    if (chatBackdrop) chatBackdrop.hidden = !on;
+    if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", on ? "true" : "false");
+    if (chatPanel) chatPanel.setAttribute("aria-hidden", on ? "false" : "true");
+    if (on && chatInput) {
+      window.setTimeout(function () {
+        try {
+          chatInput.focus({ preventScroll: true });
+        } catch (_e) {
+          chatInput.focus();
+        }
+      }, 120);
+    }
+  }
+
+  function syncMobileChatState() {
+    var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
+    if (!isMobile) {
+      document.body.classList.remove("portal-body--chat-open");
+      if (chatBackdrop) chatBackdrop.hidden = true;
+      if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", "false");
+      if (chatPanel) chatPanel.setAttribute("aria-hidden", "false");
+      return;
+    }
+    if (chatPanel) chatPanel.setAttribute("aria-hidden", "true");
+    if (chatBackdrop) chatBackdrop.hidden = true;
   }
 
   var fn = typeof p.firstName === "string" ? p.firstName : "";
@@ -374,6 +414,35 @@
   renderMessages();
   setInterval(renderMessages, 3000);
 
+  syncMobileChatState();
+  if (chatOpenBtn) {
+    chatOpenBtn.addEventListener("click", function () {
+      setMobileChatOpen(true);
+    });
+  }
+  if (chatCloseBtn) {
+    chatCloseBtn.addEventListener("click", function () {
+      setMobileChatOpen(false);
+    });
+  }
+  if (chatBackdrop) {
+    chatBackdrop.addEventListener("click", function () {
+      setMobileChatOpen(false);
+    });
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (!document.body.classList.contains("portal-body--chat-open")) return;
+    setMobileChatOpen(false);
+  });
+  if (mobileChatMq) {
+    if (typeof mobileChatMq.addEventListener === "function") {
+      mobileChatMq.addEventListener("change", syncMobileChatState);
+    } else if (typeof mobileChatMq.addListener === "function") {
+      mobileChatMq.addListener(syncMobileChatState);
+    }
+  }
+
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");
   var fileInput = document.getElementById("portal-msg-files");
@@ -400,6 +469,10 @@
       if (fileInput) fileInput.value = "";
       if (fileHint) fileHint.textContent = "";
       renderMessages();
+      if (mobileChatMq && mobileChatMq.matches) {
+        setMobileChatOpen(false);
+        showAppToast("Message sent.");
+      }
     });
   }
 

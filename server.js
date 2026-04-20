@@ -1162,6 +1162,31 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
   });
 });
 
+app.delete("/api/admin/orders/:orderNumber", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "Database is not configured." });
+  }
+  const { orderNumber } = req.params;
+  try {
+    const sel = await pool.query(
+      "select id, status from orders where order_number = $1 limit 1",
+      [orderNumber]
+    );
+    if (!sel.rows.length) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+    if (sel.rows[0].status !== "cancelled") {
+      return res.status(400).json({ error: "Only cancelled orders can be deleted." });
+    }
+    await pool.query("delete from orders where id = $1", [sel.rows[0].id]);
+    return res.json({ ok: true });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/orders] delete failed:", err.message);
+    return res.status(500).json({ error: "Could not delete order." });
+  }
+});
+
 app.get("/api/admin/inbox", async (_req, res) => {
   const sql = `
     select

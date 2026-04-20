@@ -53,13 +53,23 @@
         <div class="portal-dashboard">
           <!-- Primary: messaging -->
           <section
+            id="portal-messages-panel"
             class="portal-panel portal-panel--messages"
             aria-labelledby="msg-heading"
+            aria-hidden="false"
           >
             <div class="portal-panel__header">
               <div class="portal-panel__title-row">
                 <h2 id="msg-heading" class="portal-h2">Messages</h2>
                 <p class="portal-panel__meta">Synced with our team inbox</p>
+                <button
+                  type="button"
+                  class="portal-chat-close"
+                  id="portal-chat-close"
+                  aria-label="Close chat window"
+                >
+                  Close
+                </button>
               </div>
               <p class="portal-msg-intro">
                 Replies appear here in real time. Use the control below to turn browser alerts on or off (they work even
@@ -142,6 +152,23 @@
         </div>
       </div>
     </main>
+
+    <button
+      type="button"
+      class="portal-chat-fab"
+      id="portal-chat-open"
+      aria-controls="portal-messages-panel"
+      aria-expanded="false"
+    >
+      Open chat
+    </button>
+    <button
+      type="button"
+      class="portal-chat-backdrop"
+      id="portal-chat-backdrop"
+      aria-label="Close chat window"
+      hidden
+    ></button>
 
     <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>
 

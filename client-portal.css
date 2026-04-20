@@ -266,6 +266,12 @@
   min-width: 0;
 }
 
+.portal-chat-fab,
+.portal-chat-close,
+.portal-chat-backdrop {
+  display: none;
+}
+
 .portal-panel--messages .portal-h2 {
   margin: 0;
 }
@@ -870,6 +876,99 @@
   .portal-compose textarea {
     font-size: 1rem;
     min-height: 3.35rem;
+  }
+
+  .portal-chat-fab {
+    display: inline-flex;
+    position: fixed;
+    right: 0.9rem;
+    bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    z-index: 70;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+    background: color-mix(in srgb, var(--bg-elevated) 92%, var(--accent-soft));
+    color: var(--text);
+    border-radius: 999px;
+    min-height: 2.7rem;
+    padding: 0.45rem 0.95rem;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .portal-chat-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 78;
+    background: rgba(3, 6, 14, 0.62);
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .portal-panel--messages {
+    position: fixed;
+    left: 0.55rem;
+    right: 0.55rem;
+    top: calc(0.55rem + env(safe-area-inset-top, 0px));
+    bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
+    z-index: 79;
+    border-radius: 16px;
+    max-height: none;
+    transform: translateY(106%);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      transform var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+      opacity var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  .portal-panel--messages .portal-panel__header {
+    padding-bottom: 0.7rem;
+  }
+
+  .portal-panel--messages .portal-panel__body--flush {
+    height: calc(100% - 8.8rem);
+  }
+
+  .portal-panel--messages .portal-card-messages {
+    max-height: none;
+    height: 100%;
+  }
+
+  .portal-chat-close {
+    display: inline-flex;
+    margin-left: auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .portal-body--chat-open .portal-panel--messages {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .portal-body--chat-open {
+    overflow: hidden;
+  }
+
+  .portal-body--chat-open .portal-chat-fab {
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 

@@ -14,6 +14,7 @@
   var statusSelect = document.getElementById("admin-orders-status");
   var saveBtn = document.getElementById("admin-orders-save-status");
   var cancelBtn = document.getElementById("admin-orders-cancel-order");
+  var deleteBtn = document.getElementById("admin-orders-delete-order");
 
   /** @type {string | null} */
   var selectedOrderNum = null;
@@ -182,6 +183,9 @@
     if (cancelBtn) {
       cancelBtn.disabled = o.status === "cancelled" || o.status === "fulfilled";
     }
+    if (deleteBtn) {
+      deleteBtn.disabled = o.status !== "cancelled";
+    }
     if (saveBtn && statusSelect) {
       var locked = o.status === "cancelled" || o.status === "fulfilled";
       saveBtn.disabled = locked;
@@ -252,6 +256,17 @@
     return data;
   }
 
+  async function deleteCancelledOrder(orderNumber) {
+    var res = await fetch("/api/admin/orders/" + encodeURIComponent(orderNumber), {
+      method: "DELETE",
+    });
+    var data = await res.json().catch(function () {
+      return {};
+    });
+    if (!res.ok) throw new Error(data.error || "Delete failed.");
+    return data;
+  }
+
   async function selectOrder(orderNumber) {
     selectedOrderNum = orderNumber || null;
     renderList(lastListSnapshot);
@@ -302,6 +317,12 @@
       if (!btn) return;
       var num = btn.getAttribute("data-order");
       if (!num) return;
+      if (selectedOrderNum === num) {
+        selectedOrderNum = null;
+        renderList(lastListSnapshot);
+        showEmptyDetail();
+        return;
+      }
       selectOrder(num);
     });
   }
@@ -344,6 +365,41 @@
         showAppToast((err && err.message) || "Could not cancel.");
       } finally {
         cancelBtn.disabled = false;
+      }
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async function () {
+      if (!selectedOrderNum) return;
+      var deletingNum = selectedOrderNum;
+      var active = lastListSnapshot.find(function (o) {
+        return o.orderNumber === deletingNum;
+      });
+      if (!active || active.status !== "cancelled") {
+        showAppToast("Only cancelled orders can be deleted.");
+        return;
+      }
+      if (
+        !window.confirm(
+          "Delete cancelled order " + deletingNum + "? This permanently removes it from the admin list."
+        )
+      ) {
+        return;
+      }
+      deleteBtn.disabled = true;
+      try {
+        await deleteCancelledOrder(deletingNum);
+        selectedOrderNum = null;
+        showEmptyDetail();
+        showAppToast("Cancelled order deleted.");
+        var listData = await fetchListPayload();
+        setMetrics(listData.metrics, listData.databaseConnected);
+        renderList(listData.orders || []);
+      } catch (err) {
+        showAppToast((err && err.message) || "Could not delete order.");
+      } finally {
+        deleteBtn.disabled = false;
       }
     });
   }
