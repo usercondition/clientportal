@@ -143,49 +143,63 @@
           <p class="admin-metrics__banner" id="metric-db-banner" hidden role="status">
             Database not configured or unreachable — connect <code>DATABASE_URL</code> to populate metrics.
           </p>
-          <div class="admin-metrics__grid">
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Revenue (MTD)</h3>
-              <p class="admin-metric__value" id="metric-revenue">—</p>
-              <p class="admin-metric__hint">Sum of order totals this month (excludes cancelled).</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Est. gross profit (MTD)</h3>
-              <p class="admin-metric__value" id="metric-profit">—</p>
-              <p class="admin-metric__hint" id="metric-profit-hint">
-                Optional: set <code>ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT</code> (0–100) for a rough estimate.
-              </p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Orders (MTD)</h3>
-              <p class="admin-metric__value" id="metric-orders">—</p>
-              <p class="admin-metric__hint">Non-cancelled orders created this month.</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Avg order value (MTD)</h3>
-              <p class="admin-metric__value" id="metric-avg-order">—</p>
-              <p class="admin-metric__hint">Revenue ÷ order count for the month.</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Open orders</h3>
-              <p class="admin-metric__value" id="metric-open-orders">—</p>
-              <p class="admin-metric__hint">Not fulfilled or cancelled.</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Portal clients</h3>
-              <p class="admin-metric__value" id="metric-clients">—</p>
-              <p class="admin-metric__hint">Rows in <code>clients</code>.</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Message threads</h3>
-              <p class="admin-metric__value" id="metric-threads">—</p>
-              <p class="admin-metric__hint">Active inbox conversations.</p>
-            </article>
-            <article class="admin-metric">
-              <h3 class="admin-metric__label">Messages (30 days)</h3>
-              <p class="admin-metric__value" id="metric-messages-30d">—</p>
-              <p class="admin-metric__hint">All non-deleted messages in the rolling window.</p>
-            </article>
+
+          <div class="admin-metrics__panel">
+            <div class="admin-metrics__group">
+              <h3 class="admin-metrics__subhead" id="metrics-finance">Revenue &amp; orders</h3>
+              <p class="admin-metrics__subtext">Month-to-date from your <code>orders</code> table (cancelled excluded).</p>
+              <div class="admin-metrics__grid admin-metrics__grid--finance">
+                <article class="admin-metric admin-metric--lead">
+                  <h4 class="admin-metric__label">Revenue (MTD)</h4>
+                  <p class="admin-metric__value" id="metric-revenue">—</p>
+                  <p class="admin-metric__hint">Total collected on orders this month.</p>
+                </article>
+                <article class="admin-metric admin-metric--lead">
+                  <h4 class="admin-metric__label">Est. gross profit (MTD)</h4>
+                  <p class="admin-metric__value" id="metric-profit">—</p>
+                  <p class="admin-metric__hint" id="metric-profit-hint">
+                    Set <code>ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT</code> (0–100) for a rough estimate.
+                  </p>
+                </article>
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Orders (MTD)</h4>
+                  <p class="admin-metric__value" id="metric-orders">—</p>
+                  <p class="admin-metric__hint">Count of orders created this month.</p>
+                </article>
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Avg order value</h4>
+                  <p class="admin-metric__value" id="metric-avg-order">—</p>
+                  <p class="admin-metric__hint">Revenue ÷ orders (MTD).</p>
+                </article>
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Open orders</h4>
+                  <p class="admin-metric__value" id="metric-open-orders">—</p>
+                  <p class="admin-metric__hint">Still in progress (not fulfilled or cancelled).</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="admin-metrics__group admin-metrics__group--portal">
+              <h3 class="admin-metrics__subhead" id="metrics-portal">Client portal</h3>
+              <p class="admin-metrics__subtext">Activity across registered clients and messaging.</p>
+              <div class="admin-metrics__grid admin-metrics__grid--portal">
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Portal clients</h4>
+                  <p class="admin-metric__value" id="metric-clients">—</p>
+                  <p class="admin-metric__hint">Total <code>clients</code> records.</p>
+                </article>
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Message threads</h4>
+                  <p class="admin-metric__value" id="metric-threads">—</p>
+                  <p class="admin-metric__hint">Inbox conversations (one per client).</p>
+                </article>
+                <article class="admin-metric">
+                  <h4 class="admin-metric__label">Messages (30 days)</h4>
+                  <p class="admin-metric__value" id="metric-messages-30d">—</p>
+                  <p class="admin-metric__hint">Non-deleted messages, rolling window.</p>
+                </article>
+              </div>
+            </div>
           </div>
         </section>
 

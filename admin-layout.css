@@ -335,10 +335,10 @@
 .admin-metrics__head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  gap: 0.65rem 1.25rem;
+  margin-bottom: 0.85rem;
 }
 
 .admin-metrics__title {
@@ -353,6 +353,7 @@
   margin: 0;
   font-size: 0.82rem;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .admin-metrics__period-label {
@@ -375,43 +376,139 @@
   font-size: 0.88em;
 }
 
-.admin-metrics__grid {
-  display: grid;
-  gap: 0.85rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 188px), 1fr));
+/* Single surface: groups stack with a divider */
+.admin-metrics__panel {
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: var(--shadow-sm);
 }
 
-@media (min-width: 640px) {
-  .admin-metrics__grid {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+.admin-metrics__group {
+  margin: 0;
+  padding: 0;
+}
+
+.admin-metrics__group--portal {
+  margin-top: 1.15rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.admin-metrics__subhead {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.admin-metrics__subtext {
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 62ch;
+}
+
+.admin-metrics__subtext code {
+  font-size: 0.9em;
+}
+
+/* Finance: row 1 = revenue + profit (wide); row 2 = three operational counts */
+.admin-metrics__grid--finance {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .admin-metrics__grid--finance {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .admin-metrics__grid--finance .admin-metric--lead:nth-child(1) {
+    grid-column: span 3;
+  }
+
+  .admin-metrics__grid--finance .admin-metric--lead:nth-child(2) {
+    grid-column: span 3;
+  }
+
+  .admin-metrics__grid--finance .admin-metric:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  .admin-metrics__grid--finance .admin-metric:nth-child(4) {
+    grid-column: span 2;
+  }
+
+  .admin-metrics__grid--finance .admin-metric:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 560px) and (max-width: 719px) {
+  .admin-metrics__grid--finance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-metrics__grid--finance .admin-metric:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Portal: one row of three on wide screens */
+.admin-metrics__grid--portal {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .admin-metrics__grid--portal {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 .admin-metric {
   margin: 0;
-  padding: 1rem 1.05rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
-  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
-  box-shadow: var(--shadow-sm);
-  min-height: 7.25rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  min-height: 6.75rem;
   display: flex;
   flex-direction: column;
 }
 
+.admin-metric--lead {
+  padding: 1rem 1rem;
+  min-height: 7.5rem;
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated));
+}
+
 .admin-metric__label {
-  margin: 0 0 0.5rem;
-  font-size: 0.7rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
+.admin-metric--lead .admin-metric__value {
+  font-size: clamp(1.35rem, 3.2vw, 1.75rem);
+}
+
 .admin-metric__value {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.35rem;
   font-family: var(--font-display);
-  font-size: clamp(1.25rem, 2.8vw, 1.5rem);
+  font-size: clamp(1.2rem, 2.6vw, 1.45rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -421,8 +518,8 @@
 
 .admin-metric__hint {
   margin: auto 0 0;
-  font-size: 0.74rem;
-  line-height: 1.42;
+  font-size: 0.72rem;
+  line-height: 1.4;
   color: var(--text-muted);
 }
 
