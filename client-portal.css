@@ -883,7 +883,7 @@
     position: fixed;
     right: 0.9rem;
     bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
-    z-index: 70;
+    z-index: 102;
     border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
     background: color-mix(in srgb, var(--bg-elevated) 92%, var(--accent-soft));
     color: var(--text);
@@ -902,7 +902,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 78;
+    z-index: 100;
     background: rgba(3, 6, 14, 0.62);
     border: 0;
     padding: 0;
@@ -919,12 +919,16 @@
     right: 0.55rem;
     top: calc(0.55rem + env(safe-area-inset-top, 0px));
     bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
-    z-index: 79;
+    z-index: 101;
     border-radius: 16px;
     max-height: none;
     transform: translateY(106%);
     opacity: 0;
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
     transition:
       transform var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
       opacity var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
@@ -932,15 +936,32 @@
 
   .portal-panel--messages .portal-panel__header {
     padding-bottom: 0.7rem;
+    flex-shrink: 0;
   }
 
   .portal-panel--messages .portal-panel__body--flush {
-    height: calc(100% - 8.8rem);
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .portal-panel--messages .portal-card-messages {
     max-height: none;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+
+  .portal-panel--messages .portal-thread {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .portal-panel--messages .portal-compose {
+    flex-shrink: 0;
   }
 
   .portal-chat-close {
@@ -1004,6 +1025,11 @@
   .portal-card-messages {
     max-height: min(40dvh, 300px);
   }
+}
+
+/* Full-height chat sheet: undo narrow max-height from breakpoint above */
+body.portal-body--chat-open .portal-panel--messages .portal-card-messages {
+  max-height: none;
 }
 
 /* —— New order request (client-order-new.html) —— */

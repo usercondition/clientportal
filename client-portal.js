@@ -149,7 +149,13 @@
     document.body.classList.toggle("portal-body--chat-open", !!on);
     if (chatBackdrop) chatBackdrop.hidden = !on;
     if (chatOpenBtn) chatOpenBtn.setAttribute("aria-expanded", on ? "true" : "false");
-    if (chatPanel) chatPanel.setAttribute("aria-hidden", on ? "false" : "true");
+    if (chatPanel) {
+      if (on) {
+        chatPanel.removeAttribute("aria-hidden");
+      } else {
+        chatPanel.setAttribute("aria-hidden", "true");
+      }
+    }
     if (on && chatInput) {
       window.setTimeout(function () {
         try {

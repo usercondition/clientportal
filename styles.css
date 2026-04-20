@@ -1079,21 +1079,21 @@ code {
   position: fixed;
   right: max(var(--space-gutter), env(safe-area-inset-right, 0px));
   bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  z-index: 80;
+  /* Below portal mobile chat sheet (z 100+) so the modal stays usable */
+  z-index: 60;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 2.75rem;
   min-height: 2.75rem;
+  width: 2.75rem;
   height: 2.75rem;
-  padding: 0 0.75rem;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
   color: var(--text);
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
   box-shadow: var(--shadow-sm);
@@ -1105,6 +1105,26 @@ code {
     color var(--dur-med) var(--ease-fluid);
 }
 
+.theme-toggle__icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.theme-toggle__icon svg {
+  display: block;
+}
+
+/* Light mode: show moon (switch to dark). Dark mode: show sun (switch to light). */
+.theme-toggle:not(.theme-toggle--dark) .theme-toggle__icon--moon {
+  display: flex;
+}
+
+.theme-toggle.theme-toggle--dark .theme-toggle__icon--sun {
+  display: flex;
+}
+
 .theme-toggle:hover {
   border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
   color: var(--accent);
@@ -1112,6 +1132,14 @@ code {
 
 .theme-toggle:active {
   transform: scale(0.97);
+}
+
+@media (max-width: 899px) {
+  .theme-toggle {
+    left: max(var(--space-gutter), env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* In-app toast */
