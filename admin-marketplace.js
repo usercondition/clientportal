@@ -7,6 +7,10 @@
 
   /** @type {string | null} */
   var selectedId = null;
+  /** When false, message panel shows only the newest row per thread. */
+  var showFullMarketplaceHistory = false;
+  /** @type {any[] | null} */
+  var cachedThreadMessages = null;
 
   function showBanner(text) {
     if (!banner) return;
@@ -55,27 +59,29 @@
     });
   }
 
-  function renderDetail(thread, messages) {
-    if (!detailHead || !msgsEl) return;
-    if (!thread) {
-      detailHead.innerHTML = "";
-      msgsEl.innerHTML = '<p class="admin-mp__empty">Select a conversation.</p>';
-      return;
+  function messageSortTime(m) {
+    var raw = m && (m.sentAt || m.at || m.createdAt);
+    var t = raw ? Date.parse(String(raw)) : NaN;
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  /** Newest single message (by sentAt); if ties or missing dates, prefer last in array. */
+  function pickLatestMessagesOnly(messages) {
+    if (!messages || !messages.length) return [];
+    var bestI = 0;
+    var bestT = messageSortTime(messages[0]);
+    for (var i = 1; i < messages.length; i++) {
+      var ti = messageSortTime(messages[i]);
+      if (ti >= bestT) {
+        bestT = ti;
+        bestI = i;
+      }
     }
-    detailHead.innerHTML =
-      "<h2>" +
-      esc(thread.buyerName || "Thread") +
-      "</h2>" +
-      "<p>Platform: " +
-      esc(thread.platform || "") +
-      " · ID: " +
-      esc(thread.threadId || "") +
-      "</p>";
-    if (!messages || !messages.length) {
-      msgsEl.innerHTML = '<p class="admin-mp__empty">No messages stored for this thread.</p>';
-      return;
-    }
-    msgsEl.innerHTML = messages
+    return [messages[bestI]];
+  }
+
+  function renderMessageBubbles(messages) {
+    return messages
       .map(function (m) {
         return (
           '<div class="admin-mp__bubble">' +
@@ -92,8 +98,59 @@
       .join("");
   }
 
+  function renderDetail(thread, messages) {
+    if (!detailHead || !msgsEl) return;
+    if (!thread) {
+      detailHead.innerHTML = "";
+      msgsEl.innerHTML = '<p class="admin-mp__empty">Select a conversation.</p>';
+      cachedThreadMessages = null;
+      return;
+    }
+    cachedThreadMessages = messages && messages.length ? messages.slice() : [];
+    detailHead.innerHTML =
+      "<h2>" +
+      esc(thread.buyerName || "Thread") +
+      "</h2>" +
+      "<p>Platform: " +
+      esc(thread.platform || "") +
+      " · ID: " +
+      esc(thread.threadId || "") +
+      "</p>";
+    if (!cachedThreadMessages.length) {
+      msgsEl.innerHTML = '<p class="admin-mp__empty">No messages stored for this thread.</p>';
+      return;
+    }
+    var total = cachedThreadMessages.length;
+    var toShow = showFullMarketplaceHistory ? cachedThreadMessages : pickLatestMessagesOnly(cachedThreadMessages);
+    var toolbar = "";
+    if (total > 1) {
+      if (showFullMarketplaceHistory) {
+        toolbar =
+          '<div class="admin-mp__msg-toolbar">' +
+          "<span>Showing all " +
+          total +
+          ' messages.</span> <button type="button" id="admin-mp-toggle-history">Show latest only</button></div>';
+      } else {
+        toolbar =
+          '<div class="admin-mp__msg-toolbar">' +
+          "<span>Showing <strong>latest message</strong> only (" +
+          total +
+          ' in thread).</span> <button type="button" id="admin-mp-toggle-history">Show full history</button></div>';
+      }
+    }
+    msgsEl.innerHTML = toolbar + renderMessageBubbles(toShow);
+    var toggleBtn = document.getElementById("admin-mp-toggle-history");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", function () {
+        showFullMarketplaceHistory = !showFullMarketplaceHistory;
+        renderDetail(thread, cachedThreadMessages);
+      });
+    }
+  }
+
   function loadThread(id) {
     selectedId = id;
+    showFullMarketplaceHistory = false;
     renderList(window.__adminMpThreads || []);
     fetch("/api/admin/marketplace/threads/" + encodeURIComponent(id) + "/messages")
       .then(function (r) {
