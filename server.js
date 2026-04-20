@@ -1244,6 +1244,85 @@ app.get("/api/admin/inbox", async (_req, res) => {
   });
 });
 
+app.get("/api/admin/customers", async (_req, res) => {
+  if (!DATABASE_URL) {
+    return res.json({
+      databaseConnected: false,
+      customers: [],
+    });
+  }
+  try {
+    const cRes = await pool.query(`
+      select
+        c.id,
+        c.first_name,
+        c.last_name,
+        c.email,
+        c.phone,
+        c.sign_in_zip,
+        c.created_at,
+        a.line_1,
+        a.line_2,
+        a.city,
+        a.state,
+        a.postal_code,
+        coalesce(o.total_orders, 0)::int as total_orders,
+        coalesce(o.open_orders, 0)::int as open_orders,
+        o.last_order_at,
+        t.last_message_at
+      from clients c
+      left join lateral (
+        select line_1, line_2, city, state, postal_code
+        from client_addresses
+        where client_id = c.id and is_default = true
+        order by created_at asc
+        limit 1
+      ) a on true
+      left join lateral (
+        select
+          count(*)::int as total_orders,
+          count(*) filter (
+            where status not in ('fulfilled'::order_status, 'cancelled'::order_status)
+          )::int as open_orders,
+          max(created_at) as last_order_at
+        from orders
+        where client_id = c.id
+      ) o on true
+      left join message_threads t on t.client_id = c.id
+      order by c.created_at desc
+      limit 1000
+    `);
+    return res.json({
+      databaseConnected: true,
+      customers: cRes.rows.map((r) => ({
+        clientId: r.id,
+        firstName: r.first_name || "",
+        lastName: r.last_name || "",
+        fullName: `${r.first_name || ""} ${r.last_name || ""}`.trim() || "Client",
+        email: r.email || "",
+        phone: r.phone || "",
+        signInZip: r.sign_in_zip || "",
+        createdAt: r.created_at,
+        address: {
+          line1: r.line_1 || "",
+          line2: r.line_2 || "",
+          city: r.city || "",
+          state: r.state || "",
+          postalCode: r.postal_code || "",
+        },
+        totalOrders: Number(r.total_orders || 0),
+        openOrders: Number(r.open_orders || 0),
+        lastOrderAt: r.last_order_at,
+        lastMessageAt: r.last_message_at,
+      })),
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/customers] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load customers.", details: err.message });
+  }
+});
+
 /**
  * Dashboard KPIs: revenue/profit from orders (MTD), portal activity. Profit is optional margin on revenue via
  * ADMIN_ESTIMATED_GROSS_MARGIN_PERCENT (0–100) until you add real COGS.
