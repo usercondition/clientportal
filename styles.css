@@ -1,18 +1,18 @@
 /* Theme — tweak these variables to re-skin quickly */
 :root {
-  --bg: #0e0818;
-  --bg-elevated: #171127;
-  --text: #f4efff;
-  --text-muted: #b7a8cd;
-  --accent: #74f0ff;
-  --accent-soft: rgba(116, 240, 255, 0.14);
-  --border: rgba(205, 174, 255, 0.2);
+  --bg: #f2edeb;
+  --bg-elevated: #ddd2cd;
+  --text: #4b4c52;
+  --text-muted: #7c7170;
+  --accent: #b68677;
+  --accent-soft: rgba(182, 134, 119, 0.16);
+  --border: rgba(75, 76, 82, 0.2);
   --radius: 12px;
   --radius-lg: 20px;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Manrope", "Inter", system-ui, sans-serif;
-  --shadow: 0 28px 76px rgba(6, 2, 14, 0.58);
-  --shadow-sm: 0 12px 34px rgba(6, 2, 12, 0.46);
+  --shadow: 0 24px 56px rgba(53, 44, 41, 0.22);
+  --shadow-sm: 0 10px 24px rgba(53, 44, 41, 0.16);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.18s;
@@ -24,15 +24,15 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0c0515;
-  --bg-elevated: #150a24;
-  --text: #f8eeff;
-  --text-muted: #ad95c7;
-  --accent: #67e8ff;
-  --accent-soft: rgba(103, 232, 255, 0.2);
-  --border: rgba(149, 229, 255, 0.2);
-  --shadow: 0 28px 76px rgba(3, 6, 16, 0.62);
-  --shadow-sm: 0 12px 32px rgba(2, 6, 14, 0.45);
+  --bg: #4b4c52;
+  --bg-elevated: #5b5c63;
+  --text: #f2edeb;
+  --text-muted: #d2c2bc;
+  --accent: #c9ab9f;
+  --accent-soft: rgba(201, 171, 159, 0.22);
+  --border: rgba(242, 237, 235, 0.2);
+  --shadow: 0 24px 64px rgba(12, 12, 16, 0.48);
+  --shadow-sm: 0 10px 28px rgba(12, 12, 16, 0.38);
 }
 
 *,
@@ -46,7 +46,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-x: clip;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -64,9 +64,9 @@ body {
   color: var(--text);
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 58%),
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(101, 220, 255, 0.15), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 0% 90%, rgba(180, 102, 255, 0.2), transparent 62%);
+    radial-gradient(ellipse 120% 88% at 50% -35%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 58%),
+    radial-gradient(ellipse 70% 55% at 100% 0%, color-mix(in srgb, #c9ab9f 22%, transparent), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 90%, color-mix(in srgb, #bcaeab 28%, transparent), transparent 62%);
   min-height: 100vh;
   min-height: 100dvh;
   /* Notched phones / home indicator: keep content off system UI */
@@ -98,7 +98,7 @@ a {
 }
 
 a:hover {
-  color: #d4b88a;
+  color: color-mix(in srgb, var(--accent) 80%, #8f5d4d);
 }
 
 code {
@@ -486,7 +486,7 @@ code {
     color-mix(in srgb, var(--accent) 88%, #ffffff) 0%,
     color-mix(in srgb, var(--accent) 74%, #8bc6ff) 100%
   );
-  color: #08111e;
+  color: #2f2725;
   box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
@@ -496,7 +496,7 @@ code {
     color-mix(in srgb, var(--accent) 100%, #ffffff) 0%,
     color-mix(in srgb, var(--accent) 84%, #9ad2ff) 100%
   );
-  color: #08111e;
+  color: #2f2725;
   box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
@@ -706,7 +706,7 @@ code {
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
   overflow: hidden;
-  background: linear-gradient(140deg, #3f0f67 0%, #0f1238 45%, #2c0e4c 100%);
+  background: linear-gradient(140deg, #bcaeab 0%, #b68677 55%, #4b4c52 100%);
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--dur-med) var(--ease-fluid),
@@ -719,14 +719,14 @@ code {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 20%, rgba(255, 95, 207, 0.52), transparent 35%),
-    radial-gradient(circle at 85% 85%, rgba(82, 241, 255, 0.38), transparent 38%),
+    radial-gradient(circle at 18% 20%, rgba(202, 175, 161, 0.45), transparent 35%),
+    radial-gradient(circle at 85% 85%, rgba(75, 76, 82, 0.35), transparent 38%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.06), transparent 56%);
 }
 
 .synth-tile:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 22px 40px rgba(31, 4, 49, 0.45);
+  box-shadow: 0 22px 40px rgba(53, 44, 41, 0.35);
   border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
 }
 
@@ -767,15 +767,15 @@ code {
 }
 
 .synth-tile--02 {
-  background: linear-gradient(140deg, #2d0a53 0%, #151742 55%, #5b1e5f 100%);
+  background: linear-gradient(140deg, #cab0a2 0%, #b68677 52%, #4b4c52 100%);
 }
 
 .synth-tile--03 {
-  background: linear-gradient(155deg, #4c0c59 0%, #171543 48%, #211d6c 100%);
+  background: linear-gradient(155deg, #ddd2cd 0%, #cab0a2 48%, #4b4c52 100%);
 }
 
 .synth-tile--04 {
-  background: linear-gradient(145deg, #25184f 0%, #3a1256 44%, #0f294f 100%);
+  background: linear-gradient(145deg, #bcaeab 0%, #b68677 44%, #4b4c52 100%);
 }
 
 .contact-list {
