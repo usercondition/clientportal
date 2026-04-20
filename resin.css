@@ -377,10 +377,10 @@ body.resin-home .rh-gallery__thumb img {
   display: block;
 }
 
-/* Prototype tile: preserve full object geometry without edge cropping. */
+/* Prototype tile: stretch image to fill full container. */
 body.resin-home .rh-gallery__item--prototype .rh-gallery__thumb img {
-  object-fit: contain;
-  padding: 8%;
+  object-fit: fill;
+  padding: 0;
 }
 
 body.resin-home .rh-gallery__cap {
