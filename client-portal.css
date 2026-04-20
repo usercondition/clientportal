@@ -995,6 +995,7 @@
 
   .portal-body--chat-view .portal-main {
     padding-block: 0.65rem;
+    overflow: hidden;
   }
 
   .portal-body--chat-view .portal-layout,
@@ -1002,6 +1003,7 @@
     gap: 0;
     animation: none;
     transform: none;
+    min-height: 0;
   }
 
   .portal-body--chat-view .portal-chat-fab {
@@ -1010,6 +1012,18 @@
 
   .portal-body--chat-view .portal-panel--messages .portal-card-messages {
     max-height: calc(100dvh - 12.5rem);
+  }
+
+  .portal-body--chat-view .portal-panel--messages,
+  .portal-body--chat-view .portal-panel--messages .portal-panel__body--flush,
+  .portal-body--chat-view .portal-panel--messages .portal-card-messages {
+    overscroll-behavior: contain;
+  }
+
+  .portal-body--chat-view .portal-panel--messages .portal-thread {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 }
 
@@ -1045,6 +1059,10 @@
 /* Ensure chat view is not capped by narrow-screen card max-heights. */
 body.portal-body--chat-view .portal-panel--messages .portal-card-messages {
   max-height: none;
+}
+
+body.portal-body--chat-view {
+  overflow: hidden;
 }
 
 /* —— New order request (client-order-new.html) —— */

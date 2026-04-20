@@ -363,9 +363,16 @@
     );
   }
 
+  function isNearBottom(el) {
+    if (!el) return true;
+    var remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    return remaining <= 48;
+  }
+
   async function renderMessages() {
     var thread = document.getElementById("portal-thread");
     if (!thread) return;
+    var shouldStickToBottom = firstMessageRender || isNearBottom(thread);
     var messages = [];
     try {
       messages = await Portal.getMessages();
@@ -417,14 +424,17 @@
     }
     firstMessageRender = false;
 
-    var scrollToEnd = function () {
-      if (prefersReducedMotion()) {
-        thread.scrollTop = thread.scrollHeight;
-      } else {
-        thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
-      }
-    };
-    window.requestAnimationFrame(scrollToEnd);
+    if (shouldStickToBottom) {
+      var scrollToEnd = function () {
+        var isMobile = Boolean(mobileChatMq && mobileChatMq.matches);
+        if (prefersReducedMotion() || isMobile) {
+          thread.scrollTop = thread.scrollHeight;
+        } else {
+          thread.scrollTo({ top: thread.scrollHeight, behavior: "smooth" });
+        }
+      };
+      window.requestAnimationFrame(scrollToEnd);
+    }
   }
 
   renderOrders();
