@@ -102,6 +102,10 @@
           return null;
         }
         return r.json().then(function (j) {
+          if (r.status === 503 && j && j.migrationNeeded) {
+            showBanner(j.error || "Run npm run db:migrate to create marketplace tables.");
+            return null;
+          }
           if (!r.ok) throw new Error((j && j.error) || "Load failed");
           return j;
         });
@@ -128,12 +132,25 @@
           return null;
         }
         return r.json().then(function (j) {
+          if (r.status === 503 && j && j.migrationNeeded) {
+            return { __migration: j };
+          }
           if (!r.ok) throw new Error((j && j.error) || "Load failed");
           return j;
         });
       })
       .then(function (data) {
         if (!data) return;
+        if (data.__migration) {
+          showBanner(
+            (data.__migration.error ||
+              "Apply database migration 003.") +
+              " Railway: open the Web service → Shell → run npm run db:migrate with DATABASE_URL set."
+          );
+          renderList([]);
+          renderDetail(null, []);
+          return;
+        }
         if (data.databaseConnected === false) {
           showBanner("Database not configured — connect DATABASE_URL to load synced threads.");
         }

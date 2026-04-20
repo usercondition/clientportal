@@ -6,6 +6,6 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "node server.js"
-# Liveness only — does not require Postgres (use /api/health to verify DB).
+# Liveness only — does not require Postgres. Use GET /api/health for DB + optional marketplace.* fields.
 healthcheckPath = "/health"
 healthcheckTimeout = 30

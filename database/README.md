@@ -50,6 +50,13 @@ npm run db:migrate
 psql "$DATABASE_URL" -f database/seed.sql
 ```
 
+### Marketplace sync (deploy checklist)
+
+1. **Web service variables**: `MARKETPLACE_SYNC_ENABLED=true`, `MARKETPLACE_SYNC_TOKEN` = long random secret (same value in the Chrome extension options).
+2. **Database**: ensure **`003_marketplace_sync.sql`** ran (`npm run db:migrate` in Railway Shell on the web service, or rely on server startup auto-apply unless `SKIP_AUTO_SCHEMA=true`).
+3. **Verify**: `GET /api/health` should show `"marketplace": { "enabled": true, "tokenConfigured": true, "tablesPresent": true }` when Postgres is connected.
+4. **Extension**: load unpacked from `extensions/marketplace-sync-extension`, set API base URL to your public site origin, paste the token, sync from an inbox tab, then open **Admin → Marketplace**.
+
 ## How this maps to your portal
 
 - Client sign-in lookup (`first name + last name + ZIP`) -> `clients` unique key
@@ -80,7 +87,7 @@ The **Node server auto-applies** `001_init.sql` on startup when **any core porta
 
 If **`SKIP_AUTO_SCHEMA=true`**, auto-apply of `001` / `002` / `003` on startup is skipped — run **`npm run db:migrate`** (or apply SQL manually) so marketplace tables exist before using the extension.
 
-If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually (this runs **001** and **002**):
+If the API still reports **schema mismatch**, Postgres is reachable but migrations did not complete — apply manually (this runs **001**, **002**, and **003**):
 
 **Option A — from your laptop** (recommended once):
 

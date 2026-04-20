@@ -24,6 +24,19 @@ const MARKETPLACE_SYNC_MAX_PER_MIN = (() => {
 /** @type {Map<string, { count: number; startedAt: number }>} */
 const marketplaceSyncRateBuckets = new Map();
 
+(function logMarketplaceDeployHints() {
+  if (!MARKETPLACE_SYNC_ENABLED) return;
+  if (!MARKETPLACE_SYNC_TOKEN) {
+    console.warn(
+      "[marketplace] MARKETPLACE_SYNC_ENABLED is true but MARKETPLACE_SYNC_TOKEN is empty; POST /api/admin/marketplace/sync will return 401 until you set a secret."
+    );
+  } else if (MARKETPLACE_SYNC_TOKEN.length < 24) {
+    console.warn(
+      "[marketplace] MARKETPLACE_SYNC_TOKEN is under 24 characters; use a long random value in production (see .env.example)."
+    );
+  }
+})();
+
 function resolveAdminNotifyEmail() {
   const v = process.env.ADMIN_NOTIFY_EMAIL;
   if (v && String(v).trim()) return String(v).trim();
@@ -342,7 +355,8 @@ const {
   applyMarketplaceSyncSchema,
 } = require("./lib/apply-initial-schema");
 
-app.use(express.json({ limit: "1mb" }));
+// Slightly higher than default: marketplace sync payloads may include many thread rows.
+app.use(express.json({ limit: "2mb" }));
 
 /** Liveness for Railway / load balancers — does not touch the database (avoids restart loops during DB misconfig). */
 app.get("/health", (_req, res) => {
@@ -466,6 +480,10 @@ function checkMarketplaceSyncRateLimit(req, res) {
   return true;
 }
 
+function isPgUndefinedTable(err) {
+  return Boolean(err && /** @type {{ code?: string }} */ (err).code === "42P01");
+}
+
 const ORDER_SERVICE_TYPES = new Set([
   "print",
   "cad",
@@ -522,21 +540,32 @@ function buildOrderRequestSummary(body) {
 /** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
 app.get("/api/health", async (_req, res) => {
   const smtpConfigured = Boolean(createMailTransport());
+  const marketplace = {
+    enabled: MARKETPLACE_SYNC_ENABLED,
+    tokenConfigured: Boolean(MARKETPLACE_SYNC_TOKEN),
+    tablesPresent: null,
+  };
   if (!DATABASE_URL) {
     return res.status(200).json({
       ok: true,
       database: "not_configured",
       smtp: smtpConfigured ? "configured" : "missing",
       hint: "Set DATABASE_URL on the Web service (reference from Postgres).",
+      marketplace,
     });
   }
   try {
     await pool.query("select 1 as health_check");
+    if (MARKETPLACE_SYNC_ENABLED) {
+      const reg = await pool.query("select to_regclass('public.marketplace_threads') as t");
+      marketplace.tablesPresent = Boolean(reg.rows[0] && reg.rows[0].t);
+    }
     return res.status(200).json({
       ok: true,
       database: "connected",
       env: DATABASE_SOURCE_KEY,
       smtp: smtpConfigured ? "configured" : "missing",
+      marketplace,
     });
   } catch (e) {
     const err = /** @type {{ message?: string; code?: string }} */ (e);
@@ -546,6 +575,7 @@ app.get("/api/health", async (_req, res) => {
       message: err.message,
       postgresCode: err.code,
       smtp: smtpConfigured ? "configured" : "missing",
+      marketplace,
     });
   }
 });
@@ -2010,7 +2040,14 @@ app.post("/api/admin/marketplace/sync", async (req, res) => {
     try {
       await client.query("ROLLBACK");
     } catch (_rollbackErr) {}
-    const err = /** @type {{ message?: string }} */ (e);
+    const err = /** @type {{ message?: string; code?: string }} */ (e);
+    if (isPgUndefinedTable(err)) {
+      console.error("[admin/marketplace/sync] undefined table — run npm run db:migrate (003_marketplace_sync.sql).");
+      return res.status(503).json({
+        error: "Marketplace tables are missing. Run npm run db:migrate on the server environment.",
+        migrationNeeded: true,
+      });
+    }
     console.error("[admin/marketplace/sync] failed:", err.message);
     return res.status(500).json({ error: "Marketplace sync failed." });
   } finally {
@@ -2048,7 +2085,16 @@ app.get("/api/admin/marketplace/threads", async (_req, res) => {
       })),
     });
   } catch (e) {
-    const err = /** @type {{ message?: string }} */ (e);
+    const err = /** @type {{ message?: string; code?: string }} */ (e);
+    if (isPgUndefinedTable(err)) {
+      console.error("[admin/marketplace/threads] undefined table — apply 003_marketplace_sync.sql.");
+      return res.status(503).json({
+        error: "Marketplace tables are missing. Run npm run db:migrate (003_marketplace_sync.sql).",
+        migrationNeeded: true,
+        databaseConnected: true,
+        threads: [],
+      });
+    }
     console.error("[admin/marketplace/threads] failed:", err.message);
     return res.status(500).json({ error: "Failed to load marketplace threads." });
   }
@@ -2091,7 +2137,14 @@ app.get("/api/admin/marketplace/threads/:threadId/messages", async (req, res) =>
       })),
     });
   } catch (e) {
-    const err = /** @type {{ message?: string }} */ (e);
+    const err = /** @type {{ message?: string; code?: string }} */ (e);
+    if (isPgUndefinedTable(err)) {
+      console.error("[admin/marketplace/messages] undefined table — apply 003_marketplace_sync.sql.");
+      return res.status(503).json({
+        error: "Marketplace tables are missing. Run npm run db:migrate (003_marketplace_sync.sql).",
+        migrationNeeded: true,
+      });
+    }
     console.error("[admin/marketplace/messages] failed:", err.message);
     return res.status(500).json({ error: "Failed to load marketplace messages." });
   }
@@ -2129,6 +2182,20 @@ async function start() {
       console.log("[db] Schema step complete (bootstrap + compat + marketplace).");
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
+    }
+  }
+
+  if (DATABASE_URL && MARKETPLACE_SYNC_ENABLED) {
+    try {
+      const chk = await pool.query("select to_regclass('public.marketplace_threads') as t");
+      if (!chk.rows[0] || !chk.rows[0].t) {
+        console.warn(
+          "[marketplace] marketplace_threads is missing. Run `npm run db:migrate` in Railway Shell (or apply database/migrations/003_marketplace_sync.sql). If SKIP_AUTO_SCHEMA=true, migrations never run on boot."
+        );
+      }
+    } catch (e) {
+      const err = /** @type {{ message?: string }} */ (e);
+      console.warn("[marketplace] Could not verify marketplace tables:", err.message);
     }
   }
 

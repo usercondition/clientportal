@@ -7,6 +7,7 @@ Manual bridge from a marketplace inbox tab into the admin portal.
 1. Set `MARKETPLACE_SYNC_ENABLED=true` and `MARKETPLACE_SYNC_TOKEN` (long random secret) on the web service.
 2. Run migrations (`npm run db:migrate`) so `003_marketplace_sync.sql` is applied (or rely on server startup auto-apply when `SKIP_AUTO_SCHEMA` is not set).
 3. Open **Admin → Marketplace** to view synced threads.
+4. After deploy, `GET /api/health` includes `marketplace.enabled`, `marketplace.tokenConfigured`, and `marketplace.tablesPresent` when the database is reachable — use that to confirm the stack is ready before syncing.
 
 ## Load in Chrome
 
