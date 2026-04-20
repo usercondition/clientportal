@@ -1,24 +1,22 @@
-/* Design system — calm, high-contrast surfaces for light and dark */
+/* Design system — retro synthwave (shared: marketing, portal, flow, admin) */
 :root {
-  --bg: #f5f6f8;
-  --bg-elevated: #ffffff;
-  --text: #12151a;
-  --text-muted: #5c6370;
-  --accent: #1e5aef;
-  /* Secondary line / interactive hint (used in flow + links) */
-  --accent-cyan: #0b7eb8;
-  --accent-hot: #b45309;
-  --accent-soft: rgba(30, 90, 239, 0.09);
-  --border: rgba(18, 21, 26, 0.1);
+  --bg: #ebe4f5;
+  --bg-elevated: #f7f2ff;
+  --text: #1a0b2e;
+  --text-muted: #5c4a78;
+  --accent: #d91a8b;
+  --accent-cyan: #0ec4d7;
+  --accent-hot: #ff7b45;
+  --accent-soft: rgba(217, 26, 139, 0.12);
+  --border: rgba(42, 18, 72, 0.12);
   --radius: 10px;
   --radius-lg: 16px;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-display: "DM Sans", var(--font-sans);
-  --shadow: 0 20px 50px rgba(18, 21, 26, 0.07);
-  --shadow-sm: 0 4px 16px rgba(18, 21, 26, 0.06);
-  /* Legacy name: soft elevation only (no glow) */
-  --shadow-neon: 0 8px 24px rgba(18, 21, 26, 0.08);
-  --scrim: rgba(18, 21, 26, 0.4);
+  --font-display: "Orbitron", system-ui, sans-serif;
+  --shadow: 0 20px 50px rgba(26, 11, 46, 0.09);
+  --shadow-sm: 0 4px 18px rgba(26, 11, 46, 0.07);
+  --shadow-neon: 0 0 28px rgba(217, 26, 139, 0.14);
+  --scrim: rgba(12, 5, 28, 0.45);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.16s;
@@ -26,71 +24,36 @@
   --dur-slow: 0.45s;
   --max: 1120px;
   --narrow: 560px;
-  /* Horizontal page gutter — used by .container, portal, flow (safe-area aware on mobile) */
   --space-gutter: clamp(0.875rem, 4.5vw, 1.25rem);
-  /* Subtle page depth (no decorative layers in markup) */
-  --page-tint: color-mix(in srgb, var(--accent) 4%, transparent);
+  --page-tint: color-mix(in srgb, var(--accent) 9%, transparent);
+  --page-bg-image:
+    radial-gradient(ellipse 120% 85% at 50% -22%, var(--page-tint), transparent 58%),
+    linear-gradient(185deg, color-mix(in srgb, var(--accent-cyan) 8%, transparent) 0%, transparent 45%);
+  --sem-success: #0d9b86;
+  --sem-danger: #d4254a;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0f1115;
-  --bg-elevated: #181b22;
-  --text: #eef1f6;
-  --text-muted: #9aa3b2;
-  --accent: #6ea8ff;
-  --accent-cyan: #5bc0e6;
-  --accent-hot: #e8b86d;
-  --accent-soft: rgba(110, 168, 255, 0.14);
-  --border: rgba(238, 241, 246, 0.1);
-  --shadow: 0 24px 56px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.35);
-  --shadow-neon: 0 12px 32px rgba(0, 0, 0, 0.4);
-  --scrim: rgba(0, 0, 0, 0.55);
-  --page-tint: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-
-/* Client flow + portal: match resin marketing site (resin.css / index.html palette) */
-html[data-marketing="resin"] body.client-flow-body,
-html[data-marketing="resin"] body.portal-body {
-  --bg: #e8e4dc;
-  --bg-elevated: #dfdad0;
-  --text: #2a2723;
-  --text-muted: #5f5a54;
-  --accent: #0d5f63;
-  --accent-cyan: #0a6b70;
-  --accent-hot: #a6602f;
-  --accent-soft: rgba(13, 95, 99, 0.12);
-  --border: rgba(42, 39, 35, 0.1);
-  --shadow: 0 20px 50px rgba(35, 32, 28, 0.07);
-  --shadow-sm: 0 4px 16px rgba(35, 32, 28, 0.06);
-  --shadow-neon: 0 8px 24px rgba(35, 32, 28, 0.06);
-  --scrim: rgba(35, 32, 28, 0.42);
-  --page-tint: color-mix(in srgb, var(--accent) 6%, transparent);
-}
-
-html[data-marketing="resin"][data-theme="dark"] body.client-flow-body,
-html[data-marketing="resin"][data-theme="dark"] body.portal-body {
-  --bg: #171511;
-  --bg-elevated: #201e1a;
-  --text: #ebe7df;
-  --text-muted: #9a948a;
-  --accent: #5fa3a7;
-  --accent-cyan: #72b3b7;
-  --accent-hot: #c49b72;
-  --accent-soft: rgba(95, 163, 167, 0.16);
-  --border: rgba(235, 231, 223, 0.1);
-  --shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
-  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.32);
-  --shadow-neon: 0 12px 32px rgba(0, 0, 0, 0.38);
-  --scrim: rgba(0, 0, 0, 0.55);
-  --page-tint: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-/* Primary buttons on resin-dark portal/flow: match marketing contrast */
-html[data-marketing="resin"][data-theme="dark"] body.client-flow-body .btn-primary,
-html[data-marketing="resin"][data-theme="dark"] body.portal-body .btn-primary {
-  color: #12110e;
+  --bg: #0f0820;
+  --bg-elevated: #1a1033;
+  --text: #f5edff;
+  --text-muted: #a89bc4;
+  --accent: #ff2ec4;
+  --accent-cyan: #3defff;
+  --accent-hot: #ffae42;
+  --accent-soft: rgba(255, 46, 196, 0.16);
+  --border: rgba(218, 198, 255, 0.12);
+  --shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.4);
+  --shadow-neon: 0 0 36px rgba(255, 46, 196, 0.22);
+  --scrim: rgba(0, 0, 0, 0.62);
+  --page-tint: color-mix(in srgb, var(--accent) 14%, transparent);
+  --page-bg-image:
+    radial-gradient(ellipse 120% 85% at 50% -22%, var(--page-tint), transparent 58%),
+    linear-gradient(185deg, color-mix(in srgb, var(--accent-cyan) 10%, transparent) 0%, transparent 48%);
+  --sem-success: #2ee5c7;
+  --sem-danger: #ff5c8a;
 }
 
 *,
@@ -125,7 +88,7 @@ body {
   overflow-wrap: break-word;
   color: var(--text);
   background-color: var(--bg);
-  background-image: radial-gradient(ellipse 120% 80% at 50% -20%, var(--page-tint), transparent 55%);
+  background-image: var(--page-bg-image);
   min-height: 100vh;
   min-height: 100dvh;
   padding-left: max(0px, env(safe-area-inset-left, 0px));
@@ -674,13 +637,16 @@ code {
 }
 
 .btn-primary:hover {
-  background: color-mix(in srgb, var(--accent) 92%, var(--text));
+  background: color-mix(in srgb, var(--accent) 88%, var(--text));
   box-shadow: var(--shadow-sm);
 }
 
 [data-theme="dark"] .btn-primary {
-  color: #0f1115;
-  border-color: transparent;
+  color: #fff7ff;
+  border-color: color-mix(in srgb, var(--accent-cyan) 42%, var(--accent));
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--accent) 32%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .btn-ghost {

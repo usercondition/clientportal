@@ -296,10 +296,6 @@
   text-align: center;
 }
 
-html[data-theme="dark"] .admin-inbox-unread {
-  color: #111418;
-}
-
 /* ——— Empty / active chat ——— */
 .admin-empty-state {
   flex: 1 1 0%;
@@ -620,9 +616,9 @@ html[data-theme="dark"] .admin-inbox-unread {
 }
 
 .admin-msg__btn--danger:hover {
-  border-color: color-mix(in srgb, #b91c1c 42%, var(--border));
-  color: color-mix(in srgb, #b91c1c 78%, var(--text-muted));
-  background: color-mix(in srgb, #b91c1c 10%, var(--bg));
+  border-color: color-mix(in srgb, var(--sem-danger) 42%, var(--border));
+  color: color-mix(in srgb, var(--sem-danger) 78%, var(--text-muted));
+  background: color-mix(in srgb, var(--sem-danger) 10%, var(--bg));
 }
 
 /* ——— Compose ——— */

@@ -2,10 +2,10 @@
 
 :root {
   --admin-sidebar-w: 260px;
-  --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 92%, #000 8%);
-  --admin-sidebar-border: color-mix(in srgb, var(--border) 80%, transparent);
-  --admin-nav-active: color-mix(in srgb, var(--accent) 18%, var(--bg));
-  --admin-nav-active-border: color-mix(in srgb, var(--accent) 42%, var(--border));
+  --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 88%, var(--accent) 5%);
+  --admin-sidebar-border: color-mix(in srgb, var(--border) 85%, var(--accent-cyan) 8%);
+  --admin-nav-active: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  --admin-nav-active-border: color-mix(in srgb, var(--accent) 38%, var(--border));
 }
 
 .admin-app {
@@ -14,7 +14,8 @@
   min-height: 100vh;
   min-height: 100dvh;
   min-height: -webkit-fill-available;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--page-bg-image);
 }
 
 .admin-app__content {

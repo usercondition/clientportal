@@ -1288,8 +1288,8 @@ body.portal-body--chat-locked {
   padding: 0.65rem 0.75rem;
   font-size: 0.85rem;
   line-height: 1.4;
-  color: color-mix(in srgb, #b91c1c 78%, var(--text));
-  background: color-mix(in srgb, #b91c1c 12%, var(--bg-elevated));
-  border: 1px solid color-mix(in srgb, #b91c1c 28%, var(--border));
+  color: color-mix(in srgb, var(--sem-danger) 78%, var(--text));
+  background: color-mix(in srgb, var(--sem-danger) 12%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--sem-danger) 28%, var(--border));
   border-radius: 0.5rem;
 }

@@ -1,23 +1,12 @@
 (function () {
   var KEY = "site_theme_mode";
   var root = document.documentElement;
-  /** Default app shell (admin / portal) — must match styles.css --bg */
-  var BG_PAGE_LIGHT = "#f5f6f8";
-  var BG_PAGE_DARK = "#0f1115";
-  /** Resin marketing homepage (index) — must match resin.css --rh-bg light/dark */
-  var RESIN_BG_LIGHT = "#e8e4dc";
-  var RESIN_BG_DARK = "#171511";
-
-  function isResinMarketing() {
-    return root.getAttribute("data-marketing") === "resin";
-  }
+  /** Page chrome — must match styles.css / resin.css --bg */
+  var BG_PAGE_LIGHT = "#ebe4f5";
+  var BG_PAGE_DARK = "#0f0820";
 
   function pageBackground(mode) {
-    var dark = mode === "dark";
-    if (isResinMarketing()) {
-      return dark ? RESIN_BG_DARK : RESIN_BG_LIGHT;
-    }
-    return dark ? BG_PAGE_DARK : BG_PAGE_LIGHT;
+    return mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;
   }
 
   function syncThemeColorMeta(mode) {

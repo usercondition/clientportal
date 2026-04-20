@@ -111,13 +111,13 @@
 }
 
 .admin-orders-item__badge--fulfilled {
-  border-color: color-mix(in srgb, #15803d 28%, var(--border));
-  color: color-mix(in srgb, #15803d 62%, var(--text-muted));
+  border-color: color-mix(in srgb, var(--sem-success) 28%, var(--border));
+  color: color-mix(in srgb, var(--sem-success) 62%, var(--text-muted));
 }
 
 .admin-orders-item__badge--cancelled {
-  border-color: color-mix(in srgb, #b91c1c 30%, var(--border));
-  color: color-mix(in srgb, #b91c1c 62%, var(--text-muted));
+  border-color: color-mix(in srgb, var(--sem-danger) 30%, var(--border));
+  color: color-mix(in srgb, var(--sem-danger) 62%, var(--text-muted));
 }
 
 .admin-orders-item__badge--draft {

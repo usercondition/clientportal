@@ -1,26 +1,27 @@
 /**
  * Resin marketing homepage — scoped to body.resin-home only.
- * Does not alter global :root tokens used by admin / client portal.
+ * Uses the same retro synthwave palette as styles.css :root.
  */
 
-/* Light: warm paper tones — slightly muted vs pure cream to reduce glare for long reading */
+/* Light: sunset-on-lavender (synthwave day) */
 body.resin-home {
-  --rh-bg: #e8e4dc;
-  --rh-surface: #dfdad0;
-  --rh-surface-2: #d3cec3;
-  --rh-text: #2a2723;
-  --rh-muted: #5f5a54;
-  --rh-primary: #0d5f63;
-  --rh-primary-hover: #094a4e;
-  --rh-copper: #a6602f;
-  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 16%, transparent);
-  --rh-border: rgba(42, 39, 35, 0.1);
-  --rh-shadow: 0 2px 10px rgba(35, 32, 28, 0.05);
-  --rh-shadow-md: 0 10px 32px rgba(35, 32, 28, 0.07);
+  --rh-bg: #ebe4f5;
+  --rh-surface: #f0e8fc;
+  --rh-surface-2: #e5daf5;
+  --rh-text: #1a0b2e;
+  --rh-muted: #5c4a78;
+  --rh-primary: #d91a8b;
+  --rh-primary-hover: #b81476;
+  --rh-copper: #ff7b45;
+  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
+  --rh-border: rgba(42, 18, 72, 0.12);
+  --rh-shadow: 0 2px 12px rgba(26, 11, 46, 0.06);
+  --rh-shadow-md: 0 12px 36px rgba(26, 11, 46, 0.1);
   --rh-radius: 10px;
   --rh-radius-sm: 6px;
   --rh-max: 1080px;
   --rh-font: "Inter", system-ui, -apple-system, sans-serif;
+  --rh-display: "Orbitron", system-ui, sans-serif;
   --rh-step-1: 0.25rem;
   --rh-step-2: 0.5rem;
   --rh-step-3: 0.75rem;
@@ -30,20 +31,20 @@ body.resin-home {
   --rh-step-7: 3.25rem;
 }
 
-/* Dark: warm charcoal + eggshell text — matches grey resin + cream photo backdrops */
+/* Dark: outrun night grid */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #171511;
-  --rh-surface: #201e1a;
-  --rh-surface-2: #2a2722;
-  --rh-text: #ebe7df;
-  --rh-muted: #9a948a;
-  --rh-primary: #5fa3a7;
-  --rh-primary-hover: #72b3b7;
-  --rh-copper: #c49b72;
-  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
-  --rh-border: rgba(235, 231, 223, 0.1);
-  --rh-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
-  --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.42);
+  --rh-bg: #0f0820;
+  --rh-surface: #1a1033;
+  --rh-surface-2: #241548;
+  --rh-text: #f5edff;
+  --rh-muted: #a89bc4;
+  --rh-primary: #ff2ec4;
+  --rh-primary-hover: #ff5ad4;
+  --rh-copper: #ffae42;
+  --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
+  --rh-border: rgba(218, 198, 255, 0.12);
+  --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.38);
+  --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.48);
 }
 
 body.resin-home {
@@ -175,6 +176,7 @@ body.resin-home .rh-kicker {
 
 body.resin-home .rh-h2 {
   margin: 0 0 var(--rh-step-3);
+  font-family: var(--rh-display);
   font-size: clamp(1.35rem, 2.4vw, 1.65rem);
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -220,6 +222,7 @@ body.resin-home .rh-hero__kicker {
 
 body.resin-home .rh-hero__title {
   margin: 0 0 var(--rh-step-4);
+  font-family: var(--rh-display);
   font-size: clamp(2rem, 4.5vw, 2.85rem);
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -736,11 +739,11 @@ body.resin-home .rh-cta__status {
 }
 
 body.resin-home .rh-cta__status.is-success {
-  color: #1f7a3f;
+  color: var(--sem-success, #0d9b86);
 }
 
 body.resin-home .rh-cta__status.is-error {
-  color: #b42318;
+  color: var(--sem-danger, #d4254a);
 }
 
 body.resin-home .rh-cta__fineprint {
@@ -915,10 +918,10 @@ body.resin-home .footer-note {
   }
 }
 
-/* Photo harmony in dark mode — pulls bright cream highlights in images toward page warmth */
+/* Photo harmony in dark mode — slight cool/magenta cast to match neon UI */
 html[data-theme="dark"] body.resin-home .rh-hero-visual__img,
 html[data-theme="dark"] body.resin-home .rh-gallery__thumb img {
-  filter: brightness(0.94) saturate(0.92);
+  filter: brightness(0.93) saturate(1.05) hue-rotate(-6deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -940,11 +943,15 @@ body.resin-home main a:focus-visible {
 }
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary {
-  color: #12110e;
+  color: #fff7ff;
+  border-color: color-mix(in srgb, var(--rh-primary) 55%, #3defff);
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--rh-primary) 35%, transparent),
+    var(--rh-shadow);
 }
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary:hover {
-  color: #12110e;
+  color: #fff7ff;
 }
 
 body.resin-home .skip-link:focus {
