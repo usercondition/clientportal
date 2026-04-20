@@ -622,6 +622,17 @@
   }
 }
 
+/* Opacity-only entrance: any non-none transform on .portal-dashboard makes
+   descendants with position:fixed resolve against that box (breaks mobile chat sheet). */
+@keyframes portal-rise-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes portal-bubble-in {
   from {
     opacity: 0;
@@ -806,6 +817,7 @@
   .portal-panel--welcome,
   .portal-dashboard {
     animation: none;
+    transform: none;
   }
   .portal-order-list li {
     animation: none;
@@ -826,6 +838,12 @@
 
 /* ——— Mobile ——— */
 @media (max-width: 899px) {
+  /* Critical: dashboard must not retain transform or fixed chat is trapped/clipped inside it */
+  .portal-dashboard {
+    animation: portal-rise-fade var(--dur-slow, 0.58s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)) 0.08s both;
+    transform: none;
+  }
+
   .portal-header-inner {
     min-height: 3.1rem;
     gap: 0.65rem;

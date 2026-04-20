@@ -449,6 +449,16 @@
     }
   }
 
+  var resizeChatTid;
+  function scheduleSyncChatLayout() {
+    window.clearTimeout(resizeChatTid);
+    resizeChatTid = window.setTimeout(function () {
+      syncMobileChatState();
+    }, 120);
+  }
+  window.addEventListener("orientationchange", scheduleSyncChatLayout);
+  window.addEventListener("resize", scheduleSyncChatLayout);
+
   var form = document.getElementById("portal-compose");
   var input = document.getElementById("portal-msg-input");
   var fileInput = document.getElementById("portal-msg-files");
