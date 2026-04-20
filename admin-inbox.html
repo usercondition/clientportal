@@ -128,8 +128,10 @@
         <div class="admin-inbox-page-head__titles">
           <h1 class="admin-inbox-page-head__h">Messages</h1>
           <p class="admin-inbox-page-head__sub">
-            Conversations refresh every few seconds. New client messages can also email your staff address when the server has SMTP
-            configured.
+            Conversations refresh automatically. Use the inbox on the left to open a thread — the message area below fills this column.
+          </p>
+          <p class="admin-inbox-page-head__tip">
+            Email relay: set <code>ADMIN_NOTIFY_EMAIL</code>, <code>SMTP_*</code>, and <code>MAIL_FROM</code> on the server.
           </p>
         </div>
         <button type="button" class="admin-inbox-notify-btn" id="admin-enable-notify">
@@ -155,9 +157,14 @@
             </aside>
 
             <section class="admin-panel admin-panel--chat" aria-label="Selected conversation">
-              <div class="admin-empty-state" id="admin-inbox-empty">
+              <div class="admin-empty-state" id="admin-inbox-empty" role="status">
+                <div class="admin-empty-state__visual" aria-hidden="true">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
                 <p class="admin-empty-state__title">Select a conversation</p>
-                <p class="admin-empty-state__text">Choose a thread on the left to read messages and send a reply.</p>
+                <p class="admin-empty-state__text">Choose a thread in the inbox to read messages and send a reply. This area is replaced when you select someone.</p>
               </div>
 
               <div id="admin-inbox-chat" class="admin-chat-workspace" hidden>
@@ -212,11 +219,6 @@
               </div>
             </section>
           </div>
-
-          <p class="admin-inbox-footnote">
-            Tip: Set <code>ADMIN_NOTIFY_EMAIL</code>, <code>SMTP_*</code>, and <code>MAIL_FROM</code> on the server so staff and clients receive real
-            emails for new messages and replies.
-          </p>
         </div>
       </main>
     </div>

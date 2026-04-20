@@ -419,7 +419,24 @@
   font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.4;
-  max-width: 48ch;
+  max-width: 56ch;
+}
+
+.admin-inbox-page-head__tip {
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 62ch;
+  opacity: 0.92;
+}
+
+.admin-inbox-page-head__tip code {
+  font-size: 0.85em;
+  padding: 0.08em 0.28em;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
 .admin-inbox-notify-btn {
