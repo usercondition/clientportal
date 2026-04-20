@@ -14,7 +14,10 @@
     }
   }
 
-  /** Long numeric ids typical of Meta thread URLs (avoid matching random /t/ paths). */
+  /**
+   * Thread id from absolute URL (Facebook / Messenger / Marketplace / legacy query strings).
+   * Meta changes URLs often — several patterns are tried.
+   */
   function extractThreadIdFromInboxHref(absUrl) {
     var s = String(absUrl || "");
     var patterns = [
@@ -22,7 +25,12 @@
       /\/messages\/t\/(\d{6,})/i,
       /\/messenger\/t\/(\d{6,})/i,
       /\/e2ee\/t\/(\d{6,})/i,
+      /\/messages\/e\/(\d{6,})/i,
       /[?&]thread_id=(\d{6,})/i,
+      /[?&]tid=id\.(\d{6,})/i,
+      /[?&]tid=id%2E(\d{6,})/i,
+      /[?&]tid=id%2e(\d{6,})/i,
+      /[?&]tid=(\d{10,})/i,
     ];
     for (var i = 0; i < patterns.length; i++) {
       var m = s.match(patterns[i]);
@@ -30,6 +38,10 @@
     }
     var loose = s.match(/\/t\/(\d{6,})\b/);
     if (loose) return loose[1];
+    if (/messenger\.com/i.test(s)) {
+      var mc = s.match(/messenger\.com\/t\/(\d{6,})/i);
+      if (mc) return mc[1];
+    }
     return "";
   }
 
@@ -79,9 +91,17 @@
     }
     addAnchors('a[href*="/t/"]');
     addAnchors('a[href*="thread_id"]');
+    addAnchors('a[href*="tid="]');
     addAnchors('a[href*="messages"]');
     addAnchors('a[href*="marketplace"]');
     addAnchors('a[href*="messenger"]');
+    addAnchors('[role="row"] a[href]');
+    addAnchors('[role="listitem"] a[href]');
+    addAnchors('[role="grid"] a[href]');
+    addAnchors("div[role='grid'] a[href]");
+    var allA = document.querySelectorAll("a[href]");
+    var cap = Math.min(allA.length, 5000);
+    for (var k = 0; k < cap; k++) anchorSet.add(allA[k]);
 
     anchorSet.forEach(function (a) {
       var href = a.getAttribute("href");
@@ -112,6 +132,7 @@
         messages: previewMessagesForThread(threadId, snippet),
       });
     });
+    if (threads.length > 200) threads = threads.slice(0, 200);
     return threads;
   }
 
@@ -165,7 +186,7 @@
   }
 
   var META_EMPTY_HINT =
-    "No threads found on this tab. Open the Facebook/Meta Messages or Marketplace inbox list (conversation list). In extension Options choose profile “Meta / Facebook”. If the list still shows 0, use “Custom” with row selectors from DevTools (Meta changes markup often).";
+    "No threads found on this tab. Use normal Chrome on facebook.com (Messages or Marketplace inbox), not only Comet/other shells. Scroll the conversation list so rows load. Options → profile “Meta / Facebook”. If still 0: open DevTools → pick one conversation row → use “Custom” JSON (rowSelector + id from a link’s href or data-*).";
 
   var GENERIC_EMPTY_HINT =
     'No elements matched [data-thread-id]. For Meta/Facebook inbox, switch profile to “Meta / Facebook”, or use “Custom” JSON with rowSelector / idAttr.';
