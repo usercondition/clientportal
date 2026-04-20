@@ -2001,7 +2001,9 @@ app.post("/api/admin/marketplace/sync", async (req, res) => {
       upsertedThreads += 1;
 
       const messagesArr = Array.isArray(rawThread.messages) ? rawThread.messages : [];
-      const messageById = new Map();
+      /** Preserve extension array order (transcript order); last duplicate id overwrites earlier slot. */
+      const orderedMsgs = [];
+      const indexByMessageId = new Map();
       for (const m of messagesArr) {
         messagesReceived += 1;
         const rawMsg = m && typeof m === "object" ? m : {};
@@ -2012,16 +2014,19 @@ app.post("/api/admin/marketplace/sync", async (req, res) => {
           messagesSkippedMissingId += 1;
           continue;
         }
-        if (messageById.has(platformMessageId)) {
+        if (indexByMessageId.has(platformMessageId)) {
           messagesDedupedInRequest += 1;
           pushWarning(`Duplicate message id in thread ${platformThreadId}; last wins: ${platformMessageId}`);
+          orderedMsgs[indexByMessageId.get(platformMessageId)] = rawMsg;
+          continue;
         }
-        messageById.set(platformMessageId, rawMsg);
+        indexByMessageId.set(platformMessageId, orderedMsgs.length);
+        orderedMsgs.push(rawMsg);
       }
-      const capped = Array.from(messageById.values()).slice(0, 500);
-      if (messageById.size > 500) {
+      const capped = orderedMsgs.slice(0, 500);
+      if (orderedMsgs.length > 500) {
         pushWarning(
-          `Thread ${platformThreadId}: only first 500 messages were stored (${messageById.size} unique ids).`
+          `Thread ${platformThreadId}: only first 500 messages were stored (${orderedMsgs.length} in payload).`
         );
       }
       for (const rawMsg of capped) {
@@ -2139,7 +2144,15 @@ app.get("/api/admin/marketplace/threads/:threadId/messages", async (req, res) =>
     );
     if (!threadRes.rows.length) return res.status(404).json({ error: "Marketplace thread not found." });
     const msgRes = await pool.query(
-      "select id, platform_message_id, sender_label, body, sent_at, created_at from marketplace_messages where thread_id = $1 order by coalesce(sent_at, created_at) asc limit 1000",
+      `select id, platform_message_id, sender_label, body, sent_at, created_at, raw_json
+       from marketplace_messages
+       where thread_id = $1
+       order by
+         case when raw_json ? 'sortOrder' then 0 else 1 end asc,
+         case when raw_json ? 'sortOrder' then (raw_json->>'sortOrder')::int else 0 end asc,
+         coalesce(sent_at, created_at) asc nulls last,
+         id asc
+       limit 1000`,
       [threadId]
     );
     const t = threadRes.rows[0];
@@ -2154,13 +2167,24 @@ app.get("/api/admin/marketplace/threads/:threadId/messages", async (req, res) =>
         lastMessageAt: t.last_message_at,
         updatedAt: t.updated_at,
       },
-      messages: msgRes.rows.map((m) => ({
-        id: m.id,
-        messageId: m.platform_message_id,
-        senderLabel: m.sender_label || "",
-        body: m.body || "",
-        sentAt: m.sent_at || m.created_at,
-      })),
+      messages: msgRes.rows.map((m) => {
+        const raw = m.raw_json && typeof m.raw_json === "object" ? m.raw_json : {};
+        const sortOrder = raw.sortOrder != null ? Number(raw.sortOrder) : null;
+        const isOutgoing =
+          typeof raw.isOutgoing === "boolean"
+            ? raw.isOutgoing
+            : raw.direction === "out" || raw.direction === "outgoing";
+        return {
+          id: m.id,
+          messageId: m.platform_message_id,
+          senderLabel: m.sender_label || "",
+          body: m.body || "",
+          sentAt: m.sent_at || m.created_at,
+          sortOrder: Number.isFinite(sortOrder) ? sortOrder : null,
+          isOutgoing,
+          direction: isOutgoing ? "out" : "in",
+        };
+      }),
     });
   } catch (e) {
     const err = /** @type {{ message?: string; code?: string }} */ (e);

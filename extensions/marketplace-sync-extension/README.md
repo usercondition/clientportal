@@ -25,6 +25,8 @@ That means the **active tab** had no inbox helper script attached. **Fix:** clic
 1. **Options**: set API base URL (site origin), **same** token as `MARKETPLACE_SYNC_TOKEN`, choose **Extraction profile** (try **Meta / Facebook** on Meta inbox).
 2. **Inbox list** — must be **Facebook Marketplace** (`/marketplace/inbox`, `/marketplace/you/…`, etc.). Syncs one row per visible conversation; thread links are collected **only inside the page main column** (not site-wide).
 3. **Single open chat** — `/marketplace/t/THREAD_ID/` always. For `/messages/t/…` or `messenger.com/t/…`, sync runs only if the page looks like a **Marketplace** thread (listing link, title, or typical buyer copy). Generic Messenger chats are blocked. Message text is read from the chat **`role="log"`** region when present so the inbox rail is not mistaken for messages.
+
+**v0.2.9+:** Each scraped message gets a stable **`sortOrder`** (top-to-bottom in the transcript) and monotonic **`sentAt`** when Meta does not expose a real time, so the admin portal lists messages in chat order. **`isOutgoing` / `direction`** are best-effort from layout + aria so the admin UI can show left (buyer) vs right (you) bubbles.
 4. Click the extension icon → **Sync now**.
 5. In the portal, open **Admin → Marketplace** — threads refresh on load / every 45s.
 

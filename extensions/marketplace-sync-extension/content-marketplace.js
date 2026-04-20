@@ -232,6 +232,71 @@
   var SKIP_BODY =
     /^(write a reply|message|search|active now|online|more options|enter|send a sticker|attach a file|voice call|video call|more people|people|photos|files)$/i;
 
+  /** Best-effort parse of a real timestamp from a Messenger row (else null). */
+  function parseTimestampFromRow(row) {
+    if (!row) return null;
+    var timeEl = row.querySelector("time[datetime]");
+    if (timeEl) {
+      var dt = timeEl.getAttribute("datetime");
+      if (dt) {
+        var ms = Date.parse(dt);
+        if (Number.isFinite(ms)) return new Date(ms).toISOString();
+      }
+    }
+    var abbr = row.querySelector("abbr[data-utime]");
+    if (abbr) {
+      var ut = abbr.getAttribute("data-utime");
+      if (ut && /^\d+$/.test(ut)) {
+        var sec = Number(ut);
+        if (Number.isFinite(sec) && sec > 946684800)
+          return new Date(sec * 1000).toISOString();
+      }
+    }
+    return null;
+  }
+
+  /** Heuristic: outgoing (you / seller) vs incoming — Meta uses layout + aria in many builds. */
+  function inferIsOutgoing(row) {
+    if (!row) return false;
+    var el = row;
+    for (var depth = 0; depth < 10 && el; depth++) {
+      var ar = String(el.getAttribute("aria-label") || "").toLowerCase();
+      if (/sent by you|you sent|your message|you replied/i.test(ar)) return true;
+      var st = String(el.getAttribute("style") || "").toLowerCase().replace(/\s+/g, "");
+      if (
+        /flex-end|justify-content:flex-end|margin-inline-start:auto|margin-left:auto|alignself:flex-end/.test(
+          st
+        )
+      )
+        return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+
+  /**
+   * Stable transcript order for the API: sortOrder matches top-to-bottom DOM walk.
+   * sentAt is parsed from the row when possible; otherwise synthetic monotonic times so DB sort matches chat order.
+   */
+  function finalizeTranscriptMessages(messages) {
+    var anchor = Date.UTC(2020, 0, 1);
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
+      m.sortOrder = i;
+      var parsed = m._parsedAt || null;
+      delete m._parsedAt;
+      delete m._hasMid;
+      if (parsed) {
+        m.sentAt = parsed;
+      } else {
+        m.sentAt = new Date(anchor + i * 3000).toISOString();
+      }
+      if (typeof m.isOutgoing !== "boolean") m.isOutgoing = false;
+      m.direction = m.isOutgoing ? "out" : "in";
+    }
+    return messages;
+  }
+
   /**
    * One thread + messages from the open conversation only (matches visible chat area best-effort).
    */
@@ -279,11 +344,17 @@
         ? String(mid).trim().slice(0, 512)
         : "__open__:" + threadId + ":" + djb2Hash(body.slice(0, 500) + ":" + i);
       var who = textOf(row.querySelector("h4,[aria-label*='sent'],[aria-label*='Sent']")).slice(0, 200);
+      var parsedAt = parseTimestampFromRow(row);
+      var outgoing = inferIsOutgoing(row);
+      if (!who || who === "—") {
+        if (outgoing) who = "You";
+      }
       raw.push({
         messageId: msgId,
         senderLabel: who || "—",
         body: body,
-        sentAt: new Date().toISOString(),
+        _parsedAt: parsedAt,
+        isOutgoing: outgoing,
         _hasMid: !!mid,
       });
       if (raw.length >= 220) break;
@@ -304,6 +375,7 @@
         if (messages.length >= 200) break;
       }
     }
+    if (messages.length) finalizeTranscriptMessages(messages);
     var snippet = messages.length ? messages[messages.length - 1].body.slice(0, 500) : "";
     return [
       {
@@ -355,6 +427,9 @@
         senderLabel: "Inbox preview",
         body: sn.slice(0, 12000),
         sentAt: new Date().toISOString(),
+        sortOrder: 0,
+        isOutgoing: false,
+        direction: "in",
       },
     ];
   }

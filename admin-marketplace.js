@@ -67,37 +67,65 @@
     return Number.isFinite(t) ? t : 0;
   }
 
-  /** Newest single message (by sentAt); if ties or missing dates, prefer last in array. */
+  /** Match server / extension: transcript order first, then timestamp. */
+  function stableSortMessages(messages) {
+    if (!messages || !messages.length) return [];
+    return messages.slice().sort(function (a, b) {
+      var sa = Number(a.sortOrder);
+      var sb = Number(b.sortOrder);
+      var hasA = Number.isFinite(sa);
+      var hasB = Number.isFinite(sb);
+      if (hasA && hasB && sa !== sb) return sa - sb;
+      if (hasA && !hasB) return -1;
+      if (!hasA && hasB) return 1;
+      var ta = messageSortTime(a);
+      var tb = messageSortTime(b);
+      if (ta !== tb) return ta - tb;
+      return String(a.messageId || a.id || "").localeCompare(String(b.messageId || b.id || ""));
+    });
+  }
+
+  function isOutgoingBubble(m) {
+    if (m.isOutgoing === true || m.direction === "out" || m.direction === "outgoing") return true;
+    if (m.isOutgoing === false) return false;
+    var lab = String(m.senderLabel || "").toLowerCase().trim();
+    if (lab === "you" || /^you[,.]/.test(lab)) return true;
+    if (/^(your reply|your message|seller|shop)\b/.test(lab)) return true;
+    return false;
+  }
+
+  /** Newest single message (by transcript position or time). */
   function pickLatestMessagesOnly(messages) {
     if (!messages || !messages.length) return [];
-    var bestI = 0;
-    var bestT = messageSortTime(messages[0]);
-    for (var i = 1; i < messages.length; i++) {
-      var ti = messageSortTime(messages[i]);
-      if (ti >= bestT) {
-        bestT = ti;
-        bestI = i;
-      }
-    }
-    return [messages[bestI]];
+    var sorted = stableSortMessages(messages);
+    return [sorted[sorted.length - 1]];
   }
 
   function renderMessageBubbles(messages) {
-    return messages
-      .map(function (m) {
-        return (
-          '<div class="admin-mp__bubble">' +
-          '<div class="admin-mp__bubble-from">' +
-          esc(m.senderLabel || "—") +
-          " · " +
-          esc(m.sentAt ? String(m.sentAt).slice(0, 19) : "") +
-          "</div>" +
-          '<div class="admin-mp__bubble-body">' +
-          esc(m.body || "") +
-          "</div></div>"
-        );
-      })
-      .join("");
+    var ordered = stableSortMessages(messages);
+    return (
+      '<div class="admin-mp__transcript">' +
+      ordered
+        .map(function (m) {
+          var out = isOutgoingBubble(m);
+          var mod = out ? " admin-mp__bubble--out" : " admin-mp__bubble--in";
+          return (
+            '<div class="admin-mp__bubble' +
+            mod +
+            '">' +
+            '<div class="admin-mp__bubble-from">' +
+            esc(m.senderLabel || "—") +
+            " · " +
+            esc(m.sentAt ? String(m.sentAt).slice(0, 19) : "") +
+            "</div>" +
+            '<div class="admin-mp__bubble-body">' +
+            esc(m.body || "") +
+            "</div></div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
   }
 
   function renderDetail(thread, messages) {
@@ -108,7 +136,7 @@
       cachedThreadMessages = null;
       return;
     }
-    cachedThreadMessages = messages && messages.length ? messages.slice() : [];
+    cachedThreadMessages = messages && messages.length ? stableSortMessages(messages) : [];
     detailHead.innerHTML =
       "<h2>" +
       esc(thread.buyerName || "Thread") +

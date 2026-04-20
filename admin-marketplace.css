@@ -208,8 +208,17 @@
   background: color-mix(in srgb, var(--bg) 35%, var(--mp-surface) 65%);
 }
 
+.admin-mp__transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
 .admin-mp__bubble {
-  margin-bottom: 12px;
+  margin-bottom: 0;
   padding: 10px 14px;
   border-radius: 14px 14px 14px 4px;
   background: var(--mp-surface);
@@ -217,7 +226,32 @@
   font-size: 0.875rem;
   line-height: 1.5;
   box-shadow: var(--shadow-sm);
-  max-width: min(100%, 42rem);
+  max-width: min(100%, 85%);
+  align-self: flex-start;
+}
+
+/* Incoming (buyer) — left, neutral surface */
+.admin-mp__bubble--in {
+  align-self: flex-start;
+  border-radius: 14px 14px 14px 4px;
+}
+
+/* Outgoing (you / seller) — right, teal emphasis like Messenger “sent” */
+.admin-mp__bubble--out {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: color-mix(in srgb, var(--mp-teal) 14%, var(--mp-surface));
+  border-color: color-mix(in srgb, var(--mp-teal) 28%, var(--mp-border));
+  max-width: min(100%, 85%);
+}
+
+.admin-mp__bubble--out .admin-mp__bubble-from {
+  color: var(--mp-teal);
+  text-align: right;
+}
+
+.admin-mp__bubble--out .admin-mp__bubble-body {
+  text-align: left;
 }
 
 .admin-mp__bubble-from {
