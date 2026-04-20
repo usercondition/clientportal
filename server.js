@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
@@ -217,6 +218,47 @@ function formatMoney(cents) {
   return n > 0 ? `$${n.toFixed(2)}` : "—";
 }
 
+const ORDER_SERVICE_TYPES = new Set([
+  "print",
+  "cad",
+  "post_process",
+  "repair",
+  "consultation",
+  "other",
+]);
+
+const ORDER_SHIPPING_PREFS = new Set(["pickup", "ship_on_file", "discuss"]);
+
+function nextClientOrderNumber() {
+  const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const suffix = crypto.randomBytes(3).toString("hex").toUpperCase();
+  return `REQ-${yyyymmdd}-${suffix}`;
+}
+
+function buildOrderRequestSummary(body) {
+  const lines = [
+    `Service: ${body.serviceTypeLabel || body.serviceType || "—"}`,
+    `Quantity: ${body.quantity != null ? body.quantity : "—"}`,
+    `Approx. size / dimensions: ${body.dimensions ? body.dimensions : "—"}`,
+    `Material / finish: ${body.materialPreference || "—"}`,
+    `Intended use: ${body.intendedUse || "—"}`,
+    `Needed by: ${body.neededBy || "Not specified"}`,
+    `Reference URL: ${body.referenceUrl || "—"}`,
+    `Rush: ${body.rushRequested ? "Yes" : "No"}`,
+    `Shipping / delivery: ${body.shippingLabel || body.shippingPreference || "—"}`,
+    "",
+    "Description:",
+    String(body.description || "").trim() || "—",
+  ];
+  if (body.unit && String(body.unit).trim()) {
+    lines.splice(2, 0, `Unit: ${String(body.unit).trim()}`);
+  }
+  if (body.specialInstructions && String(body.specialInstructions).trim()) {
+    lines.push("", "Special instructions:", String(body.specialInstructions).trim());
+  }
+  return lines.join("\n");
+}
+
 /** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
 app.get("/api/health", async (_req, res) => {
   const smtpConfigured = Boolean(createMailTransport());
@@ -427,6 +469,208 @@ app.get("/api/client/:clientId/orders", async (req, res) => {
     total: formatMoney(o.total_cents),
   }));
   res.json({ orders });
+});
+
+app.post("/api/client/:clientId/orders", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({
+      error:
+        "Database is not configured. On Railway, add DATABASE_URL on the Web service (reference from Postgres).",
+    });
+  }
+
+  const { clientId } = req.params;
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+
+  const title = String(body.title || "").trim();
+  const serviceType = String(body.serviceType || "").trim();
+  const description = String(body.description || "").trim();
+  const quantity = body.quantity != null ? Number(body.quantity) : NaN;
+  const dimensions = String(body.dimensions || "").trim();
+  const materialPreference = String(body.materialPreference || "").trim();
+  const intendedUse = String(body.intendedUse || "").trim();
+  const neededBy = String(body.neededBy || "").trim();
+  const referenceUrl = String(body.referenceUrl || "").trim();
+  const rushRequested = Boolean(body.rushRequested);
+  const shippingPreference = String(body.shippingPreference || "").trim();
+  const specialInstructions = String(body.specialInstructions || "").trim();
+  const unit = String(body.unit || "").trim();
+  const confirmAccuracy = Boolean(body.confirmAccuracy);
+
+  const serviceLabels = {
+    print: "3D printing / fabrication",
+    cad: "CAD / modeling",
+    post_process: "Post-processing / finishing",
+    repair: "Repair or rework",
+    consultation: "Consultation",
+    other: "Other",
+  };
+  const shippingLabels = {
+    pickup: "Pickup (local)",
+    ship_on_file: "Ship to address on file",
+    discuss: "Discuss shipping / delivery",
+  };
+
+  if (title.length < 3 || title.length > 200) {
+    return res.status(400).json({ error: "Title must be between 3 and 200 characters." });
+  }
+  if (!ORDER_SERVICE_TYPES.has(serviceType)) {
+    return res.status(400).json({ error: "Select a valid service type." });
+  }
+  if (description.length < 10 || description.length > 12000) {
+    return res
+      .status(400)
+      .json({ error: "Description must be at least 10 characters (max 12,000)." });
+  }
+  if (!Number.isFinite(quantity) || quantity < 1 || quantity > 100000) {
+    return res.status(400).json({ error: "Quantity must be a number from 1 to 100,000." });
+  }
+  if (materialPreference.length < 2 || materialPreference.length > 2000) {
+    return res
+      .status(400)
+      .json({ error: "Material / finish preference is required (2–2,000 characters)." });
+  }
+  if (intendedUse.length < 5 || intendedUse.length > 4000) {
+    return res.status(400).json({ error: "Intended use must be at least 5 characters (max 4,000)." });
+  }
+  if (!ORDER_SHIPPING_PREFS.has(shippingPreference)) {
+    return res.status(400).json({ error: "Select a shipping / delivery option." });
+  }
+  if (!confirmAccuracy) {
+    return res.status(400).json({ error: "Confirm that your request details are accurate." });
+  }
+  if (dimensions.length > 500) {
+    return res.status(400).json({ error: "Dimensions field is too long (max 500 characters)." });
+  }
+  if (specialInstructions.length > 8000) {
+    return res.status(400).json({ error: "Special instructions are too long (max 8,000 characters)." });
+  }
+  if (unit.length > 40) {
+    return res.status(400).json({ error: "Unit label is too long." });
+  }
+
+  if (referenceUrl) {
+    try {
+      const u = new URL(referenceUrl);
+      if (!["http:", "https:"].includes(u.protocol)) {
+        return res.status(400).json({ error: "Reference URL must start with http:// or https://." });
+      }
+    } catch (_e) {
+      return res.status(400).json({ error: "Reference URL is not valid." });
+    }
+  }
+
+  let neededByOut = "";
+  if (neededBy) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(neededBy)) {
+      return res.status(400).json({ error: "Needed-by date must be YYYY-MM-DD or empty." });
+    }
+    neededByOut = neededBy;
+  }
+
+  const clientCheck = await pool.query("select first_name, last_name, email from clients where id = $1 limit 1", [
+    clientId,
+  ]);
+  if (!clientCheck.rows.length) {
+    return res.status(404).json({ error: "Client not found." });
+  }
+  const who = clientCheck.rows[0];
+  const clientLabel = `${who.first_name || ""} ${who.last_name || ""}`.trim() || "Client";
+  const clientEmail = who.email ? String(who.email).trim() : "";
+
+  const enriched = {
+    ...body,
+    title,
+    serviceType,
+    description,
+    quantity,
+    dimensions,
+    materialPreference,
+    intendedUse,
+    neededBy: neededByOut,
+    referenceUrl,
+    rushRequested,
+    shippingPreference,
+    specialInstructions,
+    unit,
+    serviceTypeLabel: serviceLabels[serviceType] || serviceType,
+    shippingLabel: shippingLabels[shippingPreference] || shippingPreference,
+  };
+
+  const summary = buildOrderRequestSummary(enriched);
+
+  const dbClient = await pool.connect();
+  let orderRow;
+  try {
+    await dbClient.query("BEGIN");
+    let lastErr;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const orderNumber = nextClientOrderNumber();
+      try {
+        const ins = await dbClient.query(
+          `insert into orders (
+            order_number, client_id, status, title, summary,
+            subtotal_cents, tax_cents, shipping_cents, submitted_at
+          ) values ($1, $2, 'submitted', $3, $4, 0, 0, 0, now())
+          returning id, order_number, title, summary, created_at, submitted_at, total_cents`,
+          [orderNumber, clientId, title, summary]
+        );
+        orderRow = ins.rows[0];
+        break;
+      } catch (e) {
+        lastErr = e;
+        if (e && e.code === "23505") continue;
+        throw e;
+      }
+    }
+    if (!orderRow) {
+      await dbClient.query("ROLLBACK");
+      console.error("[orders] could not allocate unique order_number:", lastErr && lastErr.message);
+      return res.status(500).json({ error: "Could not create order. Try again." });
+    }
+
+    await dbClient.query(
+      `insert into order_timeline_events (order_id, event_code, event_label, event_details, created_by)
+       values ($1, 'submitted', 'Order submitted', $2, 'system')`,
+      [
+        orderRow.id,
+        "Request received from the client portal and queued for review.",
+      ]
+    );
+
+    await dbClient.query("COMMIT");
+  } catch (err) {
+    try {
+      await dbClient.query("ROLLBACK");
+    } catch (_r) {}
+    console.error("[orders] create failed:", err && err.message);
+    return res.status(500).json({ error: "Failed to submit order request." });
+  } finally {
+    dbClient.release();
+  }
+
+  const { subject, text } = emailTemplates.staffNewOrderRequest({
+    clientLabel,
+    clientEmail,
+    orderNumber: orderRow.order_number,
+    title,
+    summarySnippet: summary,
+  });
+  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, clientEmail ? { replyTo: clientEmail } : undefined);
+
+  const o = orderRow;
+  res.status(201).json({
+    order: {
+      id: o.order_number,
+      phase: mapOrderPhase("submitted"),
+      title: o.title,
+      summary: o.summary || "",
+      dateLabel: o.submitted_at
+        ? `Submitted ${new Date(o.submitted_at).toLocaleDateString()}`
+        : `Started ${new Date(o.created_at).toLocaleDateString()}`,
+      total: formatMoney(o.total_cents),
+    },
+  });
 });
 
 app.get("/api/client/:clientId/messages", async (req, res) => {

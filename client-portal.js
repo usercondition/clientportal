@@ -20,6 +20,16 @@
     }, 5200);
   }
 
+  try {
+    var sp = new URLSearchParams(window.location.search);
+    if (sp.get("order") === "submitted") {
+      showAppToast("Your order request was submitted.");
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, "", "client-portal.html");
+      }
+    }
+  } catch (e) {}
+
   var PORTAL_NOTIFY_STORAGE = "portal_notify_ui_enabled";
 
   function isInAppNotifyEnabled() {

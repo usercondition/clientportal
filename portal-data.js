@@ -94,6 +94,20 @@
     return payload.orders || [];
   }
 
+  /**
+   * Submit a new order request (portal → POST /api/client/:id/orders).
+   * @param {Record<string, unknown>} payload
+   */
+  async function submitOrderRequest(payload) {
+    var p = getProfile();
+    if (!p || !p.id) throw new Error("Sign in to submit an order.");
+    return requestJson("/api/client/" + encodeURIComponent(p.id) + "/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+    });
+  }
+
   async function getMessages() {
     var p = getProfile();
     if (!p || !p.id) return [];
@@ -173,6 +187,7 @@
     loginClient: loginClient,
     registerClient: registerClient,
     getOrders: getOrders,
+    submitOrderRequest: submitOrderRequest,
     getMessages: getMessages,
     appendClientMessage: appendClientMessage,
     formatAddress: formatAddress,

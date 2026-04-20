@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#160a24" />
+    <meta name="description" content="Submit a new order request." />
+    <title>New order request</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="client-portal.css" />
+    <script src="theme.js" defer></script>
+    <script src="portal-data.js"></script>
+    <script>
+      if (!window.Portal || !Portal.getProfile()) {
+        location.replace("client-flow.html");
+      }
+    </script>
+  </head>
+  <body class="portal-body">
+    <a class="skip-link" href="#order-main">Skip to form</a>
+
+    <header class="portal-header">
+      <div class="container portal-header-inner">
+        <span class="portal-brand">My portal</span>
+        <div class="portal-header-actions">
+          <a class="portal-link" href="client-portal.html">Back to portal</a>
+          <button type="button" class="portal-link portal-link-btn" id="portal-sign-out">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="order-main" class="portal-main">
+      <div class="container portal-layout">
+        <section class="portal-panel portal-order-page" aria-labelledby="new-order-title">
+          <div class="portal-panel__header">
+            <a class="portal-order-page__back" href="client-portal.html">← Orders</a>
+            <h1 id="new-order-title" class="portal-h2 portal-order-page__title">New order request</h1>
+            <p class="portal-order-page__lede">
+              Tell us what you need so we can quote, schedule, and fulfill the work. Fields marked required must be
+              filled in before you submit.
+            </p>
+          </div>
+          <div class="portal-panel__body">
+            <p class="portal-order-form__error" id="order-form-error" hidden></p>
+            <form id="order-request-form" class="portal-order-form" novalidate>
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-title">Project title <span aria-hidden="true">*</span></label>
+                <p class="portal-field__hint">Short name we can use on your order list and in messages.</p>
+                <input
+                  class="portal-field__input"
+                  id="order-title"
+                  name="title"
+                  type="text"
+                  required
+                  minlength="3"
+                  maxlength="200"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-service">Service type <span aria-hidden="true">*</span></label>
+                <select class="portal-field__select" id="order-service" name="serviceType" required>
+                  <option value="" selected disabled>Select…</option>
+                  <option value="print">3D printing / fabrication</option>
+                  <option value="cad">CAD / modeling</option>
+                  <option value="post_process">Post-processing / finishing</option>
+                  <option value="repair">Repair or rework</option>
+                  <option value="consultation">Consultation</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-desc">Description &amp; specifications <span aria-hidden="true">*</span></label>
+                <p class="portal-field__hint">
+                  Part name, layer height, infill, color, orientation, tolerances, file names you will send, or anything
+                  else we need to produce or review the job.
+                </p>
+                <textarea
+                  class="portal-field__textarea"
+                  id="order-desc"
+                  name="description"
+                  required
+                  minlength="10"
+                  maxlength="12000"
+                ></textarea>
+              </div>
+
+              <div class="portal-field__row">
+                <div class="portal-field">
+                  <label class="portal-field__label" for="order-qty">Quantity <span aria-hidden="true">*</span></label>
+                  <input
+                    class="portal-field__input"
+                    id="order-qty"
+                    name="quantity"
+                    type="number"
+                    required
+                    min="1"
+                    max="100000"
+                    step="1"
+                    inputmode="numeric"
+                  />
+                </div>
+                <div class="portal-field">
+                  <label class="portal-field__label" for="order-unit">Unit (optional)</label>
+                  <input
+                    class="portal-field__input"
+                    id="order-unit"
+                    name="unit"
+                    type="text"
+                    maxlength="40"
+                    placeholder="e.g. pieces, sets"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-dim">Approximate size / dimensions (optional)</label>
+                <input
+                  class="portal-field__input"
+                  id="order-dim"
+                  name="dimensions"
+                  type="text"
+                  maxlength="500"
+                  placeholder="e.g. 120 × 80 × 40 mm"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-material">Material / finish preference <span aria-hidden="true">*</span></label>
+                <textarea
+                  class="portal-field__textarea"
+                  id="order-material"
+                  name="materialPreference"
+                  required
+                  minlength="2"
+                  maxlength="2000"
+                ></textarea>
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-use">Intended use <span aria-hidden="true">*</span></label>
+                <p class="portal-field__hint">Helps us choose materials, strength, and safety considerations.</p>
+                <textarea
+                  class="portal-field__textarea"
+                  id="order-use"
+                  name="intendedUse"
+                  required
+                  minlength="5"
+                  maxlength="4000"
+                ></textarea>
+              </div>
+
+              <div class="portal-field__row">
+                <div class="portal-field">
+                  <label class="portal-field__label" for="order-needed">Needed by (optional)</label>
+                  <input class="portal-field__input" id="order-needed" name="neededBy" type="date" />
+                </div>
+                <div class="portal-field">
+                  <label class="portal-field__label" for="order-ref">Reference link (optional)</label>
+                  <input
+                    class="portal-field__input"
+                    id="order-ref"
+                    name="referenceUrl"
+                    type="url"
+                    maxlength="2000"
+                    placeholder="https://"
+                    inputmode="url"
+                  />
+                </div>
+              </div>
+
+              <div class="portal-field portal-field--checkbox">
+                <input class="portal-field__check" type="checkbox" id="order-rush" name="rushRequested" />
+                <label class="portal-field__label" for="order-rush">Rush / expedited timing if available</label>
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-ship">Shipping / delivery <span aria-hidden="true">*</span></label>
+                <select class="portal-field__select" id="order-ship" name="shippingPreference" required>
+                  <option value="" selected disabled>Select…</option>
+                  <option value="pickup">Pickup (local)</option>
+                  <option value="ship_on_file">Ship to address on file</option>
+                  <option value="discuss">Discuss shipping / delivery</option>
+                </select>
+              </div>
+
+              <div class="portal-field">
+                <label class="portal-field__label" for="order-notes">Special instructions (optional)</label>
+                <textarea
+                  class="portal-field__textarea"
+                  id="order-notes"
+                  name="specialInstructions"
+                  maxlength="8000"
+                ></textarea>
+              </div>
+
+              <div class="portal-field portal-field--checkbox">
+                <input class="portal-field__check" type="checkbox" id="order-confirm" name="confirmAccuracy" required />
+                <label class="portal-field__label" for="order-confirm">
+                  I confirm these details are accurate to the best of my knowledge. <span aria-hidden="true">*</span>
+                </label>
+              </div>
+
+              <div class="portal-order-form__actions">
+                <button type="submit" class="btn btn-primary" id="order-submit">Submit request</button>
+                <a class="portal-link" href="client-portal.html">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="client-order-new.js" defer></script>
+  </body>
+</html>
