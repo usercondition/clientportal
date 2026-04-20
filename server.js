@@ -10,6 +10,8 @@ const emailTemplates = require("./lib/email-templates");
 const chatAttachments = require("./lib/chat-attachments");
 
 const ADMIN_NOTIFY_EMAIL_DEFAULT = "m.e.mercado@proton.me";
+const SUPPORT_BOT_SAMPLER_ENABLED =
+  String(process.env.SUPPORT_BOT_SAMPLER_ENABLED || "").toLowerCase() === "true";
 
 function resolveAdminNotifyEmail() {
   const v = process.env.ADMIN_NOTIFY_EMAIL;
@@ -22,6 +24,75 @@ function resolveAdminReplyEmail() {
   const v = process.env.ADMIN_REPLY_EMAIL;
   if (v && String(v).trim()) return String(v).trim();
   return resolveAdminNotifyEmail();
+}
+
+function buildSupportBotSamplerReply(inputText) {
+  const text = String(inputText || "").toLowerCase();
+  const open = "Support assistant (sample):";
+  if (/(price|quote|cost|how much|estimate)/.test(text)) {
+    return (
+      open +
+      " Thanks for your request. I can capture your specs and our team will send a formal quote. " +
+      "Please share quantity, size, material preference, and deadline."
+    );
+  }
+  if (/(status|update|progress|order)/.test(text)) {
+    return (
+      open +
+      " I can help with status checks. Share your order number and I will flag the thread for a manual update from staff."
+    );
+  }
+  if (/(file|stl|step|upload|attachment)/.test(text)) {
+    return (
+      open +
+      " File received. For best results, include intended use, dimensions, and finish requirements with your upload."
+    );
+  }
+  if (/(time|timeline|lead|turnaround|when)/.test(text)) {
+    return (
+      open +
+      " Timelines depend on scope and queue load. If you share your deadline and quantity, staff can confirm availability."
+    );
+  }
+  return (
+    open +
+    " Thanks for your message. This is a trial assistant and a human will follow up. " +
+    "If you need a quote, include quantity, dimensions, material, and deadline."
+  );
+}
+
+async function maybeSendSupportBotSamplerReply(client, threadId, clientBodyText) {
+  if (!SUPPORT_BOT_SAMPLER_ENABLED) return;
+  if (!threadId) return;
+  const cleanBody = String(clientBodyText || "").trim();
+  if (!cleanBody) return;
+
+  const recentBotRes = await client.query(
+    `select created_at
+       from messages
+      where thread_id = $1
+        and sender = 'admin'
+        and sender_ref = 'support_bot_sample'
+        and deleted_at is null
+      order by created_at desc
+      limit 1`,
+    [threadId]
+  );
+  if (recentBotRes.rows.length) {
+    const lastAtMs = Date.parse(recentBotRes.rows[0].created_at);
+    if (Number.isFinite(lastAtMs) && Date.now() - lastAtMs < 90 * 1000) {
+      return;
+    }
+  }
+
+  const botReply = buildSupportBotSamplerReply(cleanBody);
+  await client.query(
+    "insert into messages (thread_id, sender, sender_ref, body, attachments, delivered_at) values ($1,'admin','support_bot_sample',$2,'[]'::jsonb, now())",
+    [threadId, botReply]
+  );
+  await client.query("update message_threads set last_message_at = now(), updated_at = now() where id = $1", [
+    threadId,
+  ]);
 }
 
 function createMailTransport() {
@@ -934,6 +1005,11 @@ app.post("/api/client/:clientId/messages", messageMultipartUpload, async (req, r
     [threadId, clientId, bodyText, JSON.stringify(uploaded)]
   );
   await pool.query("update message_threads set last_message_at = now(), updated_at = now(), admin_archived_at = null where id = $1", [threadId]);
+  try {
+    await maybeSendSupportBotSamplerReply(pool, threadId, bodyText);
+  } catch (botErr) {
+    console.error("[support-bot-sampler] failed to send sample reply:", botErr && botErr.message);
+  }
   const infoRes = await pool.query(
     "select first_name, last_name, email from clients where id = $1 limit 1",
     [clientId]
