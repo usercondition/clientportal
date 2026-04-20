@@ -1,178 +1,23 @@
-/* Admin inbox — panel layout aligned with client portal */
+/* Admin inbox — conversation UI (loads with admin-layout.css shell) */
 
-.admin-inbox-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
+.admin-inbox-view {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 0.85rem;
 }
 
-/* ——— Top bar ——— */
-.admin-topbar {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
-  backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  padding-top: max(0px, env(safe-area-inset-top, 0px));
-}
-
-.admin-topbar-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem 1.25rem;
-  padding: 0.85rem 0 0.95rem;
-  min-height: 3.35rem;
-}
-
-.admin-topbar-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.admin-topbar-title {
-  font-family: var(--font-display);
-  font-size: 1.12rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.admin-topbar-tagline {
+.admin-inbox-footnote {
+  margin: 0;
+  flex-shrink: 0;
   font-size: 0.78rem;
   color: var(--text-muted);
-  max-width: 42ch;
-  line-height: 1.35;
-}
-
-.admin-topbar-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.65rem;
-  flex-shrink: 0;
-}
-
-.admin-topbar-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.84rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-decoration: none;
-  padding: 0.38rem 0.65rem;
-  border-radius: 8px;
-  transition: color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
-}
-
-.admin-topbar-icon {
-  flex-shrink: 0;
-  opacity: 0.92;
-}
-
-.admin-topbar-link:hover {
-  color: var(--accent);
-}
-
-.admin-topbar-link--btn {
-  font: inherit;
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-}
-
-.admin-topbar-link--btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  color: var(--accent);
-}
-
-.admin-topbar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.38rem 0.7rem;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    border-color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
-    color var(--dur-med, 0.35s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
-}
-
-.admin-topbar-btn__label {
-  line-height: 1.2;
-}
-
-.admin-topbar-btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  color: var(--accent);
-}
-
-.admin-topbar-btn--muted,
-.admin-topbar-btn:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
-}
-
-.admin-topbar-btn:disabled:hover {
-  color: var(--text-muted);
-  border-color: var(--border);
-}
-
-/* ——— Page ——— */
-.admin-inbox-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  padding: clamp(0.75rem, 2vw, 1.15rem) 0 clamp(1.25rem, 3vw, 2rem);
-}
-
-.admin-page {
-  max-width: 1120px;
-  margin-inline: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  flex: 1;
-  min-height: 0;
-}
-
-.admin-page-lede,
-.admin-page-footnote {
-  flex-shrink: 0;
-}
-
-.admin-page-lede {
-  margin: 0;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.45;
   max-width: 72ch;
 }
 
-.admin-page-footnote {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.45;
-  max-width: 70ch;
-}
-
-.admin-page-footnote code {
+.admin-inbox-footnote code {
   font-size: 0.78em;
 }
 
@@ -738,23 +583,6 @@
     min-height: 22rem;
   }
 
-  .admin-topbar-inner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .admin-topbar-actions {
-    justify-content: flex-start;
-  }
-
-  .admin-topbar-btn,
-  .admin-topbar-link,
-  .admin-topbar-link--btn {
-    min-height: 2.65rem;
-    display: inline-flex;
-    align-items: center;
-  }
-
   .admin-compose-actions {
     justify-content: stretch;
   }
@@ -769,7 +597,7 @@
     font-size: 1rem;
   }
 
-  .admin-page-footnote {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+  .admin-inbox-footnote {
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
   }
 }

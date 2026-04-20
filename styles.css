@@ -798,7 +798,7 @@ code {
   left: 50%;
   bottom: max(5.5rem, calc(4.5rem + env(safe-area-inset-bottom, 0px)));
   transform: translateX(-50%);
-  z-index: 90;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: center;

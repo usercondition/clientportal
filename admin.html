@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#160a24" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Admin</title>
+    <title>Dashboard — Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +13,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin-layout.css" />
     <script src="theme.js" defer></script>
     <script src="admin-auth.js"></script>
     <script>
@@ -26,136 +27,164 @@
         }
       })();
     </script>
-    <style>
-      .admin-shell {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-      .admin-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        flex-wrap: wrap;
-        padding: max(1rem, env(safe-area-inset-top, 0px)) min(1.5rem, 4vw) 1rem;
-        border-bottom: 1px solid var(--border);
-        background: color-mix(in srgb, var(--bg) 92%, transparent);
-        backdrop-filter: blur(10px);
-      }
-      .admin-bar h1 {
-        font-family: var(--font-display);
-        font-size: 1.15rem;
-        font-weight: 600;
-        margin: 0;
-        letter-spacing: -0.02em;
-      }
-      .admin-bar-actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-      .admin-logout {
-        font: inherit;
-        font-size: 0.88rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        background: transparent;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 0.4rem 0.75rem;
-        cursor: pointer;
-      }
-      .admin-logout:hover {
-        color: var(--accent);
-        border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-      }
-      .admin-bar a {
-        font-size: 0.88rem;
-        font-weight: 500;
-        color: var(--text-muted);
-        text-decoration: none;
-      }
-      .admin-bar a:hover {
-        color: var(--accent);
-      }
-      .admin-main {
-        flex: 1;
-        padding: clamp(1.5rem, 4vw, 2.5rem) min(1.5rem, 4vw);
-        padding-bottom: max(clamp(1.5rem, 4vw, 2.5rem), env(safe-area-inset-bottom, 0px));
-      }
-      .admin-nav {
-        display: grid;
-        gap: 0.5rem;
-        max-width: 20rem;
-      }
-      .admin-nav a {
-        display: block;
-        padding: 0.65rem 0.85rem;
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        background: var(--bg-elevated);
-        color: var(--text);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.95rem;
-      }
-      .admin-nav a:hover {
-        border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-        color: var(--accent);
-      }
-      .admin-note {
-        margin: 1.25rem 0 0;
-        font-size: 0.88rem;
-        color: var(--text-muted);
-        max-width: 36ch;
-        line-height: 1.5;
-      }
-      @media (max-width: 520px) {
-        .admin-bar h1 {
-          width: 100%;
-        }
-        .admin-bar-actions {
-          width: 100%;
-          justify-content: flex-start;
-        }
-        .admin-logout,
-        .admin-bar a {
-          min-height: 2.75rem;
-          display: inline-flex;
-          align-items: center;
-          touch-action: manipulation;
-        }
-        .admin-nav {
-          max-width: none;
-        }
-      }
-    </style>
   </head>
-  <body>
-    <div class="admin-shell">
-      <header class="admin-bar">
-        <h1>Admin</h1>
-        <div class="admin-bar-actions">
-          <button type="button" class="admin-logout" id="admin-logout">Log out</button>
-          <a href="index.html">Public site</a>
+  <body class="admin-app">
+    <a class="skip-link" href="#admin-dashboard-main">Skip to content</a>
+
+    <button type="button" class="admin-app__drawer-btn" id="admin-drawer-open" aria-label="Open navigation" aria-expanded="false" aria-controls="admin-sidebar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6" />
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="18" x2="20" y2="18" />
+      </svg>
+    </button>
+
+    <button type="button" class="admin-app__backdrop" id="admin-drawer-backdrop" hidden tabindex="-1" aria-label="Close navigation"></button>
+
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Staff navigation">
+      <div class="admin-sidebar__brand">
+        <span class="admin-sidebar__logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </span>
+        <div class="admin-sidebar__brand-text">
+          <span class="admin-sidebar__title">Staff</span>
+          <span class="admin-sidebar__subtitle">Portal</span>
         </div>
+      </div>
+
+      <nav class="admin-sidebar__nav" aria-label="Primary">
+        <a class="admin-nav-item" href="admin.html" aria-current="page">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9" rx="1" />
+            <rect x="14" y="3" width="7" height="5" rx="1" />
+            <rect x="14" y="12" width="7" height="9" rx="1" />
+            <rect x="3" y="16" width="7" height="5" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a class="admin-nav-item" href="admin-inbox.html">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+            <path d="M5.45 5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-7A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1z" />
+          </svg>
+          Messages
+        </a>
+        <p class="admin-sidebar__section-label">Coming soon</p>
+        <span class="admin-nav-item admin-nav-item--disabled" title="Not connected yet">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M16.5 9.4 7.55 4.24" />
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <polyline points="3.29 7 12 12 20.71 7" />
+            <line x1="12" y1="22" x2="12" y2="12" />
+          </svg>
+          Orders
+        </span>
+        <span class="admin-nav-item admin-nav-item--disabled" title="Not connected yet">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          Customers
+        </span>
+        <span class="admin-nav-item admin-nav-item--disabled" title="Not connected yet">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+          Settings
+        </span>
+      </nav>
+
+      <div class="admin-sidebar__footer">
+        <a class="admin-sidebar__footer-btn" href="index.html">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          </svg>
+          Public site
+        </a>
+        <button type="button" class="admin-sidebar__footer-btn" id="admin-logout">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Log out
+        </button>
+      </div>
+    </aside>
+
+    <div class="admin-app__content">
+      <header class="admin-page-header">
+        <h1 class="admin-page-header__h">Dashboard</h1>
+        <p class="admin-page-header__lede">
+          Manage client conversations and future storefront tools from one place. Live features are linked below; other tiles are
+          placeholders until you wire them to your backend.
+        </p>
       </header>
-      <main class="admin-main">
-        <nav class="admin-nav" aria-label="Admin sections">
-          <a href="admin-inbox.html">Inbox (messages)</a>
-          <a href="#">Dashboard</a>
-          <a href="#">Orders</a>
-          <a href="#">Customers</a>
-          <a href="#">Settings</a>
-        </nav>
-        <p class="admin-note">
-          Client portal messages appear in the inbox. Other links are placeholders until you connect a
-          backend.
+
+      <main class="admin-app__main" id="admin-dashboard-main">
+        <div class="admin-dash-grid">
+          <a class="admin-dash-card" href="admin-inbox.html">
+            <span class="admin-dash-card__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+                <path d="M5.45 5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-7A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1z" />
+              </svg>
+            </span>
+            <h2 class="admin-dash-card__title">Messages</h2>
+            <p class="admin-dash-card__desc">Open the inbox to read and reply to client threads. Email relay works when SMTP is set on the server.</p>
+          </a>
+
+          <div class="admin-dash-card admin-dash-card--muted">
+            <span class="admin-dash-card__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16.5 9.4 7.55 4.24" />
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              </svg>
+            </span>
+            <h2 class="admin-dash-card__title">Orders</h2>
+            <p class="admin-dash-card__desc">Placeholder — connect order data when you add commerce or quotes.</p>
+          </div>
+
+          <div class="admin-dash-card admin-dash-card--muted">
+            <span class="admin-dash-card__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+              </svg>
+            </span>
+            <h2 class="admin-dash-card__title">Customers</h2>
+            <p class="admin-dash-card__desc">Placeholder — list portal clients and CRM fields here later.</p>
+          </div>
+
+          <div class="admin-dash-card admin-dash-card--muted">
+            <span class="admin-dash-card__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2" />
+              </svg>
+            </span>
+            <h2 class="admin-dash-card__title">Settings</h2>
+            <p class="admin-dash-card__desc">Placeholder — staff preferences, notification routing, and API keys.</p>
+          </div>
+        </div>
+
+        <p class="admin-dash-note">
+          Tip: configure <code>ADMIN_NOTIFY_EMAIL</code>, <code>SMTP_*</code>, and <code>MAIL_FROM</code> on the server so new client messages and your replies reach real inboxes.
         </p>
       </main>
     </div>
+
+    <script src="admin-layout.js" defer></script>
     <script>
       var lo = document.getElementById("admin-logout");
       if (lo) {

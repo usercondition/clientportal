@@ -9,7 +9,7 @@
   var replyInput = document.getElementById("admin-inbox-reply");
   var adminFileInput = document.getElementById("admin-inbox-files");
   var adminFileHint = document.getElementById("admin-inbox-file-hint");
-  var logoutBtn = document.getElementById("admin-inbox-logout");
+  var logoutBtn = document.getElementById("admin-logout");
   var notifyPermBtn = document.getElementById("admin-enable-notify");
   var showArchivedEl = document.getElementById("admin-show-archived");
 
@@ -75,13 +75,13 @@
   }
 
   function notifyBtnLabelEl(btn) {
-    return btn ? btn.querySelector(".admin-topbar-btn__label") : null;
+    return btn ? btn.querySelector(".admin-inbox-notify-btn__label") : null;
   }
 
   function syncAdminNotifyButton(btn) {
     if (!btn) return;
     var lab = notifyBtnLabelEl(btn);
-    btn.classList.remove("admin-topbar-btn--muted");
+    btn.classList.remove("admin-inbox-notify-btn--muted");
     btn.removeAttribute("aria-pressed");
     btn.removeAttribute("title");
     if (typeof Notification === "undefined") {
@@ -94,7 +94,7 @@
     if (perm === "denied") {
       if (lab) lab.textContent = "Alerts Blocked";
       btn.title = "Allow notifications for this site in your browser settings.";
-      btn.classList.add("admin-topbar-btn--muted");
+      btn.classList.add("admin-inbox-notify-btn--muted");
       return;
     }
     if (perm === "default") {
