@@ -119,27 +119,57 @@
 
               <div class="portal-field">
                 <label class="portal-field__label" for="order-material">Material / finish preference <span aria-hidden="true">*</span></label>
-                <textarea
-                  class="portal-field__textarea"
-                  id="order-material"
-                  name="materialPreference"
-                  required
-                  minlength="2"
-                  maxlength="2000"
-                ></textarea>
+                <p class="portal-field__hint">
+                  Pick the closest match. Add nuance in the description above if needed (e.g. exact Pantone, special blend).
+                </p>
+                <select class="portal-field__select" id="order-material" name="materialPreference" required>
+                  <option value="" selected disabled>Select…</option>
+                  <optgroup label="Typical resin requests (type + color + finish style)">
+                    <option value="Standard rigid resin — clear — natural print surface">Standard rigid — clear — natural surface</option>
+                    <option value="Standard rigid resin — black — natural print surface">Standard rigid — black — natural surface</option>
+                    <option value="Standard rigid resin — white — natural print surface">Standard rigid — white — natural surface</option>
+                    <option value="Standard rigid resin — grey — light sanded matte">Standard rigid — grey — sanded matte</option>
+                    <option value="Tough / impact-resistant resin — black or grey — functional finish">Tough resin — black/grey — functional finish</option>
+                    <option value="High-detail miniature resin — grey or black — tabletop / figure quality">High-detail miniature — grey/black — figure quality</option>
+                    <option value="High-detail miniature resin — primer-ready — for painting">High-detail miniature — primer-ready — for painting</option>
+                    <option value="Flexible / rubber-like resin — black — smooth matte">Flexible / rubber-like — black — matte</option>
+                    <option value="Water-washable resin — clear or grey — natural or light sanded">Water-washable — clear/grey — natural or light sanded</option>
+                    <option value="Plant-based / bio resin — natural tint — minimal finishing">Plant-based — natural tint — light finishing</option>
+                    <option value="Translucent tinted resin — custom hue (details in description)">Translucent tint — custom hue (see description)</option>
+                    <option value="High-gloss clear coat look — clear resin base">High-gloss look — clear base (discuss in description)</option>
+                    <option value="Castable / jewelry workflow resin — clear (investment casting)">Castable / jewelry — clear — casting workflow</option>
+                  </optgroup>
+                  <optgroup label="Resin type only (add color &amp; finish in description)">
+                    <option value="Standard rigid / ABS-like resin (color &amp; finish in description)">Standard rigid / ABS-like</option>
+                    <option value="Tough or impact-resistant resin (color &amp; finish in description)">Tough / impact-resistant</option>
+                    <option value="Flexible / TPU-like resin (color &amp; finish in description)">Flexible / TPU-like</option>
+                    <option value="High-temperature resistant resin (details in description)">High-temperature resistant</option>
+                    <option value="Dental or high-detail model resin (details in description)">Dental / ultra-high detail</option>
+                  </optgroup>
+                  <option value="Not sure — recommend resin for my use (see Intended use + description)">Not sure — recommend for my use</option>
+                </select>
               </div>
 
               <div class="portal-field">
                 <label class="portal-field__label" for="order-use">Intended use <span aria-hidden="true">*</span></label>
                 <p class="portal-field__hint">Helps us choose materials, strength, and safety considerations.</p>
-                <textarea
-                  class="portal-field__textarea"
-                  id="order-use"
-                  name="intendedUse"
-                  required
-                  minlength="5"
-                  maxlength="4000"
-                ></textarea>
+                <select class="portal-field__select" id="order-use" name="intendedUse" required>
+                  <option value="" selected disabled>Select…</option>
+                  <option value="Display, art, or decorative (non-load-bearing)">Display, art, or decorative (non-load-bearing)</option>
+                  <option value="Functional mechanical part (load, wear, or fit critical)">Functional mechanical part (load, wear, or fit critical)</option>
+                  <option value="Miniatures, tabletop, or gaming figures">Miniatures, tabletop, or gaming figures</option>
+                  <option value="Cosplay, props, or wearables">Cosplay, props, or wearables</option>
+                  <option value="Fit-check or one-off prototype">Fit-check or one-off prototype</option>
+                  <option value="Small production batch (repeat parts)">Small production batch (repeat parts)</option>
+                  <option value="Replacement or spare part">Replacement or spare part</option>
+                  <option value="Gift, resale, or commission for end customer">Gift, resale, or commission for end customer</option>
+                  <option value="Jewelry, accessories, or small keepsakes">Jewelry, accessories, or small keepsakes</option>
+                  <option value="Aquarium, fountain, or wet environment">Aquarium, fountain, or wet environment</option>
+                  <option value="Outdoor / UV exposure">Outdoor / UV exposure</option>
+                  <option value="Electronics housing or enclosure">Electronics housing or enclosure</option>
+                  <option value="Food-adjacent: display only (not food-contact)">Food-adjacent: display only (not food-contact)</option>
+                  <option value="Other (explain in description)">Other (explain in description)</option>
+                </select>
               </div>
 
               <div class="portal-field__row">

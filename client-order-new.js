@@ -55,16 +55,16 @@
       '<span class="portal-line-items__index">Item</span>' +
       '<button type="button" class="btn btn-ghost portal-line-items__remove" data-remove-line-item>Remove</button>' +
       "</div>" +
-      '<textarea class="portal-field__textarea" data-line-item-description placeholder="Item description (part name, print spec, tolerances)" maxlength="1200"></textarea>' +
-      '<div class="portal-field__row">' +
-      '<div class="portal-field">' +
-      '<label class="portal-field__label">Quantity</label>' +
-      '<input class="portal-field__input" type="number" min="1" max="100000" step="1" inputmode="numeric" data-line-item-qty />' +
-      "</div>" +
-      '<div class="portal-field">' +
-      '<label class="portal-field__label">Unit (optional)</label>' +
-      '<input class="portal-field__input" type="text" maxlength="40" placeholder="e.g. pieces, sets" data-line-item-unit />' +
-      "</div>" +
+      '<div class="portal-line-items__inline">' +
+      '<textarea class="portal-field__textarea portal-line-items__desc" data-line-item-description rows="2" placeholder="Description (part name, specs)" maxlength="1200"></textarea>' +
+      '<label class="portal-line-items__mini-label portal-line-items__mini-label--qty">' +
+      '<span>Qty</span>' +
+      '<input class="portal-field__input portal-line-items__qty" type="number" min="1" max="100000" step="1" inputmode="numeric" data-line-item-qty />' +
+      "</label>" +
+      '<label class="portal-line-items__mini-label portal-line-items__mini-label--unit">' +
+      '<span>Unit</span>' +
+      '<input class="portal-field__input portal-line-items__unit" type="text" maxlength="40" placeholder="e.g. pcs" data-line-item-unit />' +
+      "</label>" +
       "</div>";
     lineItemsHost.appendChild(row);
     if (seed) {
@@ -174,12 +174,12 @@
       showError("Each line item needs a description and quantity (1–100,000).");
       return;
     }
-    if (materialPreference.length < 2) {
-      showError("Describe material / finish preference.");
+    if (!materialPreference) {
+      showError("Select a material / finish preference.");
       return;
     }
-    if (intendedUse.length < 5) {
-      showError("Intended use must be at least 5 characters.");
+    if (!intendedUse) {
+      showError("Select an intended use.");
       return;
     }
     if (!shippingPreference) {
