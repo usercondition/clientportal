@@ -638,7 +638,6 @@ function buildPortalPaymentHints(method, summary) {
   const totalStr = summary && summary.total ? String(summary.total) : "";
   const memoLine = buildPaymentMemoLine(orderRef, totalStr);
   const studio = readStudioPaymentEnv();
-  const payBrand = String(studio.brand || "").trim();
   const policySteps = studio.fullPaymentOnly
     ? [
         "Full payment only — pay the complete amount due for this order. We do not accept deposits or partial payments.",
@@ -659,21 +658,13 @@ function buildPortalPaymentHints(method, summary) {
 
   if (method === "paypal") {
     const primaryStep = payPalUrl
-      ? payBrand
-        ? `Use the button below to open ${payBrand}'s PayPal payment page, then send the amount due (${totalStr || "see total above"}).`
-        : "Use the button below to open our PayPal payment page, then send the amount due."
-      : payBrand
-        ? `Open PayPal (app or paypal.com) and send the amount due to ${payBrand} using the PayPal email or link they gave you.`
-        : "Open the PayPal app or PayPal on the web and send the amount due using the PayPal address your team shared with you.";
+      ? `Use Pay with PayPal below, then send the amount due (${totalStr || "see total above"}).`
+      : "Open PayPal and send the amount due using the payment link your studio shared with you.";
     return {
-      headline: payBrand ? `Next: PayPal — ${payBrand}` : "Next: PayPal",
+      headline: "Next: PayPal",
       steps: [...policySteps, primaryStep, memoHint],
       payUrl: payPalUrl || null,
-      payLinkLabel: payPalUrl
-        ? payBrand
-          ? `Pay ${payBrand} (PayPal)`
-          : "Open PayPal payment page"
-        : null,
+      payLinkLabel: payPalUrl ? "Pay with PayPal" : null,
       extraActions: [
         { type: "link", label: "Open PayPal.com", url: "https://www.paypal.com/" },
         ...copyMemo,
@@ -681,35 +672,30 @@ function buildPortalPaymentHints(method, summary) {
     };
   }
   if (method === "venmo") {
+    const genericVenmoLanding = !venmoUrl || /^https?:\/\/(www\.)?venmo\.com\/?$/i.test(venmoUrl);
     const primaryStep = venmoUrl
-      ? payBrand
-        ? `Use the button below to open ${payBrand} on Venmo and pay the amount due (${totalStr || "see total above"}).`
-        : "Use the button below to open Venmo and pay the amount due."
-      : payBrand
-        ? `Open Venmo and pay ${payBrand} the amount due using the @username they shared with you.`
-        : "Open the Venmo app and pay the amount due to the @username your team shared with you.";
+      ? genericVenmoLanding
+        ? `Use Pay with Venmo below to open Venmo, then send the amount due (${totalStr || "see total above"}). If you land on the home screen, open Pay / Search in the app and use any recipient details your studio sent you by email or message.`
+        : `Use Pay with Venmo below, then send the amount due (${totalStr || "see total above"}).`
+      : "Open the Venmo app and send the amount due using the payment link your studio shared with you.";
     return {
-      headline: payBrand ? `Next: Venmo — ${payBrand}` : "Next: Venmo",
+      headline: "Next: Venmo",
       steps: [...policySteps, primaryStep, memoHint],
       payUrl: venmoUrl || null,
-      payLinkLabel: venmoUrl
-        ? payBrand
-          ? `Pay ${payBrand} (Venmo)`
-          : "Open Venmo payment page"
-        : null,
+      payLinkLabel: venmoUrl ? "Pay with Venmo" : null,
       extraActions: [{ type: "link", label: "Open Venmo.com", url: "https://venmo.com/" }, ...copyMemo],
     };
   }
   if (method === "zelle") {
     const extras = [...copyMemo];
-    if (zelleNote) extras.unshift({ type: "copy", label: "Copy Zelle instructions", text: zelleNote });
+    if (zelleNote) extras.unshift({ type: "copy", label: "Copy Zelle payment details", text: zelleNote });
     return {
       headline: "Next: Zelle",
       steps: [
         ...policySteps,
         zelleNote
-          ? `Send the amount due via Zelle: ${zelleNote}`
-          : "Send the amount due via Zelle using the email or phone number your team provided outside this portal.",
+          ? "Send the amount due via Zelle from your bank’s app. Use Copy below to paste our recipient details."
+          : "Send the amount due via Zelle using the details your studio shared with you.",
         memoHint,
       ],
       payUrl: null,
@@ -719,28 +705,21 @@ function buildPortalPaymentHints(method, summary) {
   }
   if (method === "cash_app") {
     const extras = [];
-    if (cashAppUrl) {
-      extras.push({
-        type: "link",
-        label: payBrand ? `Open ${payBrand} on Cash App` : "Open Cash App profile",
-        url: cashAppUrl,
-      });
-    }
     extras.push({ type: "link", label: "Cash App website", url: "https://cash.app/" }, ...copyMemo);
-    if (cashAppTag) extras.unshift({ type: "copy", label: "Copy $Cashtag", text: cashAppTag });
+    if (cashAppTag) extras.unshift({ type: "copy", label: "Copy payment tag", text: cashAppTag });
     return {
-      headline: payBrand ? `Next: Cash App — ${payBrand}` : "Next: Cash App",
+      headline: "Next: Cash App",
       steps: [
         ...policySteps,
         cashAppUrl
-          ? "Use the button below to open our Cash App profile, then send the amount due."
+          ? "Use Pay with Cash App below, then send the amount due."
           : cashAppTag
-            ? `Pay the amount due to Cash App tag: ${cashAppTag}`
-            : "Open Cash App and send the amount due to the $Cashtag your team shared with you.",
+            ? "Open Cash App and send the amount due. Use Copy below for our payment tag."
+            : "Open Cash App and send the amount due using the details your studio shared with you.",
         memoHint,
       ],
       payUrl: cashAppUrl || null,
-      payLinkLabel: cashAppUrl ? (payBrand ? `Pay ${payBrand} (Cash App)` : "Open Cash App payment page") : null,
+      payLinkLabel: cashAppUrl ? "Pay with Cash App" : null,
       extraActions: extras,
     };
   }

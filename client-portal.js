@@ -452,7 +452,6 @@
     if (!quotePayLinks || !quoteForm) return;
     var methodEl = quoteForm.querySelector('input[name="paymentMethod"]:checked');
     var method = methodEl ? methodEl.value : "";
-    var brand = (quoteForm.dataset.studioBrand || "").trim();
     var paypal = (quoteForm.dataset.studioLinkPaypal || "").trim();
     var venmo = (quoteForm.dataset.studioLinkVenmo || "").trim();
     var cashApp = (quoteForm.dataset.studioLinkCashapp || "").trim();
@@ -463,37 +462,33 @@
       bits.push(
         '<a class="btn btn-primary portal-quote-pay-deeplink" href="' +
           esc(paypal) +
-          '" target="_blank" rel="noopener noreferrer">Open PayPal to pay' +
-          (brand ? " — " + esc(brand) : "") +
-          "</a>"
+          '" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>'
       );
     } else if (method === "venmo" && venmo) {
       bits.push(
         '<a class="btn btn-primary portal-quote-pay-deeplink" href="' +
           esc(venmo) +
-          '" target="_blank" rel="noopener noreferrer">Open Venmo to pay' +
-          (brand ? " — " + esc(brand) : "") +
-          "</a>"
+          '" target="_blank" rel="noopener noreferrer">Pay with Venmo</a>'
       );
     } else if (method === "cash_app" && cashApp) {
       bits.push(
         '<a class="btn btn-primary portal-quote-pay-deeplink" href="' +
           esc(cashApp) +
-          '" target="_blank" rel="noopener noreferrer">Open Cash App to pay' +
-          (brand ? " — " + esc(brand) : "") +
-          "</a>"
+          '" target="_blank" rel="noopener noreferrer">Pay with Cash App</a>'
       );
     } else if (method === "zelle" && zelle) {
       bits.push(
-        '<p class="portal-quote-pay-zelle">' +
-          esc(zelle) +
-          '</p><button type="button" class="btn btn-ghost portal-quote-pay-copy-zelle" data-copy="' +
+        '<p class="portal-quote-pay-zelle">Pay with Zelle using the recipient details from the copy button.</p>' +
+          '<button type="button" class="btn btn-ghost portal-quote-pay-copy-zelle" data-copy="' +
           encodeURIComponent(zelle) +
-          '">Copy Zelle details</button>'
+          '">Copy Zelle payment details</button>'
       );
     } else if (method === "cash_app" && cashtag && !cashApp) {
       bits.push(
-        "<p class=\"portal-quote-pay-zelle\">In Cash App, send to <strong>" + esc(cashtag) + "</strong>.</p>"
+        '<p class="portal-quote-pay-zelle">Pay with Cash App using the tag from the copy button.</p>' +
+          '<button type="button" class="btn btn-ghost portal-quote-pay-copy-zelle" data-copy="' +
+          encodeURIComponent(cashtag) +
+          '">Copy payment tag</button>'
       );
     }
     if (!bits.length) {
@@ -648,7 +643,6 @@
         quoteForm.dataset.quoteShippingCents = String(Number(detail.order.shippingCents || 0));
         var sp = detail.studioPayment;
         if (sp && typeof sp === "object") {
-          quoteForm.dataset.studioBrand = sp.brand || "";
           var ln = sp.links || {};
           quoteForm.dataset.studioLinkPaypal = ln.paypal || "";
           quoteForm.dataset.studioLinkVenmo = ln.venmo || "";
@@ -656,7 +650,6 @@
           quoteForm.dataset.studioZelleNote = sp.zelleNote || "";
           quoteForm.dataset.studioCashTag = sp.cashAppTag || "";
         } else {
-          quoteForm.dataset.studioBrand = "";
           quoteForm.dataset.studioLinkPaypal = "";
           quoteForm.dataset.studioLinkVenmo = "";
           quoteForm.dataset.studioLinkCashapp = "";
