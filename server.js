@@ -8,6 +8,7 @@ require("dotenv").config({ quiet: true });
 
 const emailTemplates = require("./lib/email-templates");
 const chatAttachments = require("./lib/chat-attachments");
+const studioPaymentDefaults = require("./lib/studio-payment-defaults");
 
 const ADMIN_NOTIFY_EMAIL_DEFAULT = "m.e.mercado@proton.me";
 const SUPPORT_BOT_SAMPLER_ENABLED =
@@ -609,20 +610,25 @@ function buildPaymentMemoLine(orderRef, totalStr) {
   return "";
 }
 
-/** Public studio payment links (from env). Shown to signed-in clients on quote review — no secrets, only recipient URLs. */
+/** Public studio payment links (env overrides; defaults in lib/studio-payment-defaults.js). Shown on quote review — no secrets. */
 function readStudioPaymentEnv() {
-  const paypal = String(process.env.PORTAL_PAYPAL_URL || "").trim();
-  const venmo = String(process.env.PORTAL_VENMO_URL || "").trim();
-  const cashApp = String(process.env.PORTAL_CASH_APP_URL || "").trim();
+  const d = studioPaymentDefaults;
+  const paypal = String(process.env.PORTAL_PAYPAL_URL || "").trim() || d.links.paypal || "";
+  const venmo = String(process.env.PORTAL_VENMO_URL || "").trim() || d.links.venmo || "";
+  const cashApp = String(process.env.PORTAL_CASH_APP_URL || "").trim() || d.links.cashApp || "";
+  const envFull = String(process.env.PORTAL_FULL_PAYMENT_ONLY || "").trim().toLowerCase();
+  const fullPaymentOnly =
+    envFull === "false" || envFull === "0" ? false : envFull === "true" || envFull === "1" ? true : d.fullPaymentOnly !== false;
   return {
-    brand: String(process.env.PORTAL_PAYMENT_BRAND || "").trim(),
+    brand: String(process.env.PORTAL_PAYMENT_BRAND || "").trim() || d.brand || "",
     links: {
       paypal: paypal || null,
       venmo: venmo || null,
       cashApp: cashApp || null,
     },
-    zelleNote: String(process.env.PORTAL_ZELLE_NOTE || "").trim() || null,
-    cashAppTag: String(process.env.PORTAL_CASH_APP_TAG || "").trim() || null,
+    zelleNote: String(process.env.PORTAL_ZELLE_NOTE || "").trim() || d.zelleNote || null,
+    cashAppTag: String(process.env.PORTAL_CASH_APP_TAG || "").trim() || d.cashAppTag || null,
+    fullPaymentOnly,
   };
 }
 
@@ -631,8 +637,13 @@ function buildPortalPaymentHints(method, summary) {
   const orderRef = summary && summary.orderNumber ? String(summary.orderNumber) : "";
   const totalStr = summary && summary.total ? String(summary.total) : "";
   const memoLine = buildPaymentMemoLine(orderRef, totalStr);
-  const payBrand = String(process.env.PORTAL_PAYMENT_BRAND || "").trim();
   const studio = readStudioPaymentEnv();
+  const payBrand = String(studio.brand || "").trim();
+  const policySteps = studio.fullPaymentOnly
+    ? [
+        "Full payment only — pay the complete amount due for this order. We do not accept deposits or partial payments.",
+      ]
+    : [];
   const payPalUrl = (studio.links.paypal && String(studio.links.paypal).trim()) || "";
   const venmoUrl = (studio.links.venmo && String(studio.links.venmo).trim()) || "";
   const cashAppUrl = (studio.links.cashApp && String(studio.links.cashApp).trim()) || "";
@@ -656,7 +667,7 @@ function buildPortalPaymentHints(method, summary) {
         : "Open the PayPal app or PayPal on the web and send the amount due using the PayPal address your team shared with you.";
     return {
       headline: payBrand ? `Next: PayPal — ${payBrand}` : "Next: PayPal",
-      steps: [primaryStep, memoHint],
+      steps: [...policySteps, primaryStep, memoHint],
       payUrl: payPalUrl || null,
       payLinkLabel: payPalUrl
         ? payBrand
@@ -679,7 +690,7 @@ function buildPortalPaymentHints(method, summary) {
         : "Open the Venmo app and pay the amount due to the @username your team shared with you.";
     return {
       headline: payBrand ? `Next: Venmo — ${payBrand}` : "Next: Venmo",
-      steps: [primaryStep, memoHint],
+      steps: [...policySteps, primaryStep, memoHint],
       payUrl: venmoUrl || null,
       payLinkLabel: venmoUrl
         ? payBrand
@@ -695,6 +706,7 @@ function buildPortalPaymentHints(method, summary) {
     return {
       headline: "Next: Zelle",
       steps: [
+        ...policySteps,
         zelleNote
           ? `Send the amount due via Zelle: ${zelleNote}`
           : "Send the amount due via Zelle using the email or phone number your team provided outside this portal.",
@@ -719,6 +731,7 @@ function buildPortalPaymentHints(method, summary) {
     return {
       headline: payBrand ? `Next: Cash App — ${payBrand}` : "Next: Cash App",
       steps: [
+        ...policySteps,
         cashAppUrl
           ? "Use the button below to open our Cash App profile, then send the amount due."
           : cashAppTag
@@ -733,7 +746,7 @@ function buildPortalPaymentHints(method, summary) {
   }
   return {
     headline: "Next steps",
-    steps: ["Your team may follow up with exact payment details.", memoHint],
+    steps: [...policySteps, "Your team may follow up with exact payment details.", memoHint],
     payUrl: null,
     payLinkLabel: null,
     extraActions: copyMemo,
