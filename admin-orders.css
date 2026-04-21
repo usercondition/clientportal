@@ -249,16 +249,41 @@
   padding: 0.7rem;
 }
 
+.admin-orders-quote__help {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.admin-orders-quote__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 90px 90px;
+  gap: 0.45rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
 .admin-orders-quote__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 90px));
   gap: 0.45rem;
   align-items: center;
   margin-bottom: 0.45rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 .admin-orders-quote__row input {
   width: 100%;
+}
+
+.admin-orders-quote__row:last-child {
+  margin-bottom: 0;
+  border-bottom: 0;
 }
 
 .admin-orders-quote__totals {
@@ -267,6 +292,8 @@
   gap: 0.5rem;
   align-items: end;
   margin-top: 0.65rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
 
 .admin-orders-quote__totals label {

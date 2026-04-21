@@ -25,6 +25,8 @@
 
   /** @type {Array<{ orderNumber: string }>} */
   var lastListSnapshot = [];
+  var isQuoteEditing = false;
+  var isQuoteDirty = false;
 
   function formatUsdFromCents(cents) {
     if (cents === null || cents === undefined || Number.isNaN(Number(cents))) return "—";
@@ -277,6 +279,7 @@
 
   function renderQuoteEditor(data) {
     if (!quoteItemsHost || !data || !data.quoteItems) return;
+    if (isQuoteDirty) return;
     var items = data.quoteItems || [];
     quoteItemsHost.innerHTML = items
       .map(function (it) {
@@ -311,6 +314,12 @@
       .join("");
     if (quoteTax) quoteTax.value = (Number(data.order.taxCents || 0) / 100).toFixed(2);
     if (quoteShipping) quoteShipping.value = (Number(data.order.shippingCents || 0) / 100).toFixed(2);
+  }
+
+  function quoteInputHasFocus() {
+    if (!quoteItemsHost) return false;
+    var ae = document.activeElement;
+    return Boolean(ae && quoteItemsHost.contains(ae));
   }
 
   async function deleteCancelledOrder(orderNumber) {
@@ -351,8 +360,10 @@
         });
         if (still) {
           try {
-            var d = await fetchDetail(selectedOrderNum);
-            renderDetail(d);
+            if (!isQuoteEditing && !quoteInputHasFocus()) {
+              var d = await fetchDetail(selectedOrderNum);
+              renderDetail(d);
+            }
           } catch (_e) {
             selectedOrderNum = null;
             showEmptyDetail();
@@ -404,6 +415,32 @@
   }
 
   if (saveQuoteBtn) {
+    if (quoteItemsHost) {
+      quoteItemsHost.addEventListener("focusin", function () {
+        isQuoteEditing = true;
+      });
+      quoteItemsHost.addEventListener("focusout", function () {
+        window.setTimeout(function () {
+          isQuoteEditing = quoteInputHasFocus();
+        }, 0);
+      });
+      quoteItemsHost.addEventListener("input", function () {
+        isQuoteDirty = true;
+      });
+      quoteItemsHost.addEventListener("change", function () {
+        isQuoteDirty = true;
+      });
+    }
+    if (quoteTax) {
+      quoteTax.addEventListener("input", function () {
+        isQuoteDirty = true;
+      });
+    }
+    if (quoteShipping) {
+      quoteShipping.addEventListener("input", function () {
+        isQuoteDirty = true;
+      });
+    }
     saveQuoteBtn.addEventListener("click", async function () {
       if (!selectedOrderNum || !quoteItemsHost) return;
       var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
@@ -435,6 +472,8 @@
           shippingCents: Math.round(Number(quoteShipping && quoteShipping.value ? quoteShipping.value : 0) * 100),
         });
         showAppToast("Quote sent to client.");
+        isQuoteDirty = false;
+        isQuoteEditing = false;
         await selectOrder(selectedOrderNum);
         var listData = await fetchListPayload();
         setMetrics(listData.metrics, listData.databaseConnected);
