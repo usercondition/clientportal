@@ -618,6 +618,78 @@
   font-size: 0.9rem;
 }
 
+.portal-quote-dialog__fee-ack {
+  margin: 0.55rem 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.portal-quote-dialog__fee-ack-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.portal-quote-dialog__fee-ack-label input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.portal-quote-row input[type="number"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.portal-payment-next-dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text);
+  width: min(520px, 92vw);
+  padding: 0;
+  box-shadow: var(--shadow), var(--shadow-neon);
+}
+
+.portal-payment-next-dialog::backdrop {
+  background: var(--scrim);
+}
+
+.portal-payment-next__shell {
+  padding: 1rem 1.05rem 1.1rem;
+}
+
+.portal-payment-next__title {
+  margin: 0 0 0.55rem;
+  font-size: 1.05rem;
+}
+
+.portal-payment-next__body p {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.portal-payment-next__total {
+  margin: 0.65rem 0 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.portal-payment-next__link {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.portal-payment-next__link .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.portal-payment-next__foot {
+  margin-top: 0.25rem;
+}
+
 .portal-empty {
   font-size: 0.86rem;
   color: var(--text-muted);

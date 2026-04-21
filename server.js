@@ -587,6 +587,79 @@ function feeRateBpsForMethod(method) {
   return PAYMENT_FEE_METHODS.has(method) ? PAYMENT_FEE_BPS : 0;
 }
 
+/** Optional deep links / handles shown to clients after quote confirmation (set in env on deploy). */
+function buildPortalPaymentHints(method, summary) {
+  const orderRef = summary && summary.orderNumber ? String(summary.orderNumber) : "";
+  const totalStr = summary && summary.total ? String(summary.total) : "";
+  const payPalUrl = String(process.env.PORTAL_PAYPAL_URL || "").trim();
+  const venmoUrl = String(process.env.PORTAL_VENMO_URL || "").trim();
+  const zelleNote = String(process.env.PORTAL_ZELLE_NOTE || "").trim();
+  const cashAppTag = String(process.env.PORTAL_CASH_APP_TAG || "").trim();
+
+  const memoHint = orderRef
+    ? `Include your order number (${orderRef}) in the payment note or memo so we can match your payment.`
+    : "Include your order number in the payment note or memo so we can match your payment.";
+
+  if (method === "paypal") {
+    return {
+      headline: "Next: PayPal",
+      steps: [
+        payPalUrl
+          ? "Use the button below to open PayPal (or your saved link), then send the amount due."
+          : "Open the PayPal app or go to paypal.com and send the amount due to the address your team shared with you.",
+        memoHint,
+      ],
+      payUrl: payPalUrl || null,
+      payLinkLabel: payPalUrl ? "Open PayPal link" : null,
+    };
+  }
+  if (method === "venmo") {
+    return {
+      headline: "Next: Venmo",
+      steps: [
+        venmoUrl
+          ? "Use the button below to open Venmo, then pay the amount due."
+          : "Open the Venmo app and pay the amount due to the handle your team shared with you.",
+        memoHint,
+      ],
+      payUrl: venmoUrl || null,
+      payLinkLabel: venmoUrl ? "Open Venmo link" : null,
+    };
+  }
+  if (method === "zelle") {
+    return {
+      headline: "Next: Zelle",
+      steps: [
+        zelleNote
+          ? `Send the amount due via Zelle: ${zelleNote}`
+          : "Send the amount due via Zelle using the email or phone number your team provided outside this portal.",
+        memoHint,
+      ],
+      payUrl: null,
+      payLinkLabel: null,
+    };
+  }
+  if (method === "cash_app") {
+    return {
+      headline: "Next: Cash App",
+      steps: [
+        cashAppTag
+          ? `Pay the amount due to Cash App tag: ${cashAppTag}`
+          : "Open Cash App and send the amount due to the $Cashtag your team shared with you.",
+        memoHint,
+      ],
+      payUrl: null,
+      payLinkLabel: null,
+    };
+  }
+  return {
+    headline: "Next steps",
+    steps: ["Your team may follow up with exact payment details.", memoHint],
+    payUrl: null,
+    payLinkLabel: null,
+  };
+}
+
 /** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
 app.get("/api/health", async (_req, res) => {
   const smtpConfigured = Boolean(createMailTransport());
@@ -1282,6 +1355,9 @@ app.patch("/api/client/:clientId/orders/:orderNumber/quote-review", async (req, 
 
   const dbClient = await pool.connect();
   let outOrder;
+  /** Line-item subtotal only (excludes card-style processing fee). */
+  let reviewLineSubtotalCents = 0;
+  let reviewFeeCents = 0;
   try {
     await dbClient.query("BEGIN");
     const ord = await dbClient.query(
@@ -1329,7 +1405,13 @@ app.patch("/api/client/:clientId/orders/:orderNumber/quote-review", async (req, 
         isIncluded: r.is_included,
       }))
     );
+    if (subtotal <= 0) {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({ error: "Include at least one line item in your quote selection." });
+    }
     const feeCents = Math.round((subtotal * methodFeeBps) / 10000);
+    reviewLineSubtotalCents = subtotal;
+    reviewFeeCents = feeCents;
     const upd = await dbClient.query(
       `update orders
           set subtotal_cents = $2,
@@ -1370,7 +1452,18 @@ app.patch("/api/client/:clientId/orders/:orderNumber/quote-review", async (req, 
     status: outOrder.status,
     previousStatus: "awaiting_client",
   });
-  return res.json({ ok: true });
+  const summary = {
+    orderNumber: outOrder.order_number,
+    paymentMethod: chosenMethod,
+    lineSubtotalCents: reviewLineSubtotalCents,
+    feeCents: reviewFeeCents,
+    taxCents: Number(outOrder.tax_cents || 0),
+    shippingCents: Number(outOrder.shipping_cents || 0),
+    totalCents: Number(outOrder.total_cents || 0),
+    total: formatMoney(outOrder.total_cents),
+  };
+  const paymentHints = buildPortalPaymentHints(chosenMethod, summary);
+  return res.json({ ok: true, summary, paymentHints });
 });
 
 app.get("/api/client/:clientId/messages", async (req, res) => {

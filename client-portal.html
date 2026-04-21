@@ -187,8 +187,12 @@
             <label><input type="radio" name="paymentMethod" value="zelle" /> Zelle</label>
             <label><input type="radio" name="paymentMethod" value="cash_app" /> Cash App</label>
           </fieldset>
-          <p class="portal-quote-dialog__warn" id="portal-quote-warn" hidden>
-            PayPal and Venmo include a 4% processing fee.
+          <p class="portal-quote-dialog__warn" id="portal-quote-warn" hidden></p>
+          <p class="portal-quote-dialog__fee-ack" id="portal-quote-fee-ack" hidden>
+            <label class="portal-quote-dialog__fee-ack-label">
+              <input type="checkbox" id="portal-quote-fee-ack-cb" />
+              I understand the 4% processing fee shown above applies to PayPal and Venmo.
+            </label>
           </p>
           <p class="portal-quote-dialog__totals" id="portal-quote-totals"></p>
         </div>
@@ -197,6 +201,18 @@
           <button type="submit" class="btn btn-primary" id="portal-quote-submit">Confirm selection</button>
         </footer>
       </form>
+    </dialog>
+
+    <dialog class="portal-payment-next-dialog" id="portal-payment-next-dialog" aria-labelledby="portal-payment-next-title">
+      <div class="portal-payment-next__shell">
+        <h3 class="portal-payment-next__title" id="portal-payment-next-title"></h3>
+        <div class="portal-payment-next__body" id="portal-payment-next-body"></div>
+        <p class="portal-payment-next__total" id="portal-payment-next-total" aria-live="polite"></p>
+        <div class="portal-payment-next__link" id="portal-payment-next-link"></div>
+        <footer class="portal-payment-next__foot">
+          <button type="button" class="btn btn-primary" id="portal-payment-next-done">Done</button>
+        </footer>
+      </div>
     </dialog>
 
     <script src="client-portal.js" defer></script>

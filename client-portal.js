@@ -151,6 +151,23 @@
   var lastSuccessfulMessages = [];
   var hadMessageRefreshError = false;
 
+  var quoteDialog = document.getElementById("portal-quote-dialog");
+  var quoteForm = document.getElementById("portal-quote-form");
+  var quoteItemsHost = document.getElementById("portal-quote-items");
+  var quoteMeta = document.getElementById("portal-quote-meta");
+  var quoteTotals = document.getElementById("portal-quote-totals");
+  var quoteWarn = document.getElementById("portal-quote-warn");
+  var quoteSubmit = document.getElementById("portal-quote-submit");
+  var quoteFeeAckWrap = document.getElementById("portal-quote-fee-ack");
+  var quoteFeeAckCb = document.getElementById("portal-quote-fee-ack-cb");
+  var paymentNextDialog = document.getElementById("portal-payment-next-dialog");
+  var paymentNextTitle = document.getElementById("portal-payment-next-title");
+  var paymentNextBody = document.getElementById("portal-payment-next-body");
+  var paymentNextTotal = document.getElementById("portal-payment-next-total");
+  var paymentNextLink = document.getElementById("portal-payment-next-link");
+  var paymentNextDone = document.getElementById("portal-payment-next-done");
+  var activeQuoteOrderNumber = "";
+
   function getChatThreadEl() {
     return document.getElementById("portal-thread");
   }
@@ -386,6 +403,36 @@
     return method === "paypal" || method === "venmo" ? 400 : 0;
   }
 
+  function openPaymentNextDialog(summary, paymentHints) {
+    if (!paymentNextDialog || !paymentNextTitle || !paymentNextBody || !paymentNextTotal || !paymentNextDone) return;
+    paymentNextTitle.textContent =
+      (paymentHints && paymentHints.headline) || "Next: complete your payment";
+    var steps = (paymentHints && paymentHints.steps) || [];
+    paymentNextBody.innerHTML = steps
+      .map(function (s) {
+        return "<p>" + esc(String(s)) + "</p>";
+      })
+      .join("");
+    paymentNextTotal.textContent = summary && summary.total ? "Amount due: " + String(summary.total) : "";
+    if (paymentNextLink) paymentNextLink.innerHTML = "";
+    var payUrl = paymentHints && paymentHints.payUrl;
+    if (payUrl && paymentNextLink) {
+      var a = document.createElement("a");
+      a.href = payUrl;
+      a.className = "btn btn-primary portal-payment-next__open";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = (paymentHints && paymentHints.payLinkLabel) || "Open payment page";
+      paymentNextLink.appendChild(a);
+    }
+    var onDone = function () {
+      paymentNextDialog.close();
+      paymentNextDone.removeEventListener("click", onDone);
+    };
+    paymentNextDone.addEventListener("click", onDone);
+    paymentNextDialog.showModal();
+  }
+
   function readDialogItems() {
     if (!quoteItemsHost) return [];
     var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
@@ -405,7 +452,9 @@
     if (!quoteForm || !quoteTotals || !quoteItemsHost) return;
     var methodEl = quoteForm.querySelector('input[name="paymentMethod"]:checked');
     var method = methodEl ? methodEl.value : "";
-    var subtotal = 0;
+    var taxCents = Math.max(0, Math.floor(Number(quoteForm.dataset.quoteTaxCents || 0)));
+    var shipCents = Math.max(0, Math.floor(Number(quoteForm.dataset.quoteShippingCents || 0)));
+    var lineSubtotal = 0;
     var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
     rows.forEach(function (row) {
       var included = row.querySelector("[data-quote-inc]");
@@ -413,18 +462,37 @@
       var unitCents = Number(row.getAttribute("data-unit-cents") || 0);
       var maxQty = Number(row.getAttribute("data-max-qty") || 0);
       var qty = Math.max(0, Math.min(Number(qtyEl && qtyEl.value ? qtyEl.value : 0), maxQty));
-      if (qtyEl) qtyEl.value = String(Math.floor(qty));
-      if (included && included.checked) subtotal += Math.floor(qty) * unitCents;
+      if (qtyEl) {
+        qtyEl.value = String(Math.floor(qty));
+        qtyEl.disabled = !(included && included.checked);
+      }
+      if (included && included.checked) lineSubtotal += Math.floor(qty) * unitCents;
     });
-    var fee = Math.round((subtotal * methodFeeBps(method)) / 10000);
-    var total = subtotal + fee;
-    if (quoteWarn) quoteWarn.hidden = !(fee > 0);
-    quoteTotals.textContent =
-      "Subtotal $" +
-      (subtotal / 100).toFixed(2) +
-      (fee > 0 ? " + fee $" + (fee / 100).toFixed(2) : "") +
-      " = $" +
-      (total / 100).toFixed(2);
+    var feeBps = methodFeeBps(method);
+    var fee = Math.round((lineSubtotal * feeBps) / 10000);
+    var grand = lineSubtotal + fee + taxCents + shipCents;
+    if (quoteWarn) {
+      quoteWarn.hidden = feeBps <= 0;
+      if (!quoteWarn.hidden) {
+        quoteWarn.textContent =
+          "PayPal and Venmo include a 4% processing fee. The fee is included in the estimated total below.";
+      }
+    }
+    if (quoteFeeAckWrap && quoteFeeAckCb) {
+      var needAck = feeBps > 0;
+      quoteFeeAckWrap.hidden = !needAck;
+      if (!needAck) quoteFeeAckCb.checked = false;
+    }
+    quoteTotals.setAttribute("aria-live", "polite");
+    quoteTotals.style.whiteSpace = "pre-line";
+    var parts = [];
+    parts.push("Line items $" + (lineSubtotal / 100).toFixed(2));
+    if (fee > 0) parts.push("Processing fee (4%) $" + (fee / 100).toFixed(2));
+    if (taxCents > 0) parts.push("Estimated tax $" + (taxCents / 100).toFixed(2));
+    if (shipCents > 0) parts.push("Shipping $" + (shipCents / 100).toFixed(2));
+    parts.push("Estimated amount due $" + (grand / 100).toFixed(2));
+    quoteTotals.textContent = parts.join("\n");
+    if (quoteSubmit) quoteSubmit.disabled = lineSubtotal <= 0 || !method;
   }
 
   async function openQuoteDialog(orderNumber) {
@@ -432,6 +500,11 @@
     try {
       var detail = await Portal.getOrderDetail(orderNumber);
       activeQuoteOrderNumber = orderNumber;
+      if (quoteForm) {
+        quoteForm.dataset.quoteTaxCents = String(Number(detail.order.taxCents || 0));
+        quoteForm.dataset.quoteShippingCents = String(Number(detail.order.shippingCents || 0));
+      }
+      if (quoteFeeAckCb) quoteFeeAckCb.checked = false;
       quoteItemsHost.innerHTML = (detail.quoteItems || [])
         .map(function (item) {
           var unit = item.unit ? " / " + esc(item.unit) : "";
@@ -482,7 +555,10 @@
   if (quoteForm) {
     quoteForm.addEventListener("change", function (e) {
       var t = e.target;
-      if (t && t.name === "paymentMethod") recalcQuoteTotals();
+      if (t && t.name === "paymentMethod") {
+        if (quoteFeeAckCb) quoteFeeAckCb.checked = false;
+        recalcQuoteTotals();
+      }
     });
     quoteForm.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -493,14 +569,15 @@
         showAppToast("Select a payment method.");
         return;
       }
-      var ack = true;
-      if (methodFeeBps(method) > 0) {
-        ack = window.confirm("PayPal and Venmo include a 4% processing fee. Continue?");
+      var needFeeAck = methodFeeBps(method) > 0;
+      if (needFeeAck && quoteFeeAckCb && !quoteFeeAckCb.checked) {
+        showAppToast("Please confirm you understand the 4% processing fee for this payment method.");
+        return;
       }
-      if (!ack) return;
+      var ack = !needFeeAck || Boolean(quoteFeeAckCb && quoteFeeAckCb.checked);
       if (quoteSubmit) quoteSubmit.disabled = true;
       try {
-        await Portal.submitQuoteReview(activeQuoteOrderNumber, {
+        var reviewRes = await Portal.submitQuoteReview(activeQuoteOrderNumber, {
           paymentMethod: method,
           acknowledgedFee: ack,
           items: readDialogItems(),
@@ -508,6 +585,9 @@
         quoteDialog.close();
         showAppToast("Quote confirmed. We received your selection.");
         await renderOrders();
+        if (reviewRes && reviewRes.summary && reviewRes.paymentHints) {
+          openPaymentNextDialog(reviewRes.summary, reviewRes.paymentHints);
+        }
       } catch (err) {
         showAppToast((err && err.message) || "Could not submit quote selection.");
       } finally {
@@ -518,14 +598,6 @@
 
   var firstMessageRender = true;
   var lastMessageRenderSig = "";
-  var quoteDialog = document.getElementById("portal-quote-dialog");
-  var quoteForm = document.getElementById("portal-quote-form");
-  var quoteItemsHost = document.getElementById("portal-quote-items");
-  var quoteMeta = document.getElementById("portal-quote-meta");
-  var quoteTotals = document.getElementById("portal-quote-totals");
-  var quoteWarn = document.getElementById("portal-quote-warn");
-  var quoteSubmit = document.getElementById("portal-quote-submit");
-  var activeQuoteOrderNumber = "";
 
   var notifyBtn = document.getElementById("portal-enable-notify");
   if (notifyBtn) {
