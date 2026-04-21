@@ -609,15 +609,35 @@ function buildPaymentMemoLine(orderRef, totalStr) {
   return "";
 }
 
+/** Public studio payment links (from env). Shown to signed-in clients on quote review — no secrets, only recipient URLs. */
+function readStudioPaymentEnv() {
+  const paypal = String(process.env.PORTAL_PAYPAL_URL || "").trim();
+  const venmo = String(process.env.PORTAL_VENMO_URL || "").trim();
+  const cashApp = String(process.env.PORTAL_CASH_APP_URL || "").trim();
+  return {
+    brand: String(process.env.PORTAL_PAYMENT_BRAND || "").trim(),
+    links: {
+      paypal: paypal || null,
+      venmo: venmo || null,
+      cashApp: cashApp || null,
+    },
+    zelleNote: String(process.env.PORTAL_ZELLE_NOTE || "").trim() || null,
+    cashAppTag: String(process.env.PORTAL_CASH_APP_TAG || "").trim() || null,
+  };
+}
+
 /** Optional deep links / handles shown to clients after quote confirmation (set in env on deploy). */
 function buildPortalPaymentHints(method, summary) {
   const orderRef = summary && summary.orderNumber ? String(summary.orderNumber) : "";
   const totalStr = summary && summary.total ? String(summary.total) : "";
   const memoLine = buildPaymentMemoLine(orderRef, totalStr);
-  const payPalUrl = String(process.env.PORTAL_PAYPAL_URL || "").trim();
-  const venmoUrl = String(process.env.PORTAL_VENMO_URL || "").trim();
-  const zelleNote = String(process.env.PORTAL_ZELLE_NOTE || "").trim();
-  const cashAppTag = String(process.env.PORTAL_CASH_APP_TAG || "").trim();
+  const payBrand = String(process.env.PORTAL_PAYMENT_BRAND || "").trim();
+  const studio = readStudioPaymentEnv();
+  const payPalUrl = (studio.links.paypal && String(studio.links.paypal).trim()) || "";
+  const venmoUrl = (studio.links.venmo && String(studio.links.venmo).trim()) || "";
+  const cashAppUrl = (studio.links.cashApp && String(studio.links.cashApp).trim()) || "";
+  const zelleNote = (studio.zelleNote && String(studio.zelleNote).trim()) || "";
+  const cashAppTag = (studio.cashAppTag && String(studio.cashAppTag).trim()) || "";
 
   const memoHint = orderRef
     ? `Include your order number (${orderRef}) in the payment note or memo so we can match your payment.`
@@ -627,16 +647,22 @@ function buildPortalPaymentHints(method, summary) {
     memoLine.length > 0 ? [{ type: "copy", label: "Copy memo (order # & amount)", text: memoLine }] : [];
 
   if (method === "paypal") {
+    const primaryStep = payPalUrl
+      ? payBrand
+        ? `Use the button below to open ${payBrand}'s PayPal payment page, then send the amount due (${totalStr || "see total above"}).`
+        : "Use the button below to open our PayPal payment page, then send the amount due."
+      : payBrand
+        ? `Open PayPal (app or paypal.com) and send the amount due to ${payBrand} using the PayPal email or link they gave you.`
+        : "Open the PayPal app or PayPal on the web and send the amount due using the PayPal address your team shared with you.";
     return {
-      headline: "Next: PayPal",
-      steps: [
-        payPalUrl
-          ? "Use your saved PayPal link below if we set one up for this site, then send the amount due."
-          : "Open the PayPal app or PayPal on the web and send the amount due using the PayPal address your team shared with you.",
-        memoHint,
-      ],
+      headline: payBrand ? `Next: PayPal — ${payBrand}` : "Next: PayPal",
+      steps: [primaryStep, memoHint],
       payUrl: payPalUrl || null,
-      payLinkLabel: payPalUrl ? "Open PayPal payment link" : null,
+      payLinkLabel: payPalUrl
+        ? payBrand
+          ? `Pay ${payBrand} (PayPal)`
+          : "Open PayPal payment page"
+        : null,
       extraActions: [
         { type: "link", label: "Open PayPal.com", url: "https://www.paypal.com/" },
         ...copyMemo,
@@ -644,16 +670,22 @@ function buildPortalPaymentHints(method, summary) {
     };
   }
   if (method === "venmo") {
+    const primaryStep = venmoUrl
+      ? payBrand
+        ? `Use the button below to open ${payBrand} on Venmo and pay the amount due (${totalStr || "see total above"}).`
+        : "Use the button below to open Venmo and pay the amount due."
+      : payBrand
+        ? `Open Venmo and pay ${payBrand} the amount due using the @username they shared with you.`
+        : "Open the Venmo app and pay the amount due to the @username your team shared with you.";
     return {
-      headline: "Next: Venmo",
-      steps: [
-        venmoUrl
-          ? "Use your saved Venmo link below if we set one up for this site, then pay the amount due."
-          : "Open the Venmo app and pay the amount due to the @username your team shared with you.",
-        memoHint,
-      ],
+      headline: payBrand ? `Next: Venmo — ${payBrand}` : "Next: Venmo",
+      steps: [primaryStep, memoHint],
       payUrl: venmoUrl || null,
-      payLinkLabel: venmoUrl ? "Open Venmo payment link" : null,
+      payLinkLabel: venmoUrl
+        ? payBrand
+          ? `Pay ${payBrand} (Venmo)`
+          : "Open Venmo payment page"
+        : null,
       extraActions: [{ type: "link", label: "Open Venmo.com", url: "https://venmo.com/" }, ...copyMemo],
     };
   }
@@ -674,21 +706,28 @@ function buildPortalPaymentHints(method, summary) {
     };
   }
   if (method === "cash_app") {
-    const extras = [
-      { type: "link", label: "Open Cash App", url: "https://cash.app/" },
-      ...copyMemo,
-    ];
+    const extras = [];
+    if (cashAppUrl) {
+      extras.push({
+        type: "link",
+        label: payBrand ? `Open ${payBrand} on Cash App` : "Open Cash App profile",
+        url: cashAppUrl,
+      });
+    }
+    extras.push({ type: "link", label: "Cash App website", url: "https://cash.app/" }, ...copyMemo);
     if (cashAppTag) extras.unshift({ type: "copy", label: "Copy $Cashtag", text: cashAppTag });
     return {
-      headline: "Next: Cash App",
+      headline: payBrand ? `Next: Cash App — ${payBrand}` : "Next: Cash App",
       steps: [
-        cashAppTag
-          ? `Pay the amount due to Cash App tag: ${cashAppTag}`
-          : "Open Cash App and send the amount due to the $Cashtag your team shared with you.",
+        cashAppUrl
+          ? "Use the button below to open our Cash App profile, then send the amount due."
+          : cashAppTag
+            ? `Pay the amount due to Cash App tag: ${cashAppTag}`
+            : "Open Cash App and send the amount due to the $Cashtag your team shared with you.",
         memoHint,
       ],
-      payUrl: null,
-      payLinkLabel: null,
+      payUrl: cashAppUrl || null,
+      payLinkLabel: cashAppUrl ? (payBrand ? `Pay ${payBrand} (Cash App)` : "Open Cash App payment page") : null,
       extraActions: extras,
     };
   }
@@ -1024,6 +1063,7 @@ app.get("/api/client/:clientId/orders/:orderNumber", async (req, res) => {
       submittedAt: o.submitted_at,
       fulfilledAt: o.fulfilled_at,
     },
+    studioPayment: readStudioPaymentEnv(),
     quoteItems: itemsRes.rows.map((r) => ({
       id: r.id,
       index: Number(r.item_index || 0),
@@ -1699,13 +1739,6 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
        order by item_index asc, created_at asc`,
       [o.id]
     );
-    const pmNorm = normalizePaymentMethod(o.payment_method);
-    const paymentHintsForAdmin = pmNorm
-      ? buildPortalPaymentHints(pmNorm, {
-          orderNumber: o.order_number,
-          total: formatMoney(o.total_cents),
-        })
-      : null;
     return res.json({
       order: {
         id: o.id,
@@ -1757,7 +1790,6 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         isIncluded: Boolean(r.is_included),
         adminNote: r.admin_note || "",
       })),
-      paymentHints: paymentHintsForAdmin,
     });
   } catch (e) {
     const err = /** @type {{ message?: string }} */ (e);

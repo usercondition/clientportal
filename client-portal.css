@@ -618,6 +618,42 @@
   font-size: 0.9rem;
 }
 
+.portal-quote-pay-links {
+  margin: 0.55rem 0 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-elevated));
+}
+
+.portal-quote-pay-links[hidden] {
+  display: none !important;
+}
+
+.portal-quote-pay-deeplink {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.portal-quote-pay-zelle {
+  margin: 0 0 0.45rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.portal-quote-pay-zelle strong {
+  color: var(--text);
+}
+
+.portal-quote-pay-fallback {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
 .portal-quote-dialog__fee-ack {
   margin: 0.55rem 0 0;
   font-size: 0.86rem;

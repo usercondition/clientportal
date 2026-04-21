@@ -23,18 +23,7 @@
   var saveBtn = document.getElementById("admin-orders-save-status");
   var cancelBtn = document.getElementById("admin-orders-cancel-order");
   var deleteBtn = document.getElementById("admin-orders-delete-order");
-  var adminPaymentDialog = document.getElementById("admin-payment-next-dialog");
-  var adminPaymentTitle = document.getElementById("admin-payment-next-title");
-  var adminPaymentBody = document.getElementById("admin-payment-next-body");
-  var adminPaymentTotal = document.getElementById("admin-payment-next-total");
-  var adminPaymentLink = document.getElementById("admin-payment-next-link");
-  var adminPaymentExtra = document.getElementById("admin-payment-next-extra");
-  var adminPaymentDone = document.getElementById("admin-payment-next-done");
-  var adminPaymentHintsBtn = document.getElementById("admin-orders-payment-hints-btn");
-  var adminPaymentHintsWrap = document.getElementById("admin-orders-payment-hints-wrap");
-
-  var cachedAdminPaymentSummary = null;
-  var cachedAdminPaymentHints = null;
+  var deleteWrap = document.getElementById("admin-orders-delete-wrap");
 
   /** @type {string | null} */
   var selectedOrderNum = null;
@@ -88,101 +77,6 @@
     var d = document.createElement("div");
     d.textContent = s == null ? "" : String(s);
     return d.innerHTML;
-  }
-
-  function copyTextToClipboard(text) {
-    var t = String(text || "");
-    if (!t) return Promise.resolve(false);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(t).then(
-        function () {
-          return true;
-        },
-        function () {
-          return false;
-        }
-      );
-    }
-    try {
-      var ta = document.createElement("textarea");
-      ta.value = t;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      var ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-      return Promise.resolve(ok);
-    } catch (_e) {
-      return Promise.resolve(false);
-    }
-  }
-
-  function openAdminPaymentNextDialog(summary, paymentHints) {
-    if (!adminPaymentDialog || !adminPaymentTitle || !adminPaymentBody || !adminPaymentTotal || !adminPaymentDone) {
-      return;
-    }
-    adminPaymentTitle.textContent =
-      (paymentHints && paymentHints.headline) || "Payment instructions";
-    var steps = (paymentHints && paymentHints.steps) || [];
-    adminPaymentBody.innerHTML = steps
-      .map(function (s) {
-        return "<p>" + esc(String(s)) + "</p>";
-      })
-      .join("");
-    adminPaymentTotal.textContent = summary && summary.total ? "Amount due: " + String(summary.total) : "";
-    if (adminPaymentLink) adminPaymentLink.innerHTML = "";
-    var payUrl = paymentHints && paymentHints.payUrl;
-    if (payUrl && adminPaymentLink) {
-      var a = document.createElement("a");
-      a.href = payUrl;
-      a.className = "btn btn-primary portal-payment-next__open";
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.textContent = (paymentHints && paymentHints.payLinkLabel) || "Open payment page";
-      adminPaymentLink.appendChild(a);
-    }
-    if (adminPaymentExtra) {
-      adminPaymentExtra.innerHTML = "";
-      var extras = (paymentHints && paymentHints.extraActions) || [];
-      if (!extras.length) {
-        adminPaymentExtra.hidden = true;
-      } else {
-        adminPaymentExtra.hidden = false;
-        extras.forEach(function (act) {
-          if (!act || !act.type) return;
-          if (act.type === "link" && act.url) {
-            var link = document.createElement("a");
-            link.href = String(act.url);
-            link.className = "btn btn-ghost portal-payment-next__extra-btn";
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = String(act.label || "Open");
-            adminPaymentExtra.appendChild(link);
-          } else if (act.type === "copy" && act.text) {
-            var btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "btn btn-ghost portal-payment-next__extra-btn";
-            btn.textContent = String(act.label || "Copy");
-            (function (copyContent) {
-              btn.addEventListener("click", function () {
-                copyTextToClipboard(copyContent).then(function (ok) {
-                  showAppToast(ok ? "Copied to clipboard." : "Could not copy — try manually.");
-                });
-              });
-            })(String(act.text));
-            adminPaymentExtra.appendChild(btn);
-          }
-        });
-      }
-    }
-    var onDone = function () {
-      adminPaymentDialog.close();
-      adminPaymentDone.removeEventListener("click", onDone);
-    };
-    adminPaymentDone.addEventListener("click", onDone);
-    adminPaymentDialog.showModal();
   }
 
   function formatPaymentMethod(code) {
@@ -324,18 +218,12 @@
     if (cancelBtn) {
       cancelBtn.disabled = o.status === "cancelled" || o.status === "fulfilled";
     }
-    if (deleteBtn) {
-      deleteBtn.hidden = o.status !== "cancelled";
-      deleteBtn.disabled = false;
+    if (deleteWrap) {
+      var showDelete = o.status === "cancelled";
+      deleteWrap.classList.toggle("is-visible", showDelete);
+      deleteWrap.setAttribute("aria-hidden", showDelete ? "false" : "true");
     }
-
-    cachedAdminPaymentHints = data.paymentHints || null;
-    cachedAdminPaymentSummary = o.paymentMethod
-      ? { total: o.total, orderNumber: o.orderNumber }
-      : null;
-    if (adminPaymentHintsWrap) {
-      adminPaymentHintsWrap.hidden = !(cachedAdminPaymentHints && o.paymentMethod);
-    }
+    if (deleteBtn) deleteBtn.disabled = false;
     if (saveBtn && statusSelect) {
       var locked = o.status === "cancelled" || o.status === "fulfilled";
       saveBtn.disabled = locked;
@@ -373,6 +261,10 @@
   function showEmptyDetail() {
     if (emptyDetail) emptyDetail.hidden = false;
     if (detailWrap) detailWrap.hidden = true;
+    if (deleteWrap) {
+      deleteWrap.classList.remove("is-visible");
+      deleteWrap.setAttribute("aria-hidden", "true");
+    }
   }
 
   async function fetchListPayload() {
@@ -760,13 +652,6 @@
       } finally {
         deleteBtn.disabled = false;
       }
-    });
-  }
-
-  if (adminPaymentHintsBtn) {
-    adminPaymentHintsBtn.addEventListener("click", function () {
-      if (!cachedAdminPaymentHints || !cachedAdminPaymentSummary) return;
-      openAdminPaymentNextDialog(cachedAdminPaymentSummary, cachedAdminPaymentHints);
     });
   }
 

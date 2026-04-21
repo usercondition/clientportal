@@ -350,18 +350,12 @@
   margin: 0;
 }
 
-.admin-orders-quote-accepted__pay {
-  margin-top: 0.75rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  align-items: stretch;
+.admin-orders-delete-wrap {
+  display: none;
 }
 
-.admin-orders-quote-accepted__pay .admin-orders-quote__help {
-  margin: 0;
+.admin-orders-delete-wrap.is-visible {
+  display: inline-flex;
 }
 
 .admin-orders-actions select optgroup {
@@ -373,73 +367,6 @@
 .admin-orders-actions select option {
   font-weight: 500;
   color: var(--text);
-}
-
-/* Payment next dialog (shared structure with client portal) */
-.portal-payment-next-dialog {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-elevated);
-  color: var(--text);
-  width: min(520px, 92vw);
-  padding: 0;
-  box-shadow: var(--shadow);
-}
-
-.portal-payment-next-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.portal-payment-next__shell {
-  padding: 1rem 1.05rem 1.1rem;
-}
-
-.portal-payment-next__title {
-  margin: 0 0 0.55rem;
-  font-size: 1.05rem;
-}
-
-.portal-payment-next__body p {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: var(--text-muted);
-}
-
-.portal-payment-next__total {
-  margin: 0.65rem 0 0.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.portal-payment-next__link {
-  margin: 0.5rem 0 0.75rem;
-}
-
-.portal-payment-next__link .btn {
-  width: 100%;
-  justify-content: center;
-}
-
-.portal-payment-next__extra {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0.35rem 0 0.65rem;
-}
-
-.portal-payment-next__extra[hidden] {
-  display: none !important;
-}
-
-.portal-payment-next__extra-btn {
-  flex: 1 1 auto;
-  min-width: 44%;
-  justify-content: center;
-}
-
-.portal-payment-next__foot {
-  margin-top: 0.25rem;
 }
 
 .admin-orders-timeline {

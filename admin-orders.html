@@ -244,12 +244,6 @@
                       </div>
                       <div id="admin-orders-quote-accepted-items"></div>
                       <div class="admin-orders-quote-accepted__meta" id="admin-orders-quote-accepted-meta"></div>
-                      <div class="admin-orders-quote-accepted__pay" id="admin-orders-payment-hints-wrap" hidden>
-                        <button type="button" class="btn btn-primary" id="admin-orders-payment-hints-btn">
-                          Open payment instructions
-                        </button>
-                        <p class="admin-orders-quote__help">Same links and copy buttons the client sees after confirming their quote.</p>
-                      </div>
                     </div>
                     <div class="admin-orders-quote" id="admin-orders-quote">
                       <h3 class="admin-metrics__subhead" style="margin: 0 0 0.5rem; font-size: 0.85rem">Quote builder</h3>
@@ -287,9 +281,9 @@
                       </select>
                       <button type="button" class="btn btn-primary" id="admin-orders-save-status">Save status</button>
                       <button type="button" class="btn btn-ghost" id="admin-orders-cancel-order">Cancel order</button>
-                      <button type="button" class="btn btn-ghost" id="admin-orders-delete-order" hidden>
-                        Delete cancelled order
-                      </button>
+                      <div id="admin-orders-delete-wrap" class="admin-orders-delete-wrap" aria-hidden="true">
+                        <button type="button" class="btn btn-ghost" id="admin-orders-delete-order">Delete cancelled order</button>
+                      </div>
                     </div>
                     <h3 class="admin-metrics__subhead" style="margin: 0 0 0.5rem; font-size: 0.85rem">Timeline</h3>
                     <ul class="admin-orders-timeline" id="admin-orders-timeline"></ul>
@@ -303,19 +297,6 @@
     </div>
 
     <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>
-
-    <dialog class="portal-payment-next-dialog admin-payment-next-dialog" id="admin-payment-next-dialog" aria-labelledby="admin-payment-next-title">
-      <div class="portal-payment-next__shell">
-        <h3 class="portal-payment-next__title" id="admin-payment-next-title"></h3>
-        <div class="portal-payment-next__body" id="admin-payment-next-body"></div>
-        <p class="portal-payment-next__total" id="admin-payment-next-total" aria-live="polite"></p>
-        <div class="portal-payment-next__link" id="admin-payment-next-link"></div>
-        <div class="portal-payment-next__extra" id="admin-payment-next-extra" hidden></div>
-        <footer class="portal-payment-next__foot">
-          <button type="button" class="btn btn-primary" id="admin-payment-next-done">Close</button>
-        </footer>
-      </div>
-    </dialog>
 
     <script src="admin-layout.js" defer></script>
     <script src="admin-orders.js" defer></script>
