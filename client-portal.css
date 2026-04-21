@@ -686,6 +686,23 @@
   justify-content: center;
 }
 
+.portal-payment-next__extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.65rem;
+}
+
+.portal-payment-next__extra[hidden] {
+  display: none !important;
+}
+
+.portal-payment-next__extra-btn {
+  flex: 1 1 auto;
+  min-width: 44%;
+  justify-content: center;
+}
+
 .portal-payment-next__foot {
   margin-top: 0.25rem;
 }

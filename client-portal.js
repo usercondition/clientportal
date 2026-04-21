@@ -24,6 +24,35 @@
     }, 5200);
   }
 
+  function copyTextToClipboard(text) {
+    var t = String(text || "");
+    if (!t) return Promise.resolve(false);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(t).then(
+        function () {
+          return true;
+        },
+        function () {
+          return false;
+        }
+      );
+    }
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = t;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return Promise.resolve(ok);
+    } catch (_e) {
+      return Promise.resolve(false);
+    }
+  }
+
   try {
     var sp = new URLSearchParams(window.location.search);
     if (sp.get("order") === "submitted") {
@@ -165,6 +194,7 @@
   var paymentNextBody = document.getElementById("portal-payment-next-body");
   var paymentNextTotal = document.getElementById("portal-payment-next-total");
   var paymentNextLink = document.getElementById("portal-payment-next-link");
+  var paymentNextExtra = document.getElementById("portal-payment-next-extra");
   var paymentNextDone = document.getElementById("portal-payment-next-done");
   var activeQuoteOrderNumber = "";
 
@@ -438,6 +468,40 @@
       a.rel = "noopener noreferrer";
       a.textContent = (paymentHints && paymentHints.payLinkLabel) || "Open payment page";
       paymentNextLink.appendChild(a);
+    }
+    if (paymentNextExtra) {
+      paymentNextExtra.innerHTML = "";
+      var extras = (paymentHints && paymentHints.extraActions) || [];
+      if (!extras.length) {
+        paymentNextExtra.hidden = true;
+      } else {
+        paymentNextExtra.hidden = false;
+        extras.forEach(function (act) {
+          if (!act || !act.type) return;
+          if (act.type === "link" && act.url) {
+            var link = document.createElement("a");
+            link.href = String(act.url);
+            link.className = "btn btn-ghost portal-payment-next__extra-btn";
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = String(act.label || "Open");
+            paymentNextExtra.appendChild(link);
+          } else if (act.type === "copy" && act.text) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn btn-ghost portal-payment-next__extra-btn";
+            btn.textContent = String(act.label || "Copy");
+            (function (copyContent) {
+              btn.addEventListener("click", function () {
+                copyTextToClipboard(copyContent).then(function (ok) {
+                  showAppToast(ok ? "Copied to clipboard." : "Could not copy — select and copy manually.");
+                });
+              });
+            })(String(act.text));
+            paymentNextExtra.appendChild(btn);
+          }
+        });
+      }
     }
     var onDone = function () {
       paymentNextDialog.close();

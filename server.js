@@ -600,10 +600,20 @@ function feeRateBpsForMethod(method) {
   return PAYMENT_FEE_METHODS.has(method) ? PAYMENT_FEE_BPS : 0;
 }
 
+function buildPaymentMemoLine(orderRef, totalStr) {
+  const r = String(orderRef || "").trim();
+  const t = String(totalStr || "").trim();
+  if (r && t) return `${r} — ${t}`;
+  if (t) return t;
+  if (r) return r;
+  return "";
+}
+
 /** Optional deep links / handles shown to clients after quote confirmation (set in env on deploy). */
 function buildPortalPaymentHints(method, summary) {
   const orderRef = summary && summary.orderNumber ? String(summary.orderNumber) : "";
   const totalStr = summary && summary.total ? String(summary.total) : "";
+  const memoLine = buildPaymentMemoLine(orderRef, totalStr);
   const payPalUrl = String(process.env.PORTAL_PAYPAL_URL || "").trim();
   const venmoUrl = String(process.env.PORTAL_VENMO_URL || "").trim();
   const zelleNote = String(process.env.PORTAL_ZELLE_NOTE || "").trim();
@@ -613,17 +623,24 @@ function buildPortalPaymentHints(method, summary) {
     ? `Include your order number (${orderRef}) in the payment note or memo so we can match your payment.`
     : "Include your order number in the payment note or memo so we can match your payment.";
 
+  const copyMemo =
+    memoLine.length > 0 ? [{ type: "copy", label: "Copy memo (order # & amount)", text: memoLine }] : [];
+
   if (method === "paypal") {
     return {
       headline: "Next: PayPal",
       steps: [
         payPalUrl
-          ? "Use the button below to open PayPal (or your saved link), then send the amount due."
-          : "Open the PayPal app or go to paypal.com and send the amount due to the address your team shared with you.",
+          ? "Use your saved PayPal link below if we set one up for this site, then send the amount due."
+          : "Open the PayPal app or PayPal on the web and send the amount due using the PayPal address your team shared with you.",
         memoHint,
       ],
       payUrl: payPalUrl || null,
-      payLinkLabel: payPalUrl ? "Open PayPal link" : null,
+      payLinkLabel: payPalUrl ? "Open PayPal payment link" : null,
+      extraActions: [
+        { type: "link", label: "Open PayPal.com", url: "https://www.paypal.com/" },
+        ...copyMemo,
+      ],
     };
   }
   if (method === "venmo") {
@@ -631,15 +648,18 @@ function buildPortalPaymentHints(method, summary) {
       headline: "Next: Venmo",
       steps: [
         venmoUrl
-          ? "Use the button below to open Venmo, then pay the amount due."
-          : "Open the Venmo app and pay the amount due to the handle your team shared with you.",
+          ? "Use your saved Venmo link below if we set one up for this site, then pay the amount due."
+          : "Open the Venmo app and pay the amount due to the @username your team shared with you.",
         memoHint,
       ],
       payUrl: venmoUrl || null,
-      payLinkLabel: venmoUrl ? "Open Venmo link" : null,
+      payLinkLabel: venmoUrl ? "Open Venmo payment link" : null,
+      extraActions: [{ type: "link", label: "Open Venmo.com", url: "https://venmo.com/" }, ...copyMemo],
     };
   }
   if (method === "zelle") {
+    const extras = [...copyMemo];
+    if (zelleNote) extras.unshift({ type: "copy", label: "Copy Zelle instructions", text: zelleNote });
     return {
       headline: "Next: Zelle",
       steps: [
@@ -650,9 +670,15 @@ function buildPortalPaymentHints(method, summary) {
       ],
       payUrl: null,
       payLinkLabel: null,
+      extraActions: extras,
     };
   }
   if (method === "cash_app") {
+    const extras = [
+      { type: "link", label: "Open Cash App", url: "https://cash.app/" },
+      ...copyMemo,
+    ];
+    if (cashAppTag) extras.unshift({ type: "copy", label: "Copy $Cashtag", text: cashAppTag });
     return {
       headline: "Next: Cash App",
       steps: [
@@ -663,6 +689,7 @@ function buildPortalPaymentHints(method, summary) {
       ],
       payUrl: null,
       payLinkLabel: null,
+      extraActions: extras,
     };
   }
   return {
@@ -670,6 +697,7 @@ function buildPortalPaymentHints(method, summary) {
     steps: ["Your team may follow up with exact payment details.", memoHint],
     payUrl: null,
     payLinkLabel: null,
+    extraActions: copyMemo,
   };
 }
 
@@ -1671,6 +1699,13 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
        order by item_index asc, created_at asc`,
       [o.id]
     );
+    const pmNorm = normalizePaymentMethod(o.payment_method);
+    const paymentHintsForAdmin = pmNorm
+      ? buildPortalPaymentHints(pmNorm, {
+          orderNumber: o.order_number,
+          total: formatMoney(o.total_cents),
+        })
+      : null;
     return res.json({
       order: {
         id: o.id,
@@ -1722,6 +1757,7 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         isIncluded: Boolean(r.is_included),
         adminNote: r.admin_note || "",
       })),
+      paymentHints: paymentHintsForAdmin,
     });
   } catch (e) {
     const err = /** @type {{ message?: string }} */ (e);
