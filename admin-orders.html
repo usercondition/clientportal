@@ -231,6 +231,20 @@
                   <div class="admin-orders-detail-body">
                     <div class="admin-orders-money" id="admin-orders-money"></div>
                     <div class="admin-orders-summary" id="admin-orders-summary"></div>
+                    <div class="admin-orders-quote-accepted" id="admin-orders-quote-accepted" hidden>
+                      <h3 class="admin-metrics__subhead admin-orders-quote-accepted__title">Accepted quote</h3>
+                      <p class="admin-orders-quote__help">
+                        The client confirmed line items and payment in the portal. Totals reflect their selection (subtotal may include any processing fee they chose). Use status below for fulfillment and payment tracking.
+                      </p>
+                      <div class="admin-orders-quote__head admin-orders-quote__head--readonly" aria-hidden="true">
+                        <span>Item</span>
+                        <span>Qty</span>
+                        <span>Line</span>
+                        <span>In quote</span>
+                      </div>
+                      <div id="admin-orders-quote-accepted-items"></div>
+                      <div class="admin-orders-quote-accepted__meta" id="admin-orders-quote-accepted-meta"></div>
+                    </div>
                     <div class="admin-orders-quote" id="admin-orders-quote">
                       <h3 class="admin-metrics__subhead" style="margin: 0 0 0.5rem; font-size: 0.85rem">Quote builder</h3>
                       <p class="admin-orders-quote__help">

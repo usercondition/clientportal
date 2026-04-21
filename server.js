@@ -526,6 +526,19 @@ const PAYMENT_FEE_METHODS = new Set(["paypal", "venmo"]);
 const PAYMENT_FEE_BPS = 400;
 const ADMIN_QUOTABLE_STATUSES = new Set(["submitted", "in_progress", "awaiting_client"]);
 
+/** Admin dashboard list/detail (avoid client-facing copy like “Awaiting your response”). */
+function portalAdminStatusLabel(status, clientRevisionAt) {
+  if (status === "in_progress" && clientRevisionAt) {
+    return "In progress — quote confirmed";
+  }
+  if (status === "awaiting_client") return "Awaiting client";
+  return emailTemplates.humanStatus(status);
+}
+
+function adminQuoteBuilderLocked(orderRow) {
+  return Boolean(orderRow && orderRow.client_revision_at);
+}
+
 function nextClientOrderNumber() {
   const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = crypto.randomBytes(3).toString("hex").toUpperCase();
@@ -922,7 +935,10 @@ app.get("/api/client/:clientId/orders", async (req, res) => {
       : `Started ${new Date(o.created_at).toLocaleDateString()}`,
     total: formatMoney(o.total_cents),
     status: o.status,
-    statusLabel: emailTemplates.humanStatus(o.status),
+    statusLabel:
+      o.status === "in_progress" && (o.payment_method || Number(o.payment_fee_cents || 0) > 0)
+        ? "In progress — quote confirmed"
+        : emailTemplates.humanStatus(o.status),
     cancellable: CLIENT_CANCELABLE_STATUSES.has(o.status),
     quoteEditable: o.status === "awaiting_client" && Number(o.quote_version || 0) > 0,
     quoteVersion: Number(o.quote_version || 0),
@@ -938,6 +954,7 @@ app.get("/api/client/:clientId/orders/:orderNumber", async (req, res) => {
   const oRes = await pool.query(
     `select id, order_number, status, title, summary, subtotal_cents, tax_cents, shipping_cents, total_cents,
             quote_version, quote_ready_at, payment_method, payment_fee_cents, payment_warning_ack_at,
+            client_revision_at,
             created_at, submitted_at, fulfilled_at, updated_at
        from orders
       where client_id = $1 and order_number = $2
@@ -957,7 +974,10 @@ app.get("/api/client/:clientId/orders/:orderNumber", async (req, res) => {
     order: {
       id: o.order_number,
       status: o.status,
-      statusLabel: emailTemplates.humanStatus(o.status),
+      statusLabel:
+        o.status === "in_progress" && (o.payment_method || Number(o.payment_fee_cents || 0) > 0)
+          ? "In progress — quote confirmed"
+          : emailTemplates.humanStatus(o.status),
       title: o.title,
       summary: o.summary || "",
       subtotalCents: Number(o.subtotal_cents || 0),
@@ -1574,6 +1594,7 @@ app.get("/api/admin/orders", async (_req, res) => {
         o.created_at,
         o.submitted_at,
         o.fulfilled_at,
+        o.client_revision_at,
         c.id as client_id,
         c.first_name,
         c.last_name,
@@ -1586,7 +1607,7 @@ app.get("/api/admin/orders", async (_req, res) => {
     const orders = listRes.rows.map((o) => ({
       orderNumber: o.order_number,
       status: o.status,
-      statusLabel: emailTemplates.humanStatus(o.status),
+      statusLabel: portalAdminStatusLabel(o.status, o.client_revision_at),
       title: o.title,
       summaryPreview: previewSummary(o.summary, 200),
       total: formatMoney(o.total_cents),
@@ -1655,7 +1676,7 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         id: o.id,
         orderNumber: o.order_number,
         status: o.status,
-        statusLabel: emailTemplates.humanStatus(o.status),
+        statusLabel: portalAdminStatusLabel(o.status, o.client_revision_at),
         title: o.title,
         summary: o.summary || "",
         subtotalCents: o.subtotal_cents,
@@ -1665,8 +1686,11 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         total: formatMoney(o.total_cents),
         quoteVersion: Number(o.quote_version || 0),
         quoteReadyAt: o.quote_ready_at,
+        clientRevisionAt: o.client_revision_at,
+        quoteBuilderLocked: adminQuoteBuilderLocked(o),
         paymentMethod: o.payment_method || "",
         paymentFeeCents: Number(o.payment_fee_cents || 0),
+        paymentWarningAckAt: o.payment_warning_ack_at,
         createdAt: o.created_at,
         submittedAt: o.submitted_at,
         fulfilledAt: o.fulfilled_at,
@@ -1719,7 +1743,7 @@ app.patch("/api/admin/orders/:orderNumber/quote", async (req, res) => {
   try {
     await dbClient.query("BEGIN");
     const ordRes = await dbClient.query(
-      `select id, client_id, status from orders where order_number = $1 for update`,
+      `select id, client_id, status, client_revision_at from orders where order_number = $1 for update`,
       [orderNumber]
     );
     if (!ordRes.rows.length) {
@@ -1730,6 +1754,13 @@ app.patch("/api/admin/orders/:orderNumber/quote", async (req, res) => {
     if (!ADMIN_QUOTABLE_STATUSES.has(ord.status)) {
       await dbClient.query("ROLLBACK");
       return res.status(400).json({ error: "Only active orders can be quoted." });
+    }
+    if (adminQuoteBuilderLocked(ord)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({
+        error:
+          "The client has already confirmed this quote in the portal. Use status updates to track fulfillment and payment.",
+      });
     }
     await dbClient.query(`delete from order_quote_items where order_id = $1`, [ord.id]);
     const normalized = quoteItems.map((it, idx) => {
@@ -1857,7 +1888,7 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
           id: o.id,
           orderNumber: o.order_number,
           status: o.status,
-          statusLabel: emailTemplates.humanStatus(o.status),
+          statusLabel: portalAdminStatusLabel(o.status, o.client_revision_at),
           title: o.title,
           summary: o.summary || "",
           subtotalCents: o.subtotal_cents,
@@ -1865,6 +1896,8 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
           shippingCents: o.shipping_cents,
           totalCents: o.total_cents,
           total: formatMoney(o.total_cents),
+          clientRevisionAt: o.client_revision_at,
+          quoteBuilderLocked: adminQuoteBuilderLocked(o),
           createdAt: o.created_at,
           submittedAt: o.submitted_at,
           fulfilledAt: o.fulfilled_at,
@@ -1898,7 +1931,7 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
         end
       where order_number = $2
       returning id, order_number, status, title, summary, subtotal_cents, tax_cents, shipping_cents, total_cents,
-        created_at, submitted_at, fulfilled_at, updated_at, client_id`,
+        created_at, submitted_at, fulfilled_at, updated_at, client_id, client_revision_at`,
       [newStatus, orderNumber]
     );
     row = upd.rows[0];
@@ -1951,7 +1984,7 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
       id: row.id,
       orderNumber: row.order_number,
       status: row.status,
-      statusLabel: emailTemplates.humanStatus(row.status),
+      statusLabel: portalAdminStatusLabel(row.status, row.client_revision_at),
       title: row.title,
       summary: row.summary || "",
       subtotalCents: row.subtotal_cents,
@@ -1959,6 +1992,8 @@ app.patch("/api/admin/orders/:orderNumber", async (req, res) => {
       shippingCents: row.shipping_cents,
       totalCents: row.total_cents,
       total: formatMoney(row.total_cents),
+      clientRevisionAt: row.client_revision_at,
+      quoteBuilderLocked: adminQuoteBuilderLocked(row),
       createdAt: row.created_at,
       submittedAt: row.submitted_at,
       fulfilledAt: row.fulfilled_at,

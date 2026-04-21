@@ -303,6 +303,53 @@
   gap: 0.2rem;
 }
 
+.admin-orders-quote-accepted {
+  margin-bottom: 1rem;
+  border: 1px solid color-mix(in srgb, var(--sem-success) 22%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--sem-success) 6%, var(--bg-elevated));
+  padding: 0.7rem;
+}
+
+.admin-orders-quote-accepted__title {
+  margin: 0 0 0.35rem;
+}
+
+.admin-orders-quote__head--readonly {
+  grid-template-columns: minmax(0, 1fr) 56px 88px 72px;
+}
+
+.admin-orders-quote__row--readonly {
+  grid-template-columns: minmax(0, 1fr) 56px 88px 72px;
+  font-size: 0.86rem;
+}
+
+.admin-orders-quote-readonly-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.admin-orders-quote-readonly-val {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-orders-quote__empty {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.admin-orders-quote-accepted__meta {
+  margin-top: 0.55rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.admin-orders-quote-accepted__meta p {
+  margin: 0;
+}
+
 .admin-orders-timeline {
   margin: 0;
   padding: 0;

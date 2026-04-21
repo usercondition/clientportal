@@ -15,6 +15,10 @@
   var quoteTax = document.getElementById("admin-orders-quote-tax");
   var quoteShipping = document.getElementById("admin-orders-quote-shipping");
   var saveQuoteBtn = document.getElementById("admin-orders-save-quote");
+  var quotePanel = document.getElementById("admin-orders-quote");
+  var quoteAcceptedPanel = document.getElementById("admin-orders-quote-accepted");
+  var quoteAcceptedItems = document.getElementById("admin-orders-quote-accepted-items");
+  var quoteAcceptedMeta = document.getElementById("admin-orders-quote-accepted-meta");
   var statusSelect = document.getElementById("admin-orders-status");
   var saveBtn = document.getElementById("admin-orders-save-status");
   var cancelBtn = document.getElementById("admin-orders-cancel-order");
@@ -72,6 +76,18 @@
     var d = document.createElement("div");
     d.textContent = s == null ? "" : String(s);
     return d.innerHTML;
+  }
+
+  function formatPaymentMethod(code) {
+    var key = String(code || "").trim();
+    var m = {
+      paypal: "PayPal",
+      venmo: "Venmo",
+      zelle: "Zelle",
+      cash_app: "Cash App",
+    };
+    if (!key) return "";
+    return m[key] || key.replace(/_/g, " ");
   }
 
   function badgeClass(status) {
@@ -169,6 +185,16 @@
           : "");
     }
     if (detailMoney) {
+      var payLine = "";
+      if (o.paymentMethod) {
+        payLine =
+          "<span><strong>Payment</strong> " +
+          esc(formatPaymentMethod(o.paymentMethod)) +
+          (Number(o.paymentFeeCents || 0) > 0
+            ? " (fee " + esc(formatUsdFromCents(o.paymentFeeCents)) + ")"
+            : "") +
+          "</span>";
+      }
       detailMoney.innerHTML =
         "<span><strong>Total</strong> " +
         esc(o.total || formatUsdFromCents(o.totalCents)) +
@@ -181,10 +207,11 @@
         "</span>" +
         "<span>Shipping " +
         esc(formatUsdFromCents(o.shippingCents)) +
-        "</span>";
+        "</span>" +
+        payLine;
     }
     if (detailSummary) detailSummary.textContent = o.summary || "(No summary)";
-    renderQuoteEditor(data);
+    renderQuoteSection(data);
     if (statusSelect) statusSelect.value = o.status || "submitted";
 
     if (cancelBtn) {
@@ -197,7 +224,6 @@
       var locked = o.status === "cancelled" || o.status === "fulfilled";
       saveBtn.disabled = locked;
       statusSelect.disabled = locked;
-      if (saveQuoteBtn) saveQuoteBtn.disabled = locked;
     }
 
     if (detailTimeline) {
@@ -264,6 +290,75 @@
     return data;
   }
 
+  function renderAcceptedQuote(data) {
+    if (!quoteAcceptedItems || !quoteAcceptedMeta) return;
+    var o = data.order || {};
+    var items = data.quoteItems || [];
+    if (!items.length) {
+      quoteAcceptedItems.innerHTML = '<p class="admin-orders-quote__empty">No line items on file.</p>';
+    } else {
+      quoteAcceptedItems.innerHTML = items
+        .map(function (it) {
+          var lineCents = it.isIncluded
+            ? Math.round(Number(it.quantityApproved || 0) * Number(it.unitPriceCents || 0))
+            : 0;
+          return (
+            '<div class="admin-orders-quote__row admin-orders-quote__row--readonly">' +
+            "<div><strong>" +
+            esc(it.description || "Item") +
+            "</strong>" +
+            (it.unit
+              ? '<div class="admin-orders-quote-readonly-sub">' + esc(it.unit) + "</div>"
+              : "") +
+            "</div>" +
+            '<span class="admin-orders-quote-readonly-val">' +
+            esc(String(it.quantityApproved || 0)) +
+            "</span>" +
+            '<span class="admin-orders-quote-readonly-val">' +
+            esc(formatUsdFromCents(lineCents)) +
+            "</span>" +
+            '<span class="admin-orders-quote-readonly-val">' +
+            (it.isIncluded ? "Yes" : "No") +
+            "</span>" +
+            "</div>"
+          );
+        })
+        .join("");
+    }
+    var bits = [];
+    if (o.paymentMethod) {
+      bits.push("<strong>Payment</strong> " + esc(formatPaymentMethod(o.paymentMethod)));
+    }
+    if (Number(o.paymentFeeCents || 0) > 0) {
+      bits.push("Fee " + esc(formatUsdFromCents(o.paymentFeeCents)));
+    }
+    if (o.clientRevisionAt) {
+      bits.push("Confirmed " + esc(formatTime(o.clientRevisionAt)));
+    }
+    quoteAcceptedMeta.innerHTML = bits.length ? "<p>" + bits.join(" · ") + "</p>" : "";
+  }
+
+  function renderQuoteSection(data) {
+    var o = data.order || {};
+    var locked = Boolean(o.quoteBuilderLocked);
+    if (locked) {
+      isQuoteDirty = false;
+      isQuoteEditing = false;
+    }
+    if (quoteAcceptedPanel) quoteAcceptedPanel.hidden = !locked;
+    if (quotePanel) quotePanel.hidden = locked;
+    if (locked) {
+      renderAcceptedQuote(data);
+    } else {
+      renderQuoteEditor(data);
+    }
+    var wfLocked = o.status === "cancelled" || o.status === "fulfilled";
+    var quoteLocked = locked;
+    if (quoteTax) quoteTax.disabled = wfLocked || quoteLocked;
+    if (quoteShipping) quoteShipping.disabled = wfLocked || quoteLocked;
+    if (saveQuoteBtn) saveQuoteBtn.disabled = wfLocked || quoteLocked;
+  }
+
   async function patchQuote(orderNumber, payload) {
     var res = await fetch("/api/admin/orders/" + encodeURIComponent(orderNumber) + "/quote", {
       method: "PATCH",
@@ -278,7 +373,8 @@
   }
 
   function renderQuoteEditor(data) {
-    if (!quoteItemsHost || !data || !data.quoteItems) return;
+    if (!quoteItemsHost || !data) return;
+    if (!data.quoteItems) return;
     if (isQuoteDirty) return;
     var items = data.quoteItems || [];
     quoteItemsHost.innerHTML = items
@@ -400,16 +496,19 @@
       if (!selectedOrderNum) return;
       saveBtn.disabled = true;
       try {
-        var data = await patchStatus(selectedOrderNum, statusSelect.value);
-        renderDetail(data);
+        await patchStatus(selectedOrderNum, statusSelect.value);
         showAppToast("Status updated.");
         var listData = await fetchListPayload();
         setMetrics(listData.metrics, listData.databaseConnected);
         renderList(listData.orders || []);
+        await selectOrder(selectedOrderNum);
       } catch (err) {
         showAppToast((err && err.message) || "Could not save.");
       } finally {
-        saveBtn.disabled = false;
+        if (saveBtn && statusSelect) {
+          var st = statusSelect.value;
+          saveBtn.disabled = st === "cancelled" || st === "fulfilled";
+        }
       }
     });
   }
@@ -481,7 +580,11 @@
       } catch (err) {
         showAppToast((err && err.message) || "Could not save quote.");
       } finally {
-        saveQuoteBtn.disabled = false;
+        if (saveQuoteBtn && statusSelect) {
+          var wf = statusSelect.value === "cancelled" || statusSelect.value === "fulfilled";
+          var qb = quotePanel && quotePanel.hidden;
+          saveQuoteBtn.disabled = wf || qb;
+        }
       }
     });
   }
@@ -495,12 +598,12 @@
       cancelBtn.disabled = true;
       try {
         statusSelect.value = "cancelled";
-        var data = await patchStatus(selectedOrderNum, "cancelled");
-        renderDetail(data);
+        await patchStatus(selectedOrderNum, "cancelled");
         showAppToast("Order cancelled.");
         var listData = await fetchListPayload();
         setMetrics(listData.metrics, listData.databaseConnected);
         renderList(listData.orders || []);
+        await selectOrder(selectedOrderNum);
       } catch (err) {
         showAppToast((err && err.message) || "Could not cancel.");
       } finally {

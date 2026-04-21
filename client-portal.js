@@ -318,6 +318,19 @@
 
     function orderItem(o) {
       var st = esc(o.statusLabel || "");
+      var payPm = o.paymentMethod ? String(o.paymentMethod).trim() : "";
+      var payLabel = payPm
+        ? {
+            paypal: "PayPal",
+            venmo: "Venmo",
+            zelle: "Zelle",
+            cash_app: "Cash App",
+          }[payPm] || payPm.replace(/_/g, " ")
+        : "";
+      var payHint =
+        payLabel && !o.quoteEditable
+          ? '<p class="portal-order-meta">Payment on file: ' + esc(payLabel) + ".</p>"
+          : "";
       var cancelBtn = o.cancellable
         ? '<button type="button" class="btn btn-ghost portal-order-cancel-btn" data-order-number="' +
           esc(o.id) +
@@ -349,6 +362,7 @@
         '<p class="portal-order-total">Total: ' +
         esc(o.total) +
         "</p>" +
+        payHint +
         (o.quoteEditable
           ? '<button type="button" class="btn btn-primary portal-order-review-btn" data-review-order="' +
             esc(o.id) +
