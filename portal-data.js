@@ -129,6 +129,31 @@
     );
   }
 
+  async function getOrderDetail(orderNumber) {
+    var p = getProfile();
+    if (!p || !p.id) throw new Error("Sign in to manage orders.");
+    return requestJson(
+      "/api/client/" + encodeURIComponent(p.id) + "/orders/" + encodeURIComponent(orderNumber)
+    );
+  }
+
+  async function submitQuoteReview(orderNumber, payload) {
+    var p = getProfile();
+    if (!p || !p.id) throw new Error("Sign in to manage orders.");
+    return requestJson(
+      "/api/client/" +
+        encodeURIComponent(p.id) +
+        "/orders/" +
+        encodeURIComponent(orderNumber) +
+        "/quote-review",
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload || {}),
+      }
+    );
+  }
+
   async function getMessages() {
     var p = getProfile();
     if (!p || !p.id) return [];
@@ -210,6 +235,8 @@
     getOrders: getOrders,
     submitOrderRequest: submitOrderRequest,
     cancelOrder: cancelOrder,
+    getOrderDetail: getOrderDetail,
+    submitQuoteReview: submitQuoteReview,
     getMessages: getMessages,
     appendClientMessage: appendClientMessage,
     formatAddress: formatAddress,

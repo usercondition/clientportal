@@ -171,6 +171,33 @@
     ></button>
 
     <div id="app-toast-host" class="app-toast-host" aria-live="polite"></div>
+    <dialog class="portal-quote-dialog" id="portal-quote-dialog">
+      <form method="dialog" class="portal-quote-dialog__shell" id="portal-quote-form" novalidate>
+        <header class="portal-quote-dialog__head">
+          <h3 id="portal-quote-title">Review quote</h3>
+          <button value="cancel" class="portal-quote-dialog__close" aria-label="Close">Close</button>
+        </header>
+        <div class="portal-quote-dialog__body">
+          <p class="portal-quote-dialog__meta" id="portal-quote-meta"></p>
+          <div id="portal-quote-items"></div>
+          <fieldset class="portal-quote-pay">
+            <legend>Payment method</legend>
+            <label><input type="radio" name="paymentMethod" value="paypal" /> PayPal</label>
+            <label><input type="radio" name="paymentMethod" value="venmo" /> Venmo</label>
+            <label><input type="radio" name="paymentMethod" value="zelle" /> Zelle</label>
+            <label><input type="radio" name="paymentMethod" value="cash_app" /> Cash App</label>
+          </fieldset>
+          <p class="portal-quote-dialog__warn" id="portal-quote-warn" hidden>
+            PayPal and Venmo include a 4% processing fee.
+          </p>
+          <p class="portal-quote-dialog__totals" id="portal-quote-totals"></p>
+        </div>
+        <footer class="portal-quote-dialog__foot">
+          <button value="cancel" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="portal-quote-submit">Confirm selection</button>
+        </footer>
+      </form>
+    </dialog>
 
     <script src="client-portal.js" defer></script>
   </body>

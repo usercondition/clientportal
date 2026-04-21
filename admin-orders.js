@@ -11,6 +11,10 @@
   var detailMoney = document.getElementById("admin-orders-money");
   var detailSummary = document.getElementById("admin-orders-summary");
   var detailTimeline = document.getElementById("admin-orders-timeline");
+  var quoteItemsHost = document.getElementById("admin-orders-quote-items");
+  var quoteTax = document.getElementById("admin-orders-quote-tax");
+  var quoteShipping = document.getElementById("admin-orders-quote-shipping");
+  var saveQuoteBtn = document.getElementById("admin-orders-save-quote");
   var statusSelect = document.getElementById("admin-orders-status");
   var saveBtn = document.getElementById("admin-orders-save-status");
   var cancelBtn = document.getElementById("admin-orders-cancel-order");
@@ -178,6 +182,7 @@
         "</span>";
     }
     if (detailSummary) detailSummary.textContent = o.summary || "(No summary)";
+    renderQuoteEditor(data);
     if (statusSelect) statusSelect.value = o.status || "submitted";
 
     if (cancelBtn) {
@@ -190,6 +195,7 @@
       var locked = o.status === "cancelled" || o.status === "fulfilled";
       saveBtn.disabled = locked;
       statusSelect.disabled = locked;
+      if (saveQuoteBtn) saveQuoteBtn.disabled = locked;
     }
 
     if (detailTimeline) {
@@ -254,6 +260,57 @@
     });
     if (!res.ok) throw new Error(data.error || "Update failed.");
     return data;
+  }
+
+  async function patchQuote(orderNumber, payload) {
+    var res = await fetch("/api/admin/orders/" + encodeURIComponent(orderNumber) + "/quote", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+    });
+    var data = await res.json().catch(function () {
+      return {};
+    });
+    if (!res.ok) throw new Error(data.error || "Quote update failed.");
+    return data;
+  }
+
+  function renderQuoteEditor(data) {
+    if (!quoteItemsHost || !data || !data.quoteItems) return;
+    var items = data.quoteItems || [];
+    quoteItemsHost.innerHTML = items
+      .map(function (it) {
+        return (
+          '<div class="admin-orders-quote__row" data-quote-item-id="' +
+          esc(it.id) +
+          '" data-quote-requested="' +
+          esc(String(it.quantityRequested || 1)) +
+          '" data-quote-unit="' +
+          esc(it.unit || "") +
+          '" data-quote-desc="' +
+          esc(it.description || "Item") +
+          '">' +
+          '<div><strong>' +
+          esc(it.description) +
+          "</strong><div style='font-size:.72rem;color:var(--text-muted)'>Requested " +
+          esc(String(it.quantityRequested)) +
+          (it.unit ? " " + esc(it.unit) : "") +
+          "</div></div>" +
+          '<input type="number" min="0" value="' +
+          esc(String(it.quantityApproved || 0)) +
+          '" data-quote-qty />' +
+          '<input type="number" min="0" step="0.01" value="' +
+          esc((Number(it.unitPriceCents || 0) / 100).toFixed(2)) +
+          '" data-quote-price />' +
+          '<label><input type="checkbox" data-quote-inc ' +
+          (it.isIncluded ? "checked" : "") +
+          "/> Include</label>" +
+          "</div>"
+        );
+      })
+      .join("");
+    if (quoteTax) quoteTax.value = (Number(data.order.taxCents || 0) / 100).toFixed(2);
+    if (quoteShipping) quoteShipping.value = (Number(data.order.shippingCents || 0) / 100).toFixed(2);
   }
 
   async function deleteCancelledOrder(orderNumber) {
@@ -342,6 +399,50 @@
         showAppToast((err && err.message) || "Could not save.");
       } finally {
         saveBtn.disabled = false;
+      }
+    });
+  }
+
+  if (saveQuoteBtn) {
+    saveQuoteBtn.addEventListener("click", async function () {
+      if (!selectedOrderNum || !quoteItemsHost) return;
+      var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
+      var items = rows.map(function (row) {
+        var qtyEl = row.querySelector("[data-quote-qty]");
+        var priceEl = row.querySelector("[data-quote-price]");
+        var incEl = row.querySelector("[data-quote-inc]");
+        var requested = Math.max(
+          1,
+          Math.floor(Number(row.getAttribute("data-quote-requested") || "1"))
+        );
+        var qtyApproved = Math.max(0, Math.floor(Number(qtyEl && qtyEl.value ? qtyEl.value : 0)));
+        return {
+          id: row.getAttribute("data-quote-item-id"),
+          description: row.getAttribute("data-quote-desc") || "Item",
+          quantityRequested: requested,
+          quantityApproved: Math.min(qtyApproved, requested),
+          unitPriceCents: Math.max(0, Math.round(Number(priceEl && priceEl.value ? priceEl.value : 0) * 100)),
+          isIncluded: Boolean(incEl && incEl.checked),
+          unit: row.getAttribute("data-quote-unit") || "",
+          adminNote: "",
+        };
+      });
+      saveQuoteBtn.disabled = true;
+      try {
+        await patchQuote(selectedOrderNum, {
+          items: items,
+          taxCents: Math.round(Number(quoteTax && quoteTax.value ? quoteTax.value : 0) * 100),
+          shippingCents: Math.round(Number(quoteShipping && quoteShipping.value ? quoteShipping.value : 0) * 100),
+        });
+        showAppToast("Quote sent to client.");
+        await selectOrder(selectedOrderNum);
+        var listData = await fetchListPayload();
+        setMetrics(listData.metrics, listData.databaseConnected);
+        renderList(listData.orders || []);
+      } catch (err) {
+        showAppToast((err && err.message) || "Could not save quote.");
+      } finally {
+        saveQuoteBtn.disabled = false;
       }
     });
   }

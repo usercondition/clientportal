@@ -241,6 +241,41 @@
   color: var(--text);
 }
 
+.admin-orders-quote {
+  margin-bottom: 1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-elevated) 78%, var(--bg));
+  padding: 0.7rem;
+}
+
+.admin-orders-quote__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 90px));
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+}
+
+.admin-orders-quote__row input {
+  width: 100%;
+}
+
+.admin-orders-quote__totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-top: 0.65rem;
+}
+
+.admin-orders-quote__totals label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: grid;
+  gap: 0.2rem;
+}
+
 .admin-orders-timeline {
   margin: 0;
   padding: 0;

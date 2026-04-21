@@ -332,6 +332,11 @@
         '<p class="portal-order-total">Total: ' +
         esc(o.total) +
         "</p>" +
+        (o.quoteEditable
+          ? '<button type="button" class="btn btn-primary portal-order-review-btn" data-review-order="' +
+            esc(o.id) +
+            '">Review quote</button>'
+          : "") +
         (cancelBtn ? '<div class="portal-order-actions">' + cancelBtn + "</div>" : "") +
         "</div>" +
         "</details></li>"
@@ -351,6 +356,13 @@
   var ordersPanel = document.querySelector(".portal-panel--orders");
   if (ordersPanel) {
     ordersPanel.addEventListener("click", function (e) {
+      var reviewBtn = e.target && e.target.closest && e.target.closest("[data-review-order]");
+      if (reviewBtn) {
+        e.preventDefault();
+        var reviewOrderNum = reviewBtn.getAttribute("data-review-order");
+        if (reviewOrderNum) openQuoteDialog(reviewOrderNum);
+        return;
+      }
       var btn = e.target && e.target.closest && e.target.closest(".portal-order-cancel-btn");
       if (!btn) return;
       e.preventDefault();
@@ -370,8 +382,150 @@
     });
   }
 
+  function methodFeeBps(method) {
+    return method === "paypal" || method === "venmo" ? 400 : 0;
+  }
+
+  function readDialogItems() {
+    if (!quoteItemsHost) return [];
+    var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
+    return rows.map(function (row) {
+      var id = row.getAttribute("data-quote-item-id");
+      var inc = row.querySelector("[data-quote-inc]");
+      var qty = row.querySelector("[data-quote-qty]");
+      return {
+        id: id,
+        isIncluded: Boolean(inc && inc.checked),
+        quantityApproved: Number(qty && qty.value ? qty.value : 0),
+      };
+    });
+  }
+
+  function recalcQuoteTotals() {
+    if (!quoteForm || !quoteTotals || !quoteItemsHost) return;
+    var methodEl = quoteForm.querySelector('input[name="paymentMethod"]:checked');
+    var method = methodEl ? methodEl.value : "";
+    var subtotal = 0;
+    var rows = Array.prototype.slice.call(quoteItemsHost.querySelectorAll("[data-quote-item-id]"));
+    rows.forEach(function (row) {
+      var included = row.querySelector("[data-quote-inc]");
+      var qtyEl = row.querySelector("[data-quote-qty]");
+      var unitCents = Number(row.getAttribute("data-unit-cents") || 0);
+      var maxQty = Number(row.getAttribute("data-max-qty") || 0);
+      var qty = Math.max(0, Math.min(Number(qtyEl && qtyEl.value ? qtyEl.value : 0), maxQty));
+      if (qtyEl) qtyEl.value = String(Math.floor(qty));
+      if (included && included.checked) subtotal += Math.floor(qty) * unitCents;
+    });
+    var fee = Math.round((subtotal * methodFeeBps(method)) / 10000);
+    var total = subtotal + fee;
+    if (quoteWarn) quoteWarn.hidden = !(fee > 0);
+    quoteTotals.textContent =
+      "Subtotal $" +
+      (subtotal / 100).toFixed(2) +
+      (fee > 0 ? " + fee $" + (fee / 100).toFixed(2) : "") +
+      " = $" +
+      (total / 100).toFixed(2);
+  }
+
+  async function openQuoteDialog(orderNumber) {
+    if (!quoteDialog || !quoteItemsHost || !window.Portal) return;
+    try {
+      var detail = await Portal.getOrderDetail(orderNumber);
+      activeQuoteOrderNumber = orderNumber;
+      quoteItemsHost.innerHTML = (detail.quoteItems || [])
+        .map(function (item) {
+          var unit = item.unit ? " / " + esc(item.unit) : "";
+          return (
+            '<div class="portal-quote-row" data-quote-item-id="' +
+            esc(item.id) +
+            '" data-unit-cents="' +
+            esc(String(item.unitPriceCents || 0)) +
+            '" data-max-qty="' +
+            esc(String(item.quantityApproved || 0)) +
+            '">' +
+            '<label><input type="checkbox" data-quote-inc ' +
+            (item.isIncluded ? "checked" : "") +
+            "/> " +
+            esc(item.description) +
+            "</label>" +
+            '<div><input type="number" min="0" max="' +
+            esc(String(item.quantityApproved || 0)) +
+            '" value="' +
+            esc(String(item.quantityApproved || 0)) +
+            '" data-quote-qty /> @ $' +
+            esc((Number(item.unitPriceCents || 0) / 100).toFixed(2)) +
+            unit +
+            "</div></div>"
+          );
+        })
+        .join("");
+      if (quoteMeta) {
+        quoteMeta.textContent = orderNumber + " • Quote version " + (detail.order.quoteVersion || 1);
+      }
+      var selectedMethod = detail.order.paymentMethod || "";
+      Array.prototype.slice
+        .call(quoteForm.querySelectorAll('input[name="paymentMethod"]'))
+        .forEach(function (el) {
+          el.checked = el.value === selectedMethod;
+        });
+      recalcQuoteTotals();
+      quoteDialog.showModal();
+    } catch (err) {
+      showAppToast((err && err.message) || "Could not load quote.");
+    }
+  }
+
+  if (quoteItemsHost) {
+    quoteItemsHost.addEventListener("input", recalcQuoteTotals);
+    quoteItemsHost.addEventListener("change", recalcQuoteTotals);
+  }
+  if (quoteForm) {
+    quoteForm.addEventListener("change", function (e) {
+      var t = e.target;
+      if (t && t.name === "paymentMethod") recalcQuoteTotals();
+    });
+    quoteForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (!activeQuoteOrderNumber || !window.Portal) return;
+      var methodEl = quoteForm.querySelector('input[name="paymentMethod"]:checked');
+      var method = methodEl ? methodEl.value : "";
+      if (!method) {
+        showAppToast("Select a payment method.");
+        return;
+      }
+      var ack = true;
+      if (methodFeeBps(method) > 0) {
+        ack = window.confirm("PayPal and Venmo include a 4% processing fee. Continue?");
+      }
+      if (!ack) return;
+      if (quoteSubmit) quoteSubmit.disabled = true;
+      try {
+        await Portal.submitQuoteReview(activeQuoteOrderNumber, {
+          paymentMethod: method,
+          acknowledgedFee: ack,
+          items: readDialogItems(),
+        });
+        quoteDialog.close();
+        showAppToast("Quote confirmed. We received your selection.");
+        await renderOrders();
+      } catch (err) {
+        showAppToast((err && err.message) || "Could not submit quote selection.");
+      } finally {
+        if (quoteSubmit) quoteSubmit.disabled = false;
+      }
+    });
+  }
+
   var firstMessageRender = true;
   var lastMessageRenderSig = "";
+  var quoteDialog = document.getElementById("portal-quote-dialog");
+  var quoteForm = document.getElementById("portal-quote-form");
+  var quoteItemsHost = document.getElementById("portal-quote-items");
+  var quoteMeta = document.getElementById("portal-quote-meta");
+  var quoteTotals = document.getElementById("portal-quote-totals");
+  var quoteWarn = document.getElementById("portal-quote-warn");
+  var quoteSubmit = document.getElementById("portal-quote-submit");
+  var activeQuoteOrderNumber = "";
 
   var notifyBtn = document.getElementById("portal-enable-notify");
   if (notifyBtn) {

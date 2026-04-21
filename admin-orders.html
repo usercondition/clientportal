@@ -231,6 +231,15 @@
                   <div class="admin-orders-detail-body">
                     <div class="admin-orders-money" id="admin-orders-money"></div>
                     <div class="admin-orders-summary" id="admin-orders-summary"></div>
+                    <div class="admin-orders-quote" id="admin-orders-quote">
+                      <h3 class="admin-metrics__subhead" style="margin: 0 0 0.5rem; font-size: 0.85rem">Quote builder</h3>
+                      <div id="admin-orders-quote-items"></div>
+                      <div class="admin-orders-quote__totals">
+                        <label>Tax ($)<input id="admin-orders-quote-tax" type="number" min="0" step="0.01" /></label>
+                        <label>Shipping ($)<input id="admin-orders-quote-shipping" type="number" min="0" step="0.01" /></label>
+                        <button type="button" class="btn btn-primary" id="admin-orders-save-quote">Send quote to client</button>
+                      </div>
+                    </div>
                     <div class="admin-orders-actions">
                       <label for="admin-orders-status">Status</label>
                       <select id="admin-orders-status" aria-label="Order status">

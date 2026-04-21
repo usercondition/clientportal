@@ -364,6 +364,7 @@ const {
   applyInitialSchemaIfNeeded,
   applySchemaCompat,
   applyMarketplaceSyncSchema,
+  applyOrderQuoteFlowSchema,
 } = require("./lib/apply-initial-schema");
 
 // CORS + preflight for marketplace API routes (POST + Authorization from scripts / tools).
@@ -520,6 +521,10 @@ const ORDER_SERVICE_TYPES = new Set([
 ]);
 
 const ORDER_SHIPPING_PREFS = new Set(["pickup", "ship_on_file", "discuss"]);
+const PAYMENT_METHODS = new Set(["paypal", "venmo", "zelle", "cash_app"]);
+const PAYMENT_FEE_METHODS = new Set(["paypal", "venmo"]);
+const PAYMENT_FEE_BPS = 400;
+const ADMIN_QUOTABLE_STATUSES = new Set(["submitted", "in_progress", "awaiting_client"]);
 
 function nextClientOrderNumber() {
   const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -561,6 +566,25 @@ function buildOrderRequestSummary(body) {
     lines.push("", "Special instructions:", String(body.specialInstructions).trim());
   }
   return lines.join("\n");
+}
+
+function calcQuoteSubtotalCents(items) {
+  return (items || []).reduce((sum, item) => {
+    if (!item || item.isIncluded === false) return sum;
+    const qty = Math.max(0, Math.floor(Number(item.quantityApproved || 0)));
+    const unit = Math.max(0, Math.floor(Number(item.unitPriceCents || 0)));
+    return sum + qty * unit;
+  }, 0);
+}
+
+function normalizePaymentMethod(value) {
+  const v = String(value || "").trim().toLowerCase();
+  if (!PAYMENT_METHODS.has(v)) return "";
+  return v;
+}
+
+function feeRateBpsForMethod(method) {
+  return PAYMENT_FEE_METHODS.has(method) ? PAYMENT_FEE_BPS : 0;
 }
 
 /** Detailed DB status (always HTTP 200 so platform healthchecks do not kill the process while you fix env vars). */
@@ -806,7 +830,8 @@ app.post("/api/client/register", async (req, res) => {
 app.get("/api/client/:clientId/orders", async (req, res) => {
   const { clientId } = req.params;
   const sql = `
-    select id, order_number, status, title, summary, created_at, submitted_at, fulfilled_at, total_cents
+    select id, order_number, status, title, summary, created_at, submitted_at, fulfilled_at, total_cents,
+      quote_version, quote_ready_at, payment_method, payment_fee_cents
     from orders
     where client_id = $1
     order by created_at desc
@@ -826,8 +851,73 @@ app.get("/api/client/:clientId/orders", async (req, res) => {
     status: o.status,
     statusLabel: emailTemplates.humanStatus(o.status),
     cancellable: CLIENT_CANCELABLE_STATUSES.has(o.status),
+    quoteEditable: o.status === "awaiting_client" && Number(o.quote_version || 0) > 0,
+    quoteVersion: Number(o.quote_version || 0),
+    quoteReadyAt: o.quote_ready_at,
+    paymentMethod: o.payment_method || "",
+    paymentFeeCents: Number(o.payment_fee_cents || 0),
   }));
   res.json({ orders });
+});
+
+app.get("/api/client/:clientId/orders/:orderNumber", async (req, res) => {
+  const { clientId, orderNumber } = req.params;
+  const oRes = await pool.query(
+    `select id, order_number, status, title, summary, subtotal_cents, tax_cents, shipping_cents, total_cents,
+            quote_version, quote_ready_at, payment_method, payment_fee_cents, payment_warning_ack_at,
+            created_at, submitted_at, fulfilled_at, updated_at
+       from orders
+      where client_id = $1 and order_number = $2
+      limit 1`,
+    [clientId, orderNumber]
+  );
+  if (!oRes.rows.length) return res.status(404).json({ error: "Order not found." });
+  const o = oRes.rows[0];
+  const itemsRes = await pool.query(
+    `select id, item_index, description, unit, quantity_requested, quantity_approved, unit_price_cents, is_included, admin_note
+       from order_quote_items
+      where order_id = $1
+      order by item_index asc, created_at asc`,
+    [o.id]
+  );
+  res.json({
+    order: {
+      id: o.order_number,
+      status: o.status,
+      statusLabel: emailTemplates.humanStatus(o.status),
+      title: o.title,
+      summary: o.summary || "",
+      subtotalCents: Number(o.subtotal_cents || 0),
+      taxCents: Number(o.tax_cents || 0),
+      shippingCents: Number(o.shipping_cents || 0),
+      totalCents: Number(o.total_cents || 0),
+      total: formatMoney(o.total_cents),
+      quoteVersion: Number(o.quote_version || 0),
+      quoteReadyAt: o.quote_ready_at,
+      quoteEditable: o.status === "awaiting_client" && Number(o.quote_version || 0) > 0,
+      paymentMethod: o.payment_method || "",
+      paymentFeeCents: Number(o.payment_fee_cents || 0),
+      paymentWarningAckAt: o.payment_warning_ack_at,
+      updatedAt: o.updated_at,
+      createdAt: o.created_at,
+      submittedAt: o.submitted_at,
+      fulfilledAt: o.fulfilled_at,
+    },
+    quoteItems: itemsRes.rows.map((r) => ({
+      id: r.id,
+      index: Number(r.item_index || 0),
+      description: r.description || "",
+      unit: r.unit || "",
+      quantityRequested: Number(r.quantity_requested || 0),
+      quantityApproved: Number(r.quantity_approved || 0),
+      unitPriceCents: Number(r.unit_price_cents || 0),
+      isIncluded: Boolean(r.is_included),
+      adminNote: r.admin_note || "",
+      lineTotalCents: Boolean(r.is_included)
+        ? Number(r.quantity_approved || 0) * Number(r.unit_price_cents || 0)
+        : 0,
+    })),
+  });
 });
 
 app.post("/api/client/:clientId/orders", async (req, res) => {
@@ -1035,6 +1125,24 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
       ]
     );
 
+    if (lineItems.length) {
+      for (let idx = 0; idx < lineItems.length; idx++) {
+        const item = lineItems[idx];
+        await dbClient.query(
+          `insert into order_quote_items
+            (order_id, item_index, description, unit, quantity_requested, quantity_approved, unit_price_cents, is_included)
+           values ($1,$2,$3,$4,$5,$5,0,true)`,
+          [
+            orderRow.id,
+            idx,
+            item.description,
+            item.unit || null,
+            Math.max(1, Math.floor(Number(item.quantity || 1))),
+          ]
+        );
+      }
+    }
+
     await dbClient.query("COMMIT");
   } catch (err) {
     try {
@@ -1069,6 +1177,7 @@ app.post("/api/client/:clientId/orders", async (req, res) => {
       status: "submitted",
       statusLabel: emailTemplates.humanStatus("submitted"),
       cancellable: true,
+      quoteEditable: false,
     },
   });
 });
@@ -1152,6 +1261,116 @@ app.post("/api/client/:clientId/orders/:orderNumber/cancel", async (req, res) =>
       cancellable: false,
     },
   });
+});
+
+app.patch("/api/client/:clientId/orders/:orderNumber/quote-review", async (req, res) => {
+  const { clientId, orderNumber } = req.params;
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const chosenMethod = normalizePaymentMethod(body.paymentMethod);
+  const itemsIn = Array.isArray(body.items) ? body.items : [];
+  const acknowledgedFee = Boolean(body.acknowledgedFee);
+  if (!chosenMethod) {
+    return res.status(400).json({ error: "Select a payment method." });
+  }
+  if (!itemsIn.length) {
+    return res.status(400).json({ error: "Pick at least one item to continue." });
+  }
+  const methodFeeBps = feeRateBpsForMethod(chosenMethod);
+  if (methodFeeBps > 0 && !acknowledgedFee) {
+    return res.status(400).json({ error: "Please acknowledge the payment processing fee." });
+  }
+
+  const dbClient = await pool.connect();
+  let outOrder;
+  try {
+    await dbClient.query("BEGIN");
+    const ord = await dbClient.query(
+      `select id, status, title from orders where client_id = $1 and order_number = $2 for update`,
+      [clientId, orderNumber]
+    );
+    if (!ord.rows.length) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ error: "Order not found." });
+    }
+    const o = ord.rows[0];
+    if (o.status !== "awaiting_client") {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({ error: "This order is not currently open for quote edits." });
+    }
+    const qItems = await dbClient.query(
+      `select id, quantity_approved, unit_price_cents from order_quote_items where order_id = $1`,
+      [o.id]
+    );
+    const byId = new Map(qItems.rows.map((r) => [String(r.id), r]));
+    for (const it of itemsIn) {
+      const id = String((it && it.id) || "");
+      const row = byId.get(id);
+      if (!row) continue;
+      const requestedQty = Number(it.quantityApproved);
+      const nextQty = Number.isFinite(requestedQty)
+        ? Math.max(0, Math.min(Math.floor(requestedQty), Number(row.quantity_approved || 0)))
+        : 0;
+      const included = Boolean(it.isIncluded) && nextQty > 0;
+      await dbClient.query(
+        `update order_quote_items
+            set is_included = $2, quantity_approved = $3, updated_at = now()
+          where id = $1`,
+        [id, included, nextQty]
+      );
+    }
+    const nextItems = await dbClient.query(
+      `select quantity_approved, unit_price_cents, is_included from order_quote_items where order_id = $1`,
+      [o.id]
+    );
+    const subtotal = calcQuoteSubtotalCents(
+      nextItems.rows.map((r) => ({
+        quantityApproved: r.quantity_approved,
+        unitPriceCents: r.unit_price_cents,
+        isIncluded: r.is_included,
+      }))
+    );
+    const feeCents = Math.round((subtotal * methodFeeBps) / 10000);
+    const upd = await dbClient.query(
+      `update orders
+          set subtotal_cents = $2,
+              payment_method = $3,
+              payment_fee_rate_bps = $4,
+              payment_fee_cents = $5,
+              payment_warning_ack_at = case when $5 > 0 then now() else null end,
+              client_revision_at = now(),
+              status = 'in_progress'::order_status,
+              updated_at = now()
+        where id = $1
+        returning id, order_number, status, title, summary, total_cents, subtotal_cents, tax_cents, shipping_cents`,
+      [o.id, subtotal + feeCents, chosenMethod, methodFeeBps, feeCents]
+    );
+    outOrder = upd.rows[0];
+    await dbClient.query(
+      `insert into order_timeline_events (order_id, event_code, event_label, event_details, created_by)
+       values ($1, 'client_quote_reviewed', 'Client reviewed quote', $2, 'client')`,
+      [
+        o.id,
+        `Client selected ${chosenMethod.replace("_", " ")}${feeCents ? ` with ${formatMoney(feeCents)} processing fee` : ""} and updated requested quantities.`,
+      ]
+    );
+    await dbClient.query("COMMIT");
+  } catch (err) {
+    try {
+      await dbClient.query("ROLLBACK");
+    } catch (_e) {}
+    console.error("[orders] quote review failed:", err && err.message);
+    return res.status(500).json({ error: "Could not save quote review." });
+  } finally {
+    dbClient.release();
+  }
+  await notifyOrderStatusChange(pool, {
+    clientId,
+    orderNumber: outOrder.order_number,
+    title: outOrder.title,
+    status: outOrder.status,
+    previousStatus: "awaiting_client",
+  });
+  return res.json({ ok: true });
 });
 
 app.get("/api/client/:clientId/messages", async (req, res) => {
@@ -1331,6 +1550,13 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
        order by created_at desc`,
       [o.id]
     );
+    const qRes = await pool.query(
+      `select id, item_index, description, unit, quantity_requested, quantity_approved, unit_price_cents, is_included, admin_note
+       from order_quote_items
+       where order_id = $1
+       order by item_index asc, created_at asc`,
+      [o.id]
+    );
     return res.json({
       order: {
         id: o.id,
@@ -1344,6 +1570,10 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         shippingCents: o.shipping_cents,
         totalCents: o.total_cents,
         total: formatMoney(o.total_cents),
+        quoteVersion: Number(o.quote_version || 0),
+        quoteReadyAt: o.quote_ready_at,
+        paymentMethod: o.payment_method || "",
+        paymentFeeCents: Number(o.payment_fee_cents || 0),
         createdAt: o.created_at,
         submittedAt: o.submitted_at,
         fulfilledAt: o.fulfilled_at,
@@ -1364,11 +1594,127 @@ app.get("/api/admin/orders/:orderNumber", async (req, res) => {
         createdBy: t.created_by || "",
         createdAt: t.created_at,
       })),
+      quoteItems: qRes.rows.map((r) => ({
+        id: r.id,
+        index: Number(r.item_index || 0),
+        description: r.description || "",
+        unit: r.unit || "",
+        quantityRequested: Number(r.quantity_requested || 0),
+        quantityApproved: Number(r.quantity_approved || 0),
+        unitPriceCents: Number(r.unit_price_cents || 0),
+        isIncluded: Boolean(r.is_included),
+        adminNote: r.admin_note || "",
+      })),
     });
   } catch (e) {
     const err = /** @type {{ message?: string }} */ (e);
     console.error("[admin/orders] detail failed:", err.message);
     return res.status(500).json({ error: "Failed to load order." });
+  }
+});
+
+app.patch("/api/admin/orders/:orderNumber/quote", async (req, res) => {
+  const { orderNumber } = req.params;
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const quoteItems = Array.isArray(body.items) ? body.items : [];
+  const shippingCents = Math.max(0, Math.floor(Number(body.shippingCents || 0)));
+  const taxCents = Math.max(0, Math.floor(Number(body.taxCents || 0)));
+  if (!quoteItems.length) {
+    return res.status(400).json({ error: "At least one quote item is required." });
+  }
+  const dbClient = await pool.connect();
+  try {
+    await dbClient.query("BEGIN");
+    const ordRes = await dbClient.query(
+      `select id, client_id, status from orders where order_number = $1 for update`,
+      [orderNumber]
+    );
+    if (!ordRes.rows.length) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ error: "Order not found." });
+    }
+    const ord = ordRes.rows[0];
+    if (!ADMIN_QUOTABLE_STATUSES.has(ord.status)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({ error: "Only active orders can be quoted." });
+    }
+    await dbClient.query(`delete from order_quote_items where order_id = $1`, [ord.id]);
+    const normalized = quoteItems.map((it, idx) => {
+      const desc = String((it && it.description) || "").trim();
+      const qtyReq = Math.max(1, Math.floor(Number((it && it.quantityRequested) || 1)));
+      const qtyApp = Math.max(0, Math.floor(Number((it && it.quantityApproved) || 0)));
+      const unitPriceCents = Math.max(0, Math.floor(Number((it && it.unitPriceCents) || 0)));
+      const isIncluded = Boolean(it && it.isIncluded) && qtyApp > 0;
+      if (!desc) throw new Error("Each quote item must have a description.");
+      return {
+        idx,
+        desc,
+        unit: String((it && it.unit) || "").trim() || null,
+        qtyReq,
+        qtyApp: Math.min(qtyApp, qtyReq),
+        unitPriceCents,
+        isIncluded,
+        adminNote: String((it && it.adminNote) || "").trim() || null,
+      };
+    });
+    for (const item of normalized) {
+      await dbClient.query(
+        `insert into order_quote_items
+          (order_id, item_index, description, unit, quantity_requested, quantity_approved, unit_price_cents, is_included, admin_note, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,now())`,
+        [
+          ord.id,
+          item.idx,
+          item.desc,
+          item.unit,
+          item.qtyReq,
+          item.qtyApp,
+          item.unitPriceCents,
+          item.isIncluded,
+          item.adminNote,
+        ]
+      );
+    }
+    const subtotal = calcQuoteSubtotalCents(
+      normalized.map((i) => ({
+        quantityApproved: i.qtyApp,
+        unitPriceCents: i.unitPriceCents,
+        isIncluded: i.isIncluded,
+      }))
+    );
+    await dbClient.query(
+      `update orders
+          set subtotal_cents = $2,
+              tax_cents = $3,
+              shipping_cents = $4,
+              quote_version = quote_version + 1,
+              quote_ready_at = now(),
+              status = 'awaiting_client'::order_status,
+              updated_at = now()
+        where id = $1`,
+      [ord.id, subtotal, taxCents, shippingCents]
+    );
+    await dbClient.query(
+      `insert into order_timeline_events (order_id, event_code, event_label, event_details, created_by)
+       values ($1, 'quote_ready', 'Quote ready for review', $2, 'admin')`,
+      [ord.id, "Updated line-item pricing and sent to client for approval."]
+    );
+    await dbClient.query("COMMIT");
+    await notifyOrderStatusChange(pool, {
+      clientId: ord.client_id,
+      orderNumber,
+      title: "",
+      status: "awaiting_client",
+      previousStatus: ord.status,
+    });
+    return res.json({ ok: true });
+  } catch (err) {
+    try {
+      await dbClient.query("ROLLBACK");
+    } catch (_e) {}
+    return res.status(400).json({ error: err && err.message ? err.message : "Could not save quote." });
+  } finally {
+    dbClient.release();
   }
 });
 
@@ -2264,7 +2610,11 @@ async function start() {
       if (mp.ran) {
         console.log(`[db] Applied marketplace migration (${mp.statements} statements).`);
       }
-      console.log("[db] Schema step complete (bootstrap + compat + marketplace).");
+      const quoteFlow = await applyOrderQuoteFlowSchema(pool);
+      if (quoteFlow.ran) {
+        console.log(`[db] Applied order quote flow migration (${quoteFlow.statements} statements).`);
+      }
+      console.log("[db] Schema step complete (bootstrap + compat + marketplace + quote flow).");
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
     }

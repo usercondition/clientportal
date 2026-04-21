@@ -547,6 +547,77 @@
   font-weight: 600;
 }
 
+.portal-order-review-btn {
+  margin-top: 0.55rem;
+}
+
+.portal-quote-dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--text);
+  width: min(760px, 92vw);
+  padding: 0;
+  box-shadow: var(--shadow), var(--shadow-neon);
+}
+
+.portal-quote-dialog::backdrop {
+  background: var(--scrim);
+}
+
+.portal-quote-dialog__head,
+.portal-quote-dialog__foot {
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.portal-quote-dialog__foot {
+  border-bottom: 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.portal-quote-dialog__body {
+  padding: 0.95rem 1rem;
+  max-height: 65vh;
+  overflow: auto;
+}
+
+.portal-quote-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.portal-quote-row input[type="number"] {
+  width: 84px;
+}
+
+.portal-quote-pay {
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: var(--radius);
+  padding: 0.6rem;
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.portal-quote-dialog__warn {
+  margin: 0.65rem 0 0;
+  color: color-mix(in srgb, var(--accent-hot) 78%, var(--text));
+  font-size: 0.84rem;
+}
+
+.portal-quote-dialog__totals {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .portal-empty {
   font-size: 0.86rem;
   color: var(--text-muted);
