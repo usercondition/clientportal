@@ -103,9 +103,13 @@ body.resin-home .client-portal-entry {
   letter-spacing: 0;
 }
 
-body.resin-home .client-portal-entry__full,
-body.resin-home .client-portal-entry__short {
+body.resin-home .client-portal-entry__full {
   display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+}
+
+body.resin-home .client-portal-entry__short {
   align-items: center;
   gap: 0.34rem;
 }
@@ -1658,6 +1662,14 @@ body.resin-home .rh-vendor-index__card p {
   margin: 0 0 0.65rem;
   font-size: 0.9rem;
   color: var(--rh-muted);
+}
+
+body.resin-home .rh-vendor-index__logo {
+  display: block;
+  width: min(180px, 58%);
+  height: auto;
+  margin: 0 0 0.55rem;
+  border-radius: 8px;
 }
 
 body.resin-home .rh-shop-toolbar {
