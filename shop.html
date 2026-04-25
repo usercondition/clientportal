@@ -139,6 +139,15 @@
                 <h3>Stormguard Sentinels Squad</h3>
                 <p>5-model fantasy infantry set · 32mm scale · licensed print.</p>
                 <div class="rh-shop-meta"><strong>From $34</strong><span>SKU: FNT-SG-05</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="FNT-SG-05"
+                  data-name="Stormguard Sentinels Squad"
+                  data-price="34"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
 
@@ -151,6 +160,15 @@
                 <h3>Dragon Vanguard Command Bundle</h3>
                 <p>Hero, standard, and support unit combo · limited run release.</p>
                 <div class="rh-shop-meta"><strong>From $58</strong><span>SKU: FNT-DV-CMD</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="FNT-DV-CMD"
+                  data-name="Dragon Vanguard Command Bundle"
+                  data-price="58"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
 
@@ -163,6 +181,15 @@
                 <h3>Void Skirmish Mech Pair</h3>
                 <p>2 articulated hard-surface mechs · tabletop-ready sizing.</p>
                 <div class="rh-shop-meta"><strong>From $42</strong><span>SKU: SCI-MK2-PAIR</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="SCI-MK2-PAIR"
+                  data-name="Void Skirmish Mech Pair"
+                  data-price="42"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
 
@@ -175,6 +202,15 @@
                 <h3>Modular Ruins Walls Pack</h3>
                 <p>Interlocking terrain walls with optional detail inserts.</p>
                 <div class="rh-shop-meta"><strong>From $29</strong><span>SKU: TRN-RUIN-WP</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="TRN-RUIN-WP"
+                  data-name="Modular Ruins Walls Pack"
+                  data-price="29"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
 
@@ -187,6 +223,15 @@
                 <h3>Outpost Defenders Starter Bundle</h3>
                 <p>10-model sci-fi bundle with mixed troop and elite sculpts.</p>
                 <div class="rh-shop-meta"><strong>From $64</strong><span>SKU: SCI-ODS-10</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="SCI-ODS-10"
+                  data-name="Outpost Defenders Starter Bundle"
+                  data-price="64"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
 
@@ -199,6 +244,15 @@
                 <h3>Dungeon Tile Encounter Set</h3>
                 <p>Encounter-ready terrain kit for quick modular table builds.</p>
                 <div class="rh-shop-meta"><strong>From $36</strong><span>SKU: TRN-DGE-SET</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="TRN-DGE-SET"
+                  data-name="Dungeon Tile Encounter Set"
+                  data-price="36"
+                >
+                  Add to cart
+                </button>
               </div>
             </article>
           </div>
@@ -207,15 +261,71 @@
         </div>
       </section>
 
+      <section id="checkout" class="rh-shop-checkout rh-section rh-section--tight" aria-labelledby="checkout-title">
+        <div class="rh-container rh-shop-checkout__grid">
+          <article class="rh-shop-checkout__summary">
+            <p class="rh-kicker">Direct checkout</p>
+            <h2 id="checkout-title" class="rh-h2">Review your cart and send your purchase request</h2>
+            <p class="rh-lede">
+              This submits your order directly to our team for final invoice and payment in full confirmation.
+            </p>
+            <div id="shop-cart-list" class="rh-shop-cart-list" aria-live="polite"></div>
+            <p class="rh-shop-cart-total" id="shop-cart-total">Estimated subtotal: $0.00</p>
+          </article>
+
+          <form id="shop-checkout-form" class="rh-shop-checkout__form" novalidate>
+            <label>
+              Full name
+              <input type="text" name="name" required minlength="2" maxlength="120" autocomplete="name" />
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" required autocomplete="email" />
+            </label>
+            <label>
+              Phone (optional)
+              <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
+            </label>
+            <label>
+              Preferred payment method
+              <select name="paymentMethod" required>
+                <option value="paypal">PayPal</option>
+                <option value="venmo">Venmo</option>
+                <option value="zelle">Zelle</option>
+                <option value="cash_app">Cash App</option>
+              </select>
+            </label>
+            <label>
+              Shipping city/state (optional)
+              <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
+            </label>
+            <label>
+              Notes
+              <textarea
+                name="notes"
+                rows="4"
+                maxlength="2000"
+                placeholder="Variants, quantity preferences, or delivery notes"
+              ></textarea>
+            </label>
+            <p class="rh-shop-checkout__policy">
+              Full payment only — no deposits or partial payments.
+            </p>
+            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit purchase request</button>
+            <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
       <section id="how-to-order" class="rh-shop-ordering rh-section rh-section--tight" aria-labelledby="order-title">
         <div class="rh-container rh-shop-ordering__grid">
           <article class="rh-shop-ordering__card">
             <p class="rh-kicker">How ordering works</p>
-            <h2 id="order-title" class="rh-h2">Simple direct ordering via portal</h2>
+            <h2 id="order-title" class="rh-h2">Two ways to place reseller orders</h2>
             <ol>
-              <li>Browse the catalog and note item name / SKU.</li>
-              <li>Open the client portal and submit a new request with your item list.</li>
-              <li>We confirm availability, final pricing, and ship window.</li>
+              <li>Use direct checkout above for a fast purchase request.</li>
+              <li>Or place the order through the client portal if you prefer account tracking.</li>
+              <li>We confirm availability, final pricing, shipping, then send payment instructions.</li>
             </ol>
             <div class="rh-hero__actions">
               <a class="rh-btn rh-btn--primary" href="client-flow.html">Start order request</a>

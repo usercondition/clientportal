@@ -1376,6 +1376,12 @@ body.resin-home .rh-shop-card__body p {
   line-height: 1.45;
 }
 
+body.resin-home .rh-shop-add {
+  margin-top: 0.6rem;
+  width: 100%;
+  justify-content: center;
+}
+
 body.resin-home .rh-shop-meta {
   display: flex;
   align-items: center;
@@ -1394,6 +1400,136 @@ body.resin-home .rh-shop-empty {
   margin: var(--rh-step-4) 0 0;
   color: var(--rh-muted);
   font-size: 0.92rem;
+}
+
+body.resin-home .rh-shop-checkout__grid {
+  display: grid;
+  gap: var(--rh-step-4);
+}
+
+@media (min-width: 980px) {
+  body.resin-home .rh-shop-checkout__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+    align-items: start;
+  }
+}
+
+body.resin-home .rh-shop-checkout__summary,
+body.resin-home .rh-shop-checkout__form {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow);
+}
+
+body.resin-home .rh-shop-checkout__summary {
+  padding: var(--rh-step-4);
+}
+
+body.resin-home .rh-shop-cart-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+body.resin-home .rh-shop-cart-empty {
+  margin: 0;
+  color: var(--rh-muted);
+  font-size: 0.9rem;
+}
+
+body.resin-home .rh-shop-cart-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: start;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 85%, transparent);
+  border-radius: var(--rh-radius-sm);
+  padding: 0.55rem 0.6rem;
+}
+
+body.resin-home .rh-shop-cart-row span {
+  font-size: 0.75rem;
+  color: var(--rh-muted);
+}
+
+body.resin-home .rh-shop-cart-row__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+body.resin-home .rh-shop-cart-qty,
+body.resin-home .rh-shop-cart-remove {
+  border: 1px solid var(--rh-border);
+  background: var(--rh-surface);
+  color: var(--rh-text);
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+body.resin-home .rh-shop-cart-qty {
+  min-width: 1.7rem;
+  min-height: 1.7rem;
+  line-height: 1;
+  font-size: 0.95rem;
+}
+
+body.resin-home .rh-shop-cart-remove {
+  padding: 0.22rem 0.48rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+body.resin-home .rh-shop-cart-total {
+  margin: 0.8rem 0 0;
+  font-weight: 700;
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-shop-checkout__form {
+  display: grid;
+  gap: 0.72rem;
+  padding: var(--rh-step-4);
+}
+
+body.resin-home .rh-shop-checkout__form label {
+  display: grid;
+  gap: 0.28rem;
+  color: var(--rh-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+body.resin-home .rh-shop-checkout__form input,
+body.resin-home .rh-shop-checkout__form select,
+body.resin-home .rh-shop-checkout__form textarea {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius-sm);
+  background: var(--rh-surface);
+  color: var(--rh-text);
+  font: inherit;
+  padding: 0.6rem 0.66rem;
+}
+
+body.resin-home .rh-shop-checkout__form textarea {
+  resize: vertical;
+}
+
+body.resin-home .rh-shop-checkout__form input:focus-visible,
+body.resin-home .rh-shop-checkout__form select:focus-visible,
+body.resin-home .rh-shop-checkout__form textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rh-primary) 45%, transparent);
+  outline-offset: 1px;
+}
+
+body.resin-home .rh-shop-checkout__policy {
+  margin: 0;
+  color: var(--rh-muted);
+  font-size: 0.82rem;
 }
 
 body.resin-home .rh-shop-ordering__grid {

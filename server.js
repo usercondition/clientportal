@@ -822,6 +822,112 @@ app.post("/api/contact", async (req, res) => {
   return res.status(202).json({ ok: true });
 });
 
+app.post("/api/shop/checkout", async (req, res) => {
+  if (!createMailTransport()) {
+    return res.status(503).json({
+      error: "Checkout email is not configured yet. Please set SMTP settings on the server.",
+    });
+  }
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const customer = body.customer && typeof body.customer === "object" ? body.customer : {};
+  const name = String(customer.name || "").trim();
+  const email = String(customer.email || "").trim();
+  const phone = String(customer.phone || "").trim();
+  const shippingRegion = String(customer.shippingRegion || "").trim();
+  const paymentMethod = String(body.paymentMethod || "").trim();
+  const notes = String(body.notes || "").trim();
+  const rawItems = Array.isArray(body.items) ? body.items : [];
+
+  if (name.length < 2 || name.length > 120) {
+    return res.status(400).json({ error: "Name must be between 2 and 120 characters." });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: "Enter a valid email address." });
+  }
+  if (!PAYMENT_METHODS.has(paymentMethod)) {
+    return res.status(400).json({ error: "Choose a valid payment method." });
+  }
+  if (notes.length > 2000) {
+    return res.status(400).json({ error: "Notes cannot exceed 2000 characters." });
+  }
+
+  /** @type {Array<{ sku: string; name: string; quantity: number; unitPrice: number }>} */
+  const items = [];
+  for (const it of rawItems) {
+    const row = it && typeof it === "object" ? it : {};
+    const sku = String(row.sku || "").trim().toUpperCase().slice(0, 48);
+    const itemName = String(row.name || "").trim().slice(0, 180);
+    const quantity = Math.floor(Number(row.quantity || 0));
+    const unitPrice = Number(row.unitPrice || 0);
+    if (!sku || !itemName || !Number.isFinite(unitPrice) || unitPrice < 0 || quantity < 1) continue;
+    if (quantity > 250 || unitPrice > 10000) continue;
+    items.push({
+      sku,
+      name: itemName,
+      quantity,
+      unitPrice: Math.round(unitPrice * 100) / 100,
+    });
+  }
+  if (!items.length) {
+    return res.status(400).json({ error: "Add at least one valid item to checkout." });
+  }
+  if (items.length > 40) {
+    return res.status(400).json({ error: "Checkout can include up to 40 line items." });
+  }
+
+  const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
+  const subtotalStr = subtotal.toFixed(2);
+  const paymentLabel = paymentMethod.replace("_", " ").toUpperCase();
+  const lines = items.map((it) => {
+    return `- ${it.name} (${it.sku}) x${it.quantity} @ $${it.unitPrice.toFixed(2)} = $${(it.quantity * it.unitPrice).toFixed(2)}`;
+  });
+
+  const subject = `Shop checkout request — ${name} — $${subtotalStr}`;
+  const text = [
+    "New shop checkout request",
+    "",
+    `Customer: ${name}`,
+    `Email: ${email}`,
+    phone ? `Phone: ${phone}` : "",
+    shippingRegion ? `Shipping region: ${shippingRegion}` : "",
+    `Preferred payment method: ${paymentLabel}`,
+    "",
+    "Requested items:",
+    ...lines,
+    "",
+    `Estimated subtotal: $${subtotalStr}`,
+    notes ? "" : "",
+    notes ? "Notes:" : "",
+    notes || "",
+    "",
+    "Policy: Full payment only (no deposits).",
+    emailTemplates.baseUrl() ? `Website: ${emailTemplates.baseUrl()}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, { replyTo: email });
+
+  const clientSubject = `Steindahl 3D Group — Shop request received ($${subtotalStr})`;
+  const clientText = [
+    `Hi ${name},`,
+    "",
+    "We received your shop purchase request. Our team will confirm availability, shipping, and send final invoice/payment instructions.",
+    "",
+    "Your requested items:",
+    ...lines,
+    "",
+    `Estimated subtotal: $${subtotalStr}`,
+    `Preferred payment method: ${paymentLabel}`,
+    "",
+    "Policy reminder: full payment is required (no deposits).",
+    "",
+    "Reply to this email if you need to edit quantities before final confirmation.",
+  ].join("\n");
+  queueNotifyEmail(email, clientSubject, clientText, { replyTo: resolveAdminReplyEmail() });
+
+  return res.status(202).json({ ok: true, estimatedSubtotal: subtotalStr });
+});
+
 app.post("/api/client/login", async (req, res) => {
   const { firstName, lastName, zip } = req.body || {};
   if (!firstName || !lastName || !zip) {
