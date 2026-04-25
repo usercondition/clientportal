@@ -275,69 +275,10 @@
               <h3>Your cart</h3>
               <p><strong id="shop-cart-count-top">0 items</strong></p>
               <p class="rh-shop-storefront__subtotal" id="shop-cart-subtotal-top">$0.00 subtotal</p>
-              <a class="rh-btn rh-btn--primary" href="#checkout">Go to checkout</a>
+              <a class="rh-btn rh-btn--primary" href="shop-checkout.html">Go to checkout</a>
               <p class="rh-shop-storefront__note">Checkout supports PayPal, Venmo, and Cash App.</p>
             </aside>
           </div>
-        </div>
-      </section>
-
-      <section id="checkout" class="rh-shop-checkout rh-section rh-section--tight" aria-labelledby="checkout-title">
-        <div class="rh-container rh-shop-checkout__grid">
-          <article class="rh-shop-checkout__summary">
-            <p class="rh-kicker">Direct checkout</p>
-            <h2 id="checkout-title" class="rh-h2">Review your cart and send your purchase request</h2>
-            <p class="rh-lede">
-              This submits your order directly to our team for final invoice and payment in full confirmation.
-            </p>
-            <div id="shop-cart-list" class="rh-shop-cart-list" aria-live="polite"></div>
-            <p class="rh-shop-cart-total" id="shop-cart-total">Estimated subtotal: $0.00</p>
-          </article>
-
-          <form id="shop-checkout-form" class="rh-shop-checkout__form" novalidate>
-            <label>
-              Full name
-              <input type="text" name="name" required minlength="2" maxlength="120" autocomplete="name" />
-            </label>
-            <label>
-              Email
-              <input type="email" name="email" required autocomplete="email" />
-            </label>
-            <label>
-              Phone (optional)
-              <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
-            </label>
-            <label>
-              Preferred payment method
-              <select name="paymentMethod" required>
-                <option value="paypal">PayPal</option>
-                <option value="venmo">Venmo</option>
-                <option value="cash_app">Cash App</option>
-              </select>
-            </label>
-            <label>
-              Shipping city/state (optional)
-              <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
-            </label>
-            <label>
-              Notes
-              <textarea
-                name="notes"
-                rows="4"
-                maxlength="2000"
-                placeholder="Variants, quantity preferences, or delivery notes"
-              ></textarea>
-            </label>
-            <p class="rh-shop-checkout__policy">
-              Full payment only — no deposits or partial payments.
-            </p>
-            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit purchase request</button>
-            <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
-            <div id="shop-payment-next" class="rh-shop-payment-next" hidden>
-              <p class="rh-shop-payment-next__title">Complete payment</p>
-              <div id="shop-payment-links" class="rh-shop-payment-next__links"></div>
-            </div>
-          </form>
         </div>
       </section>
 

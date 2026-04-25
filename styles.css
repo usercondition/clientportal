@@ -369,6 +369,99 @@ code {
   color: var(--text);
 }
 
+.site-nav .nav-item {
+  position: relative;
+}
+
+.site-nav .nav-item > .nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+}
+
+.site-nav .nav-item.is-active > .nav-link {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.site-nav .nav-item--has-sub {
+  padding-right: 0.9rem;
+}
+
+.site-nav .nav-subtoggle {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.site-nav .nav-subtoggle:hover {
+  color: var(--text);
+}
+
+.site-nav .nav-submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg) 95%, var(--bg-elevated));
+  box-shadow: var(--shadow-sm);
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: -0.35rem;
+  min-width: 12rem;
+  z-index: 8;
+}
+
+.site-nav .nav-submenu[hidden] {
+  display: none;
+}
+
+.site-nav .nav-sublink {
+  display: block;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.site-nav .nav-sublink:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.site-nav .nav-submenu li.is-active .nav-sublink {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (min-width: 721px) {
+  .site-nav .nav-item--has-sub .nav-subtoggle {
+    display: none;
+  }
+
+  .site-nav .nav-item--has-sub .nav-submenu {
+    display: none;
+  }
+
+  .site-nav .nav-item--has-sub:hover .nav-submenu,
+  .site-nav .nav-item--has-sub:focus-within .nav-submenu {
+    display: block;
+  }
+}
+
 @media (max-width: 720px) {
   .client-portal-entry {
     padding: 0.45rem 0.72rem;
@@ -412,13 +505,48 @@ code {
     gap: 0.25rem;
   }
 
-  .site-nav a {
+  .site-nav .nav-link {
     display: flex;
     align-items: center;
     min-height: 2.75rem;
     padding: 0.5rem 0.35rem;
     font-size: 1rem;
     border-radius: var(--radius);
+  }
+
+  .site-nav .nav-item--has-sub {
+    padding-right: 0;
+  }
+
+  .site-nav .nav-subtoggle {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.35rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    transform: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .site-nav .nav-submenu {
+    position: static;
+    margin: 0.1rem 0 0.35rem 0.7rem;
+    box-shadow: none;
+    min-width: 0;
+    border-style: dashed;
+    padding: 0.35rem;
+  }
+
+  .site-nav .nav-sublink {
+    min-height: 2.2rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
   }
 }
 

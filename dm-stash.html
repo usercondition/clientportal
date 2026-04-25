@@ -37,7 +37,7 @@
               <li><a href="index.html">Home</a></li>
               <li><a href="shop.html">All shop items</a></li>
               <li><a href="#merchant-catalog">DM Stash catalog</a></li>
-              <li><a href="#merchant-checkout">Checkout</a></li>
+              <li><a href="shop-checkout.html">Checkout</a></li>
             </ul>
           </nav>
           <a class="client-portal-entry" href="client-flow.html" aria-label="Open client portal">
@@ -196,53 +196,19 @@
         </div>
       </section>
 
-      <section id="merchant-checkout" class="rh-shop-checkout rh-section rh-section--tight" aria-labelledby="merchant-checkout-title">
-        <div class="rh-container rh-shop-checkout__grid">
-          <article class="rh-shop-checkout__summary">
-            <p class="rh-kicker">Direct checkout</p>
-            <h2 id="merchant-checkout-title" class="rh-h2">Send DM Stash purchase request</h2>
-            <p class="rh-lede">We review stock and send final payment details directly to your email.</p>
-            <div id="shop-cart-list" class="rh-shop-cart-list" aria-live="polite"></div>
-            <p class="rh-shop-cart-total" id="shop-cart-total">Estimated subtotal: $0.00</p>
-          </article>
-
-          <form id="shop-checkout-form" class="rh-shop-checkout__form" novalidate>
-            <label>
-              Full name
-              <input type="text" name="name" required minlength="2" maxlength="120" autocomplete="name" />
-            </label>
-            <label>
-              Email
-              <input type="email" name="email" required autocomplete="email" />
-            </label>
-            <label>
-              Phone (optional)
-              <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
-            </label>
-            <label>
-              Preferred payment method
-              <select name="paymentMethod" required>
-                <option value="paypal">PayPal</option>
-                <option value="venmo">Venmo</option>
-                <option value="cash_app">Cash App</option>
-              </select>
-            </label>
-            <label>
-              Shipping city/state (optional)
-              <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
-            </label>
-            <label>
-              Notes
-              <textarea name="notes" rows="4" maxlength="2000" placeholder="Variants, scale notes, delivery notes"></textarea>
-            </label>
-            <p class="rh-shop-checkout__policy">Full payment only — no deposits or partial payments.</p>
-            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit DM Stash order</button>
-            <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
-            <div id="shop-payment-next" class="rh-shop-payment-next" hidden>
-              <p class="rh-shop-payment-next__title">Complete payment</p>
-              <div id="shop-payment-links" class="rh-shop-payment-next__links"></div>
+      <section class="rh-shop-ordering rh-section rh-section--tight" aria-labelledby="merchant-checkout-title">
+        <div class="rh-container">
+          <article class="rh-shop-ordering__card">
+            <p class="rh-kicker">Checkout</p>
+            <h2 id="merchant-checkout-title" class="rh-h2">Use the dedicated checkout page</h2>
+            <p class="rh-lede">
+              Add DM Stash items to cart here, then finish in the dedicated storefront checkout flow.
+            </p>
+            <div class="rh-hero__actions">
+              <a class="rh-btn rh-btn--primary" href="shop-checkout.html">Go to checkout</a>
+              <a class="rh-btn rh-btn--ghost" href="shop.html">Browse all collections</a>
             </div>
-          </form>
+          </article>
         </div>
       </section>
     </main>

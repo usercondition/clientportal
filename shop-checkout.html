@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-marketing="resin">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script src="theme.js"></script>
+    <meta name="theme-color" content="#faf8ff" />
+    <meta
+      name="description"
+      content="Checkout for reseller miniatures from Steindahl 3D Group. Review cart, enter shipping details, and complete payment."
+    />
+    <title>Checkout — Steindahl 3D Group Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="resin.css" />
+  </head>
+  <body class="resin-home rh-shop-page rh-checkout-page">
+    <a class="skip-link" href="#checkout-main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="header-start">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand__mark" aria-hidden="true"></span>
+            <span class="site-brand__text">Steindahl 3D Group</span>
+          </a>
+          <a class="admin-entry admin-entry--header" href="admin.html">Staff</a>
+        </div>
+        <div class="header-actions">
+          <nav id="site-nav" class="site-nav" aria-label="Primary"></nav>
+          <a class="client-portal-entry" href="client-flow.html" aria-label="Open client portal">
+            <span class="client-portal-entry__full">Client portal</span>
+            <span class="client-portal-entry__short">Portal</span>
+          </a>
+          <button
+            type="button"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="Open menu"
+          >
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="checkout-main">
+      <section class="rh-shop-checkout-page-head rh-section rh-section--tight" aria-labelledby="checkout-page-title">
+        <div class="rh-container">
+          <p class="rh-kicker">Storefront checkout</p>
+          <h1 id="checkout-page-title" class="rh-h2">Complete your order</h1>
+          <p class="rh-lede">
+            Review your cart, submit your order details, and complete payment via PayPal, Venmo, or Cash App.
+          </p>
+        </div>
+      </section>
+
+      <section class="rh-shop-checkout rh-section rh-section--tight" aria-labelledby="checkout-title">
+        <div class="rh-container rh-shop-checkout__grid">
+          <article class="rh-shop-checkout__summary">
+            <p class="rh-kicker">Order summary</p>
+            <h2 id="checkout-title" class="rh-h2">Your cart</h2>
+            <p><strong id="shop-cart-count-top">0 items</strong></p>
+            <p class="rh-shop-storefront__subtotal" id="shop-cart-subtotal-top">$0.00 subtotal</p>
+            <div id="shop-cart-list" class="rh-shop-cart-list" aria-live="polite"></div>
+            <p class="rh-shop-cart-total" id="shop-cart-total">Estimated subtotal: $0.00</p>
+            <div class="rh-hero__actions">
+              <a class="rh-btn rh-btn--ghost" href="shop.html">Continue shopping</a>
+              <a class="rh-btn rh-btn--ghost" href="dm-stash.html">Shop DM Stash</a>
+            </div>
+          </article>
+
+          <form id="shop-checkout-form" class="rh-shop-checkout__form" novalidate>
+            <label>
+              Full name
+              <input type="text" name="name" required minlength="2" maxlength="120" autocomplete="name" />
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" required autocomplete="email" />
+            </label>
+            <label>
+              Phone (optional)
+              <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
+            </label>
+            <label>
+              Preferred payment method
+              <select name="paymentMethod" required>
+                <option value="paypal">PayPal</option>
+                <option value="venmo">Venmo</option>
+                <option value="cash_app">Cash App</option>
+              </select>
+            </label>
+            <label>
+              Shipping city/state (optional)
+              <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
+            </label>
+            <label>
+              Order notes
+              <textarea
+                name="notes"
+                rows="4"
+                maxlength="2000"
+                placeholder="Variants, quantity preferences, or delivery notes"
+              ></textarea>
+            </label>
+            <p class="rh-shop-checkout__policy">Full payment only — no deposits or partial payments.</p>
+            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit purchase request</button>
+            <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
+            <div id="shop-payment-next" class="rh-shop-payment-next" hidden>
+              <p class="rh-shop-payment-next__title">Complete payment</p>
+              <div id="shop-payment-links" class="rh-shop-payment-next__links"></div>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <span class="site-brand__mark site-brand__mark--footer" aria-hidden="true"></span>
+          <p>© <span id="year"></span> Steindahl 3D Group</p>
+        </div>
+        <p class="footer-note">Authorized reseller minis + custom resin jobs</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="checkout.js"></script>
+  </body>
+</html>
