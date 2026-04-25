@@ -1,9 +1,9 @@
 (function () {
   var KEY = "site_theme_mode";
   var root = document.documentElement;
-  /** Page chrome — must match styles.css / resin.css --bg */
-  var BG_PAGE_LIGHT = "#ebe4f5";
-  var BG_PAGE_DARK = "#0f0820";
+  /** Page chrome — must match styles.css :root / [data-theme="dark"] --bg */
+  var BG_PAGE_LIGHT = "#f2ebd8";
+  var BG_PAGE_DARK = "#323f4f";
 
   function pageBackground(mode) {
     return mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;

@@ -283,6 +283,7 @@ async function notifyOrderStatusChange(pool, { clientId, orderNumber, title, sta
 }
 
 const app = express();
+app.disable("x-powered-by");
 /** Behind Railway / reverse proxies (correct IPs, secure cookies if you add sessions later). */
 app.set("trust proxy", 1);
 
@@ -385,6 +386,12 @@ app.use((req, res, next) => {
 
 // Slightly higher than default: marketplace sync payloads may include many thread rows.
 app.use(express.json({ limit: "2mb" }));
+
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
 
 /** Liveness for Railway / load balancers — does not touch the database (avoids restart loops during DB misconfig). */
 app.get("/health", (_req, res) => {
@@ -2772,7 +2779,28 @@ app.post("/api/admin/marketplace/purge", async (req, res) => {
 app.use("/uploads", express.static(uploadsRoot));
 
 const staticDir = path.resolve(__dirname);
-app.use(express.static(staticDir));
+/** Cache HTML short (or no-store); allow CDN/browser reuse for versioned-looking static assets. */
+function staticAssetHeaders(res, filePath) {
+  const lower = String(filePath || "").toLowerCase();
+  if (lower.endsWith(".html")) {
+    res.setHeader("Cache-Control", "no-store");
+    return;
+  }
+  if (/\.(js|css|mjs)$/i.test(lower)) {
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return;
+  }
+  if (/\.(png|jpe?g|gif|webp|svg|ico|avif|woff2?|txt|xml|webmanifest)$/i.test(lower)) {
+    res.setHeader("Cache-Control", "public, max-age=86400");
+  }
+}
+app.use(
+  express.static(staticDir, {
+    etag: true,
+    lastModified: true,
+    setHeaders: staticAssetHeaders,
+  })
+);
 
 app.use((req, res) => {
   const target = req.path === "/" ? "index.html" : req.path.slice(1);

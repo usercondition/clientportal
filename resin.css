@@ -1,27 +1,27 @@
 /**
  * Resin marketing homepage — scoped to body.resin-home only.
- * Uses the same retro synthwave palette as styles.css :root.
+ * Aligns with styles.css slate + rose + cream theme.
  */
 
-/* Light: sunset-on-lavender (synthwave day) */
+/* Light */
 body.resin-home {
-  --rh-bg: #ebe4f5;
-  --rh-surface: #f0e8fc;
-  --rh-surface-2: #e5daf5;
-  --rh-text: #1a0b2e;
-  --rh-muted: #5c4a78;
-  --rh-primary: #d91a8b;
-  --rh-primary-hover: #b81476;
-  --rh-copper: #ff7b45;
+  --rh-bg: color-mix(in srgb, #f1e6c1 92%, #dda5b6 8%);
+  --rh-surface: #faf6ec;
+  --rh-surface-2: #ede4cf;
+  --rh-text: #4d5e72;
+  --rh-muted: color-mix(in srgb, #4d5e72 72%, #7a8899 28%);
+  --rh-primary: #3f6a8a;
+  --rh-primary-hover: #335772;
+  --rh-copper: #c45f48;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
-  --rh-border: rgba(42, 18, 72, 0.12);
-  --rh-shadow: 0 2px 12px rgba(26, 11, 46, 0.06);
-  --rh-shadow-md: 0 12px 36px rgba(26, 11, 46, 0.1);
-  --rh-radius: 10px;
-  --rh-radius-sm: 6px;
+  --rh-border: color-mix(in srgb, #4d5e72 14%, transparent);
+  --rh-shadow: 0 2px 14px color-mix(in srgb, #4d5e72 8%, transparent);
+  --rh-shadow-md: 0 12px 36px color-mix(in srgb, #4d5e72 10%, transparent);
+  --rh-radius: 12px;
+  --rh-radius-sm: 8px;
   --rh-max: 1080px;
-  --rh-font: "Inter", system-ui, -apple-system, sans-serif;
-  --rh-display: "Orbitron", system-ui, sans-serif;
+  --rh-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --rh-display: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --rh-step-1: 0.25rem;
   --rh-step-2: 0.5rem;
   --rh-step-3: 0.75rem;
@@ -31,18 +31,18 @@ body.resin-home {
   --rh-step-7: 3.25rem;
 }
 
-/* Dark: outrun night grid */
+/* Dark */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #0f0820;
-  --rh-surface: #1a1033;
-  --rh-surface-2: #241548;
-  --rh-text: #f5edff;
-  --rh-muted: #a89bc4;
-  --rh-primary: #ff2ec4;
-  --rh-primary-hover: #ff5ad4;
-  --rh-copper: #ffae42;
+  --rh-bg: #323f4f;
+  --rh-surface: #3d4d60;
+  --rh-surface-2: #485a6e;
+  --rh-text: #f7f1e4;
+  --rh-muted: color-mix(in srgb, #f1e6c1 58%, #9aa8b8 42%);
+  --rh-primary: #e8b8c8;
+  --rh-primary-hover: #f2cc8c;
+  --rh-copper: #ffb896;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
-  --rh-border: rgba(218, 198, 255, 0.12);
+  --rh-border: color-mix(in srgb, #f1e6c1 11%, transparent);
   --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.38);
   --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.48);
 }

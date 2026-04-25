@@ -1,59 +1,68 @@
-/* Design system — retro synthwave (shared: marketing, portal, flow, admin) */
+/* Design system — slate + rose + cream (shared: marketing, portal, flow, admin) */
 :root {
-  --bg: #ebe4f5;
-  --bg-elevated: #f7f2ff;
-  --text: #1a0b2e;
-  --text-muted: #5c4a78;
-  --accent: #d91a8b;
-  --accent-cyan: #0ec4d7;
-  --accent-hot: #ff7b45;
-  --accent-soft: rgba(217, 26, 139, 0.12);
-  --border: rgba(42, 18, 72, 0.12);
-  --radius: 10px;
-  --radius-lg: 16px;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-display: "Orbitron", system-ui, sans-serif;
-  --shadow: 0 20px 50px rgba(26, 11, 46, 0.09);
-  --shadow-sm: 0 4px 18px rgba(26, 11, 46, 0.07);
-  --shadow-neon: 0 0 28px rgba(217, 26, 139, 0.14);
-  --scrim: rgba(12, 5, 28, 0.45);
+  /* Reference palette (Ebtihaj-inspired) */
+  --palette-rose: #dda5b6;
+  --palette-peach: #f2cc8c;
+  --palette-cream: #f1e6c1;
+  --palette-steel: #3f6a8a;
+  --palette-slate: #4d5e72;
+
+  --bg: color-mix(in srgb, var(--palette-cream) 92%, var(--palette-rose) 8%);
+  --bg-elevated: #faf6ec;
+  --text: var(--palette-slate);
+  --text-muted: color-mix(in srgb, var(--palette-slate) 72%, #7a8899 28%);
+  --accent: var(--palette-steel);
+  --accent-cyan: color-mix(in srgb, var(--palette-steel) 50%, var(--palette-peach) 50%);
+  --accent-hot: #c45f48;
+  --accent-soft: color-mix(in srgb, var(--palette-rose) 32%, transparent);
+  --border: color-mix(in srgb, var(--palette-slate) 14%, transparent);
+  --radius: 12px;
+  --radius-lg: 18px;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Single family = fewer font requests on mobile */
+  --font-display: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --shadow: 0 20px 50px color-mix(in srgb, var(--palette-slate) 11%, transparent);
+  --shadow-sm: 0 4px 22px color-mix(in srgb, var(--palette-slate) 9%, transparent);
+  --shadow-neon: 0 14px 36px color-mix(in srgb, var(--palette-rose) 20%, transparent);
+  --scrim: color-mix(in srgb, var(--palette-slate) 58%, #000 42%);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.16s;
-  --dur-med: 0.28s;
-  --dur-slow: 0.45s;
+  --dur-med: 0.26s;
+  --dur-slow: 0.42s;
   --max: 1120px;
   --narrow: 560px;
   --space-gutter: clamp(0.875rem, 4.5vw, 1.25rem);
-  --page-tint: color-mix(in srgb, var(--accent) 9%, transparent);
+  --page-tint: color-mix(in srgb, var(--palette-rose) 14%, transparent);
   --page-bg-image:
-    radial-gradient(ellipse 120% 85% at 50% -22%, var(--page-tint), transparent 58%),
-    linear-gradient(185deg, color-mix(in srgb, var(--accent-cyan) 8%, transparent) 0%, transparent 45%);
-  --sem-success: #0d9b86;
-  --sem-danger: #d4254a;
+    radial-gradient(ellipse 110% 75% at 85% -8%, color-mix(in srgb, var(--palette-rose) 18%, transparent), transparent 52%),
+    radial-gradient(ellipse 95% 55% at 5% 105%, color-mix(in srgb, var(--palette-steel) 10%, transparent), transparent 48%),
+    linear-gradient(178deg, color-mix(in srgb, var(--palette-cream) 35%, transparent) 0%, transparent 52%);
+  --sem-success: #2a7d6b;
+  --sem-danger: #b33a50;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0f0820;
-  --bg-elevated: #1a1033;
-  --text: #f5edff;
-  --text-muted: #a89bc4;
-  --accent: #ff2ec4;
-  --accent-cyan: #3defff;
-  --accent-hot: #ffae42;
-  --accent-soft: rgba(255, 46, 196, 0.16);
-  --border: rgba(218, 198, 255, 0.12);
-  --shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
-  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.4);
-  --shadow-neon: 0 0 36px rgba(255, 46, 196, 0.22);
-  --scrim: rgba(0, 0, 0, 0.62);
-  --page-tint: color-mix(in srgb, var(--accent) 14%, transparent);
+  --bg: #323f4f;
+  --bg-elevated: #3d4d60;
+  --text: #f7f1e4;
+  --text-muted: color-mix(in srgb, var(--palette-cream) 58%, #9aa8b8 42%);
+  --accent: color-mix(in srgb, var(--palette-rose) 92%, #fff 8%);
+  --accent-cyan: var(--palette-peach);
+  --accent-hot: #ffb896;
+  --accent-soft: color-mix(in srgb, var(--palette-rose) 22%, transparent);
+  --border: color-mix(in srgb, var(--palette-cream) 11%, transparent);
+  --shadow: 0 24px 56px rgba(0, 0, 0, 0.48);
+  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.36);
+  --shadow-neon: 0 12px 40px color-mix(in srgb, var(--palette-rose) 14%, transparent);
+  --scrim: rgba(0, 0, 0, 0.6);
+  --page-tint: color-mix(in srgb, var(--palette-steel) 28%, transparent);
   --page-bg-image:
-    radial-gradient(ellipse 120% 85% at 50% -22%, var(--page-tint), transparent 58%),
-    linear-gradient(185deg, color-mix(in srgb, var(--accent-cyan) 10%, transparent) 0%, transparent 48%);
-  --sem-success: #2ee5c7;
-  --sem-danger: #ff5c8a;
+    radial-gradient(ellipse 100% 70% at 50% -8%, color-mix(in srgb, var(--palette-steel) 24%, transparent), transparent 55%),
+    linear-gradient(188deg, color-mix(in srgb, #000 32%, transparent) 0%, transparent 58%);
+  --sem-success: #6bcbaf;
+  --sem-danger: #ff8aa8;
 }
 
 *,
@@ -89,11 +98,14 @@ body {
   color: var(--text);
   background-color: var(--bg);
   background-image: var(--page-bg-image);
+  background-attachment: scroll;
   min-height: 100vh;
   min-height: 100dvh;
   padding-left: max(0px, env(safe-area-inset-left, 0px));
   padding-right: max(0px, env(safe-area-inset-right, 0px));
   padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .skip-link {
@@ -149,6 +161,12 @@ code {
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(12px);
   padding-top: max(0px, env(safe-area-inset-top, 0px));
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    backdrop-filter: blur(8px);
+  }
 }
 
 .header-inner {
@@ -642,11 +660,14 @@ code {
 }
 
 [data-theme="dark"] .btn-primary {
-  color: #fff7ff;
-  border-color: color-mix(in srgb, var(--accent-cyan) 42%, var(--accent));
-  box-shadow:
-    0 0 22px color-mix(in srgb, var(--accent) 32%, transparent),
-    0 1px 2px rgba(0, 0, 0, 0.35);
+  color: #2a3340;
+  background: var(--palette-peach);
+  border-color: color-mix(in srgb, var(--palette-peach) 70%, var(--palette-slate) 30%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: color-mix(in srgb, var(--palette-peach) 88%, #fff 12%);
 }
 
 .btn-ghost {
@@ -787,6 +808,12 @@ code {
   border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 720px) {
+  .card:hover {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

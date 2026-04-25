@@ -2,10 +2,10 @@
 
 :root {
   --admin-sidebar-w: 260px;
-  --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 88%, var(--accent) 5%);
-  --admin-sidebar-border: color-mix(in srgb, var(--border) 85%, var(--accent-cyan) 8%);
-  --admin-nav-active: color-mix(in srgb, var(--accent) 16%, var(--bg));
-  --admin-nav-active-border: color-mix(in srgb, var(--accent) 38%, var(--border));
+  --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 90%, var(--palette-rose, #dda5b6) 10%);
+  --admin-sidebar-border: color-mix(in srgb, var(--border) 88%, var(--palette-steel, #3f6a8a) 12%);
+  --admin-nav-active: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  --admin-nav-active-border: color-mix(in srgb, var(--accent) 32%, var(--border));
 }
 
 .admin-app {
@@ -735,6 +735,13 @@
 
   .admin-inbox-page-head {
     padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-sidebar,
+  .admin-app__drawer-btn {
+    backdrop-filter: blur(8px);
   }
 }
 
