@@ -62,6 +62,12 @@
     } catch (_e) {}
   }
 
+  function notifyCartChanged() {
+    try {
+      document.dispatchEvent(new CustomEvent("shop-cart-changed"));
+    } catch (_e) {}
+  }
+
   function setCheckoutStatus(message, kind) {
     if (!checkoutStatus) return;
     checkoutStatus.textContent = message || "";
@@ -83,6 +89,7 @@
       cartTotal.textContent = "Estimated subtotal: $0.00";
       if (cartCountTop) cartCountTop.textContent = "0 items";
       if (cartSubtotalTop) cartSubtotalTop.textContent = "$0.00 subtotal";
+      notifyCartChanged();
       return;
     }
     var subtotal = 0;
@@ -121,6 +128,7 @@
     cartTotal.textContent = "Estimated subtotal: " + formatMoney(subtotal);
     if (cartCountTop) cartCountTop.textContent = qty + (qty === 1 ? " item" : " items");
     if (cartSubtotalTop) cartSubtotalTop.textContent = formatMoney(subtotal) + " subtotal";
+    notifyCartChanged();
   }
 
   cartList.addEventListener("click", function (e) {
@@ -146,6 +154,7 @@
           delete cart[k];
         });
         persistCart();
+        renderCart();
         setCheckoutStatus("Payment successful. Thank you for your order!", "success");
       } else if (state === "cancelled") {
         setCheckoutStatus("Checkout was cancelled. You can try again whenever you are ready.", "error");

@@ -418,7 +418,7 @@ code {
   background: color-mix(in srgb, var(--bg) 95%, var(--bg-elevated));
   box-shadow: var(--shadow-sm);
   position: absolute;
-  top: calc(100% + 0.35rem);
+  top: 100%;
   left: -0.35rem;
   min-width: 12rem;
   z-index: 8;
@@ -454,6 +454,17 @@ code {
 
   .site-nav .nav-item--has-sub .nav-submenu {
     display: none;
+  }
+
+  /* Invisible hover bridge so the pointer can reach the submenu without it closing. */
+  .site-nav .nav-item--has-sub::after {
+    content: "";
+    position: absolute;
+    left: -0.35rem;
+    right: -0.5rem;
+    top: 100%;
+    height: 0.55rem;
+    z-index: 7;
   }
 
   .site-nav .nav-item--has-sub:hover .nav-submenu,
@@ -593,6 +604,16 @@ code {
 
   .card {
     padding: 1.25rem;
+  }
+}
+
+body.is-marketing-nav-open {
+  overflow: hidden;
+}
+
+@media (min-width: 901px) {
+  body.is-marketing-nav-open {
+    overflow: unset;
   }
 }
 

@@ -86,6 +86,12 @@
     } catch (_e) {}
   }
 
+  function notifyCartChanged() {
+    try {
+      document.dispatchEvent(new CustomEvent("shop-cart-changed"));
+    } catch (_e) {}
+  }
+
   function loadCart() {
     try {
       var raw = localStorage.getItem(CART_KEY);
@@ -156,6 +162,7 @@
       cart[sku].qty += 1;
       saveCart();
       syncCartTop();
+      notifyCartChanged();
     });
   });
 
@@ -163,4 +170,5 @@
   if (sort) sort.addEventListener("change", updateVisible);
   updateVisible();
   syncCartTop();
+  notifyCartChanged();
 })();

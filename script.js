@@ -1,13 +1,15 @@
 (function () {
+  var shell = document.querySelector(".marketing-shell");
   var nav = document.getElementById("site-nav");
-  var toggle = document.querySelector(".nav-toggle");
+  var toggle = document.querySelector(".site-topbar .nav-toggle");
+  var backdrop = document.querySelector(".site-sidebar-backdrop");
   var yearEl = document.getElementById("year");
 
   if (yearEl) {
     yearEl.textContent = String(new Date().getFullYear());
   }
 
-  if (!nav || !toggle) return;
+  if (!nav) return;
 
   var page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   var onIndex = page === "" || page === "index.html";
@@ -21,17 +23,17 @@
       href: "shop.html",
       match: ["shop.html", "dm-stash.html", "shop-checkout.html"],
       children: [
-        { label: "All Catalog", href: "shop.html", match: ["shop.html"] },
+        { label: "All catalog", href: "shop.html", match: ["shop.html"] },
         { label: "DM Stash", href: "dm-stash.html", match: ["dm-stash.html"] },
         { label: "Checkout", href: "shop-checkout.html", match: ["shop-checkout.html"] },
       ],
     },
     {
-      label: "Custom Jobs",
+      label: "Custom jobs",
       href: baseIndex + "#services",
       sectionMatch: ["#gallery", "#services", "#process", "#quality"],
       children: [
-        { label: "Featured Work", href: baseIndex + "#gallery", sectionMatch: ["#gallery"] },
+        { label: "Featured work", href: baseIndex + "#gallery", sectionMatch: ["#gallery"] },
         { label: "Services", href: baseIndex + "#services", sectionMatch: ["#services"] },
         { label: "Process", href: baseIndex + "#process", sectionMatch: ["#process"] },
         { label: "Quality", href: baseIndex + "#quality", sectionMatch: ["#quality"] },
@@ -52,7 +54,67 @@
     });
   }
 
-  function renderMenu() {
+  function renderMenuTree() {
+    nav.classList.add("site-nav", "site-nav--tree");
+    var ul = document.createElement("ul");
+    ul.className = "nav-tree";
+
+    menu.forEach(function (item) {
+      var li = document.createElement("li");
+      li.className = "nav-tree__item nav-item";
+      var active = itemIsActive(item);
+      if (active) li.classList.add("is-active");
+
+      if (Array.isArray(item.children) && item.children.length) {
+        li.classList.add("nav-tree__item--branch", "nav-item--has-sub");
+        var row = document.createElement("div");
+        row.className = "nav-tree__row";
+        var main = document.createElement("a");
+        main.href = item.href;
+        main.textContent = item.label;
+        main.className = "nav-tree__link nav-link";
+        if (active) main.setAttribute("aria-current", "page");
+        row.appendChild(main);
+        li.appendChild(row);
+
+        var sub = document.createElement("ul");
+        sub.className = "nav-tree__nested";
+        item.children.forEach(function (child) {
+          var cLi = document.createElement("li");
+          cLi.className = "nav-tree__leaf";
+          var cA = document.createElement("a");
+          cA.href = child.href;
+          cA.className = "nav-tree__sublink nav-sublink";
+          cA.textContent = child.label;
+          var childActive = itemIsActive(child);
+          if (childActive) {
+            cLi.classList.add("is-active");
+            cA.setAttribute("aria-current", "page");
+          }
+          cLi.appendChild(cA);
+          sub.appendChild(cLi);
+        });
+        li.appendChild(sub);
+      } else {
+        var link = document.createElement("a");
+        link.href = item.href;
+        link.textContent = item.label;
+        link.className = "nav-tree__link nav-link";
+        if (active) {
+          link.setAttribute("aria-current", "page");
+        }
+        li.appendChild(link);
+      }
+
+      ul.appendChild(li);
+    });
+
+    nav.innerHTML = "";
+    nav.appendChild(ul);
+  }
+
+  /** Legacy horizontal header (no marketing shell). */
+  function renderMenuHorizontal() {
     var ul = document.createElement("ul");
     ul.className = "nav-list";
 
@@ -110,48 +172,95 @@
     nav.appendChild(ul);
   }
 
-  renderMenu();
-
-  function setOpen(open) {
-    nav.classList.toggle("is-open", open);
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  if (shell) {
+    renderMenuTree();
+  } else {
+    renderMenuHorizontal();
   }
 
-  toggle.addEventListener("click", function () {
-    setOpen(!nav.classList.contains("is-open"));
-  });
+  function setSidebarOpen(open) {
+    if (!shell) return;
+    shell.classList.toggle("is-sidebar-open", open);
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    document.body.classList.toggle("is-marketing-nav-open", Boolean(open));
+    if (backdrop) {
+      backdrop.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+  }
+
+  function setHorizontalNavOpen(open) {
+    nav.classList.toggle("is-open", open);
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+  }
+
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      if (shell) {
+        setSidebarOpen(!shell.classList.contains("is-sidebar-open"));
+      } else {
+        setHorizontalNavOpen(!nav.classList.contains("is-open"));
+      }
+    });
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener("click", function () {
+      setSidebarOpen(false);
+    });
+  }
 
   nav.querySelectorAll("a").forEach(function (link) {
     link.addEventListener("click", function () {
-      setOpen(false);
+      if (shell && window.matchMedia("(max-width: 900px)").matches) {
+        setSidebarOpen(false);
+      }
+      if (!shell) {
+        setHorizontalNavOpen(false);
+      }
     });
   });
 
-  nav.querySelectorAll(".nav-subtoggle").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var targetId = btn.getAttribute("aria-controls");
-      if (!targetId) return;
-      var sub = document.getElementById(targetId);
-      if (!sub) return;
-      var expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", expanded ? "false" : "true");
-      btn.textContent = expanded ? "+" : "−";
-      sub.hidden = expanded;
+  if (!shell) {
+    nav.querySelectorAll(".nav-subtoggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetId = btn.getAttribute("aria-controls");
+        if (!targetId) return;
+        var sub = document.getElementById(targetId);
+        if (!sub) return;
+        var expanded = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", expanded ? "false" : "true");
+        btn.textContent = expanded ? "+" : "−";
+        sub.hidden = expanded;
+      });
     });
-  });
+  }
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") setOpen(false);
+    if (e.key === "Escape") {
+      setSidebarOpen(false);
+      setHorizontalNavOpen(false);
+    }
   });
 
   document.addEventListener("click", function (e) {
+    if (shell) return;
     if (!nav.classList.contains("is-open")) return;
-    if (nav.contains(e.target) || toggle.contains(e.target)) return;
-    setOpen(false);
+    if (nav.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+    setHorizontalNavOpen(false);
   });
 
   window.addEventListener("resize", function () {
-    if (window.matchMedia("(min-width: 721px)").matches) setOpen(false);
+    if (window.matchMedia("(min-width: 721px)").matches) {
+      setHorizontalNavOpen(false);
+    }
+    if (window.matchMedia("(min-width: 901px)").matches) {
+      setSidebarOpen(false);
+    }
   });
 })();
