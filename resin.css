@@ -1,22 +1,22 @@
 /**
  * Resin marketing homepage — scoped to body.resin-home only.
- * High-contrast theme (matches styles.css).
+ * Violet / indigo theme (matches styles.css).
  */
 
 /* Light */
 body.resin-home {
-  --rh-bg: #f5f5f4;
+  --rh-bg: #faf8ff;
   --rh-surface: #ffffff;
-  --rh-surface-2: #e7e5e4;
-  --rh-text: #0a0a0b;
-  --rh-muted: #57534e;
-  --rh-primary: #2563eb;
-  --rh-primary-hover: #1d4ed8;
-  --rh-copper: #ea580c;
+  --rh-surface-2: #ede9fe;
+  --rh-text: #1e1b4b;
+  --rh-muted: #64748b;
+  --rh-primary: #6d28d9;
+  --rh-primary-hover: #5b21b6;
+  --rh-copper: #c2410c;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
-  --rh-border: #d6d3d1;
-  --rh-shadow: 0 2px 14px rgba(9, 9, 11, 0.1);
-  --rh-shadow-md: 0 12px 36px rgba(9, 9, 11, 0.12);
+  --rh-border: #e7e2ef;
+  --rh-shadow: 0 2px 14px color-mix(in srgb, #6d28d9 6%, rgba(15, 10, 30, 0.08));
+  --rh-shadow-md: 0 12px 36px color-mix(in srgb, #6d28d9 8%, rgba(15, 10, 30, 0.1));
   --rh-radius: 12px;
   --rh-radius-sm: 8px;
   --rh-max: 1080px;
@@ -33,18 +33,18 @@ body.resin-home {
 
 /* Dark */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #09090b;
-  --rh-surface: #18181b;
-  --rh-surface-2: #27272a;
-  --rh-text: #fafafa;
-  --rh-muted: #a3a3a3;
-  --rh-primary: #60a5fa;
-  --rh-primary-hover: #93c5fd;
+  --rh-bg: #0f0a1e;
+  --rh-surface: #1a1329;
+  --rh-surface-2: #251d3a;
+  --rh-text: #f5f3ff;
+  --rh-muted: #a1a1aa;
+  --rh-primary: #c4b5fd;
+  --rh-primary-hover: #ddd6fe;
   --rh-copper: #fb923c;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
-  --rh-border: #27272a;
-  --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
-  --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.55);
+  --rh-border: #352f4a;
+  --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.42);
+  --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.52);
 }
 
 body.resin-home {

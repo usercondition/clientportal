@@ -1,32 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
 
-/* Design system — high contrast (neutral surfaces + saturated accent) */
+/* Design system — violet / indigo + teal (distinct from prior blue–zinc) */
 :root {
-  /* Accent: strong blue; secondary: cyan; warning: orange */
-  --palette-accent: #2563eb;
-  --palette-accent-deep: #1d4ed8;
-  --palette-accent-2: #0891b2;
-  --palette-ink: #0a0a0b;
-  --palette-muted: #57534e;
-  --palette-line: #d6d3d1;
+  --palette-accent: #6d28d9;
+  --palette-accent-deep: #5b21b6;
+  --palette-accent-2: #0d9488;
+  --palette-ink: #1e1b4b;
+  --palette-muted: #64748b;
+  --palette-line: #e7e2ef;
 
-  --bg: #f5f5f4;
+  --bg: #faf8ff;
   --bg-elevated: #ffffff;
   --text: var(--palette-ink);
   --text-muted: var(--palette-muted);
   --accent: var(--palette-accent);
   --accent-cyan: var(--palette-accent-2);
-  --accent-hot: #ea580c;
-  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-hot: #c2410c;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
   --border: var(--palette-line);
   --radius: 10px;
   --radius-lg: 14px;
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-  --shadow: 0 20px 50px rgba(9, 9, 11, 0.14);
-  --shadow-sm: 0 4px 18px rgba(9, 9, 11, 0.1);
-  --shadow-neon: 0 10px 36px color-mix(in srgb, var(--accent) 28%, transparent);
-  --scrim: rgba(9, 9, 11, 0.72);
+  --shadow: 0 20px 50px color-mix(in srgb, var(--palette-accent) 8%, rgba(15, 10, 30, 0.12));
+  --shadow-sm: 0 4px 20px color-mix(in srgb, var(--palette-accent) 6%, rgba(15, 10, 30, 0.08));
+  --shadow-neon: 0 12px 40px color-mix(in srgb, var(--accent) 22%, transparent);
+  --scrim: color-mix(in srgb, #1e1b4b 72%, #000 28%);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.14s;
@@ -35,44 +34,44 @@
   --max: 1120px;
   --narrow: 560px;
   --space-gutter: clamp(0.875rem, 4.5vw, 1.25rem);
-  --page-tint: color-mix(in srgb, var(--accent) 6%, transparent);
+  --page-tint: color-mix(in srgb, var(--accent) 8%, transparent);
   --page-bg-image:
-    radial-gradient(1000px 520px at 92% -8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 52%),
-    radial-gradient(720px 420px at -5% 45%, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent 48%),
-    linear-gradient(178deg, #fafafa 0%, var(--bg) 42%, #ffffff 100%);
+    radial-gradient(980px 500px at 88% -6%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 50%),
+    radial-gradient(700px 400px at -8% 48%, color-mix(in srgb, var(--accent-cyan) 9%, transparent), transparent 46%),
+    linear-gradient(178deg, #ffffff 0%, var(--bg) 44%, #fdfcff 100%);
   --sem-success: #047857;
-  --sem-danger: #dc2626;
+  --sem-danger: #b91c1c;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --palette-accent: #60a5fa;
-  --palette-accent-deep: #3b82f6;
-  --palette-accent-2: #22d3ee;
-  --palette-ink: #fafafa;
-  --palette-muted: #a3a3a3;
-  --palette-line: #3f3f46;
+  --palette-accent: #c4b5fd;
+  --palette-accent-deep: #7c3aed;
+  --palette-accent-2: #2dd4bf;
+  --palette-ink: #f5f3ff;
+  --palette-muted: #a1a1aa;
+  --palette-line: #352f4a;
 
-  --bg: #09090b;
-  --bg-elevated: #18181b;
-  --text: #fafafa;
-  --text-muted: #a3a3a3;
-  --accent: #60a5fa;
-  --accent-cyan: #22d3ee;
+  --bg: #0f0a1e;
+  --bg-elevated: #1a1329;
+  --text: #f5f3ff;
+  --text-muted: #a1a1aa;
+  --accent: #c4b5fd;
+  --accent-cyan: #2dd4bf;
   --accent-hot: #fb923c;
-  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
-  --border: #27272a;
-  --shadow: 0 24px 56px rgba(0, 0, 0, 0.65);
-  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.45);
-  --shadow-neon: 0 12px 40px color-mix(in srgb, var(--accent) 22%, transparent);
-  --scrim: rgba(0, 0, 0, 0.75);
-  --page-tint: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --border: #352f4a;
+  --shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.4);
+  --shadow-neon: 0 14px 44px color-mix(in srgb, var(--accent) 18%, transparent);
+  --scrim: rgba(5, 3, 12, 0.78);
+  --page-tint: color-mix(in srgb, var(--accent) 12%, transparent);
   --page-bg-image:
-    radial-gradient(880px 480px at 88% -12%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 55%),
-    radial-gradient(600px 380px at 0% 55%, color-mix(in srgb, var(--accent-cyan) 12%, transparent), transparent 50%),
-    linear-gradient(188deg, #070709 0%, var(--bg) 48%, #121215 100%);
+    radial-gradient(820px 460px at 85% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 54%),
+    radial-gradient(560px 360px at 0% 52%, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent 48%),
+    linear-gradient(188deg, #120b22 0%, var(--bg) 50%, #181028 100%);
   --sem-success: #34d399;
-  --sem-danger: #f87171;
+  --sem-danger: #fb7185;
 }
 
 *,
