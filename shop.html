@@ -38,7 +38,7 @@
           <div id="theme-toggle-root"></div>
         </div>
         <div class="site-sidebar__footer">
-          <a class="admin-entry" href="admin.html">Staff</a>
+          <a class="admin-entry" href="admin.html"><span class="ui-icon" aria-hidden="true">⚙</span><span>Staff</span></a>
         </div>
       </aside>
 
@@ -57,12 +57,12 @@
           <span class="site-topbar__crumb" aria-hidden="true">Shop</span>
           <div class="site-topbar__actions">
             <a class="site-cart-nav" id="site-cart-nav" href="shop-checkout.html" aria-label="Cart, empty">
-              <span class="site-cart-nav__label">Your cart</span>
+              <span class="site-cart-nav__label"><span class="ui-icon" aria-hidden="true">🛒</span><span>Your cart</span></span>
               <span class="site-cart-nav__meta" id="site-cart-nav-meta">Empty · $0.00</span>
             </a>
             <a class="client-portal-entry" href="client-flow.html" aria-label="Open client portal to order or message">
-              <span class="client-portal-entry__full">Client portal</span>
-              <span class="client-portal-entry__short">Portal</span>
+              <span class="client-portal-entry__full"><span class="ui-icon" aria-hidden="true">👤</span><span>Client portal</span></span>
+              <span class="client-portal-entry__short"><span class="ui-icon" aria-hidden="true">👤</span><span>Portal</span></span>
             </a>
           </div>
         </header>
@@ -106,8 +106,21 @@
           <header class="rh-gallery__head">
             <p class="rh-kicker">Shop catalog</p>
             <h2 id="catalog-title" class="rh-h2">Reseller miniatures by category</h2>
-            <p class="rh-lede">Filter by collection and search by name, set, or scale.</p>
+            <p class="rh-lede">Browse all vendors first, then filter by collection and search by name, set, or scale.</p>
           </header>
+
+          <section class="rh-vendor-index" aria-label="Catalog vendors">
+            <article class="rh-vendor-index__card">
+              <h3>All vendors mix</h3>
+              <p>Featured items from every vendor in one feed so clients can discover what is currently moving.</p>
+              <a class="rh-btn rh-btn--ghost" href="#catalog">View mixed catalog</a>
+            </article>
+            <article class="rh-vendor-index__card">
+              <h3>DM Stash</h3>
+              <p>Licensed designer collection from DM Stash, available in the shared catalog and dedicated vendor page.</p>
+              <a class="rh-btn rh-btn--ghost" href="dm-stash.html">Open vendor page</a>
+            </article>
+          </section>
 
           <div class="rh-shop-toolbar">
             <div class="rh-shop-filter-group" role="tablist" aria-label="Shop categories">

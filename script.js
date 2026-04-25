@@ -23,8 +23,7 @@
       href: "shop.html",
       match: ["shop.html", "dm-stash.html", "shop-checkout.html"],
       children: [
-        { label: "All catalog", href: "shop.html", match: ["shop.html"] },
-        { label: "DM Stash", href: "dm-stash.html", match: ["dm-stash.html"] },
+        { label: "Catalog", href: "shop.html#catalog", match: ["shop.html", "dm-stash.html"] },
         { label: "Checkout", href: "shop-checkout.html", match: ["shop-checkout.html"] },
       ],
     },
@@ -41,6 +40,34 @@
     },
     { label: "Contact", href: baseIndex + "#contact", sectionMatch: ["#contact"] },
   ];
+
+  var menuIcons = {
+    Home: "⌂",
+    Shop: "🛍",
+    Catalog: "📚",
+    Checkout: "💳",
+    "Custom jobs": "🧩",
+    "Featured work": "✨",
+    Services: "🛠",
+    Process: "🧭",
+    Quality: "✅",
+    Contact: "✉",
+  };
+
+  function appendLabelWithIcon(el, label) {
+    var iconText = menuIcons[label];
+    if (iconText) {
+      var icon = document.createElement("span");
+      icon.className = "nav-tree__icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = iconText;
+      el.appendChild(icon);
+    }
+    var text = document.createElement("span");
+    text.className = "nav-tree__text";
+    text.textContent = label;
+    el.appendChild(text);
+  }
 
   function itemIsActive(item) {
     var fileMatch = Array.isArray(item.match) && item.match.indexOf(page) >= 0;
@@ -71,8 +98,8 @@
         row.className = "nav-tree__row";
         var main = document.createElement("a");
         main.href = item.href;
-        main.textContent = item.label;
         main.className = "nav-tree__link nav-link";
+        appendLabelWithIcon(main, item.label);
         if (active) main.setAttribute("aria-current", "page");
         row.appendChild(main);
         li.appendChild(row);
@@ -85,7 +112,7 @@
           var cA = document.createElement("a");
           cA.href = child.href;
           cA.className = "nav-tree__sublink nav-sublink";
-          cA.textContent = child.label;
+          appendLabelWithIcon(cA, child.label);
           var childActive = itemIsActive(child);
           if (childActive) {
             cLi.classList.add("is-active");
@@ -98,8 +125,8 @@
       } else {
         var link = document.createElement("a");
         link.href = item.href;
-        link.textContent = item.label;
         link.className = "nav-tree__link nav-link";
+        appendLabelWithIcon(link, item.label);
         if (active) {
           link.setAttribute("aria-current", "page");
         }

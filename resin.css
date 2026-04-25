@@ -98,8 +98,16 @@ body.resin-home .client-portal-entry {
   border-color: var(--rh-border);
   color: var(--rh-text);
   font-weight: 600;
+  font-size: 0.95rem;
   text-transform: none;
   letter-spacing: 0;
+}
+
+body.resin-home .client-portal-entry__full,
+body.resin-home .client-portal-entry__short {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
 }
 
 body.resin-home .client-portal-entry:hover {
@@ -202,6 +210,7 @@ body.resin-home.marketing-layout {
   border-right: 1px solid var(--rh-border);
   background: color-mix(in srgb, var(--rh-surface) 88%, var(--rh-bg));
   box-shadow: inset -1px 0 0 color-mix(in srgb, var(--rh-primary) 6%, transparent);
+  overflow-x: hidden;
 }
 
 @media (min-width: 901px) {
@@ -221,10 +230,11 @@ body.resin-home.marketing-layout {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding-right: 0.15rem;
-  margin-right: -0.15rem;
+  padding-right: 0;
+  margin-right: 0;
 }
 
 .site-sidebar__dock {
@@ -354,6 +364,9 @@ body.resin-home.marketing-layout .marketing-main > .site-footer {
 }
 
 .site-cart-nav__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -409,6 +422,7 @@ body.resin-home .site-nav--tree .nav-tree__item {
   list-style: none;
   margin: 0;
   padding: 0;
+  min-width: 0;
 }
 
 body.resin-home .site-nav--tree .nav-tree__item--branch {
@@ -431,6 +445,17 @@ body.resin-home .site-nav--tree .nav-tree__link {
   text-decoration: none;
   font-weight: 600;
   font-size: 0.92rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+body.resin-home .site-nav--tree .nav-tree__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  margin-right: 0.42rem;
+  opacity: 0.92;
 }
 
 body.resin-home .site-nav--tree .nav-tree__link:hover {
@@ -483,6 +508,8 @@ body.resin-home .site-nav--tree .nav-tree__sublink {
   font-weight: 500;
   color: var(--rh-muted);
   text-decoration: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 body.resin-home .site-nav--tree .nav-tree__sublink:hover {
@@ -1599,6 +1626,38 @@ body.resin-home .rh-shop-catalog {
   background:
     radial-gradient(120% 100% at 100% 0%, color-mix(in srgb, var(--rh-primary) 8%, transparent), transparent 58%),
     color-mix(in srgb, var(--rh-surface) 40%, var(--rh-bg));
+}
+
+body.resin-home .rh-vendor-index {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 var(--rh-step-4);
+}
+
+@media (min-width: 760px) {
+  body.resin-home .rh-vendor-index {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.resin-home .rh-vendor-index__card {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow);
+  padding: 0.9rem;
+}
+
+body.resin-home .rh-vendor-index__card h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--rh-display);
+  letter-spacing: -0.02em;
+}
+
+body.resin-home .rh-vendor-index__card p {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  color: var(--rh-muted);
 }
 
 body.resin-home .rh-shop-toolbar {
