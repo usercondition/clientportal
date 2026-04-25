@@ -57,7 +57,7 @@
           <p class="rh-kicker">Storefront checkout</p>
           <h1 id="checkout-page-title" class="rh-h2">Complete your order</h1>
           <p class="rh-lede">
-            Review your cart, submit your order details, and complete payment via PayPal, Venmo, or Cash App.
+            Review your cart, submit your order details, and continue to secure Stripe checkout.
           </p>
         </div>
       </section>
@@ -91,14 +91,6 @@
               <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
             </label>
             <label>
-              Preferred payment method
-              <select name="paymentMethod" required>
-                <option value="paypal">PayPal</option>
-                <option value="venmo">Venmo</option>
-                <option value="cash_app">Cash App</option>
-              </select>
-            </label>
-            <label>
               Shipping city/state (optional)
               <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
             </label>
@@ -112,12 +104,9 @@
               ></textarea>
             </label>
             <p class="rh-shop-checkout__policy">Full payment only — no deposits or partial payments.</p>
-            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit purchase request</button>
+            <p class="rh-shop-checkout__policy">Card payments are processed securely by Stripe.</p>
+            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Continue to secure checkout</button>
             <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
-            <div id="shop-payment-next" class="rh-shop-payment-next" hidden>
-              <p class="rh-shop-payment-next__title">Complete payment</p>
-              <div id="shop-payment-links" class="rh-shop-payment-next__links"></div>
-            </div>
           </form>
         </div>
       </section>

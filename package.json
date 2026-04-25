@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "db:migrate": "node scripts/migrate.js",
-    "test:payment": "node scripts/test-payment-options.js"
+    "db:migrate": "node scripts/migrate.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +28,7 @@
     "express": "^5.2.1",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.5",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "stripe": "^22.1.0"
   }
 }

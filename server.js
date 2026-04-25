@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const nodemailer = require("nodemailer");
+const Stripe = require("stripe");
 const { Pool } = require("pg");
 require("dotenv").config({ quiet: true });
 
@@ -15,6 +16,18 @@ const SUPPORT_BOT_SAMPLER_ENABLED =
   String(process.env.SUPPORT_BOT_SAMPLER_ENABLED || "").toLowerCase() === "true";
 const MARKETPLACE_SYNC_ENABLED =
   String(process.env.MARKETPLACE_SYNC_ENABLED || "").toLowerCase() === "true";
+const STRIPE_SECRET_KEY = String(process.env.STRIPE_SECRET_KEY || "").trim();
+const STRIPE_WEBHOOK_SECRET = String(process.env.STRIPE_WEBHOOK_SECRET || "").trim();
+const STRIPE_CURRENCY = String(process.env.STRIPE_CURRENCY || "usd")
+  .trim()
+  .toLowerCase();
+let stripeClient = null;
+
+function getStripeClient() {
+  if (!STRIPE_SECRET_KEY) return null;
+  if (!stripeClient) stripeClient = new Stripe(STRIPE_SECRET_KEY);
+  return stripeClient;
+}
 /** Trim and strip accidental wrapping quotes from Railway / .env pastes. */
 function normalizeMarketplaceSyncToken(raw) {
   let s = String(raw || "").trim();
@@ -384,6 +397,77 @@ app.use((req, res, next) => {
   next();
 });
 
+app.post("/api/shop/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const stripe = getStripeClient();
+  if (!stripe || !STRIPE_WEBHOOK_SECRET) {
+    return res.status(503).json({ error: "Stripe webhook is not configured." });
+  }
+  const sig = String(req.headers["stripe-signature"] || "");
+  if (!sig) return res.status(400).send("Missing Stripe signature");
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const amount = Number(session.amount_total || 0) / 100;
+      const customerEmail = String(session.customer_details && session.customer_details.email ? session.customer_details.email : "").trim();
+      const customerName = String(session.customer_details && session.customer_details.name ? session.customer_details.name : "").trim();
+      const lines = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+      const itemLines = (lines.data || []).map((li) => {
+        const qty = Number(li.quantity || 1);
+        const unit = Number(li.price && li.price.unit_amount ? li.price.unit_amount : 0) / 100;
+        const total = Number(li.amount_total || 0) / 100;
+        return `- ${li.description || "Item"} x${qty} @ $${unit.toFixed(2)} = $${total.toFixed(2)}`;
+      });
+
+      const adminSubject = `Stripe payment completed — ${customerName || customerEmail || "customer"} — $${amount.toFixed(2)}`;
+      const adminText = [
+        "Stripe checkout payment completed",
+        "",
+        `Session ID: ${session.id}`,
+        customerName ? `Customer: ${customerName}` : "",
+        customerEmail ? `Email: ${customerEmail}` : "",
+        "",
+        "Items:",
+        ...itemLines,
+        "",
+        `Paid total: $${amount.toFixed(2)} ${String(session.currency || STRIPE_CURRENCY).toUpperCase()}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      queueNotifyEmail(resolveAdminNotifyEmail(), adminSubject, adminText, customerEmail ? { replyTo: customerEmail } : undefined);
+
+      if (customerEmail) {
+        const customerSubject = `Steindahl 3D Group — Payment received ($${amount.toFixed(2)})`;
+        const customerText = [
+          `Hi ${customerName || "there"},`,
+          "",
+          "We received your payment successfully via Stripe.",
+          "",
+          "Order items:",
+          ...itemLines,
+          "",
+          `Paid total: $${amount.toFixed(2)} ${String(session.currency || STRIPE_CURRENCY).toUpperCase()}`,
+          "",
+          "Thank you for your order.",
+        ].join("\n");
+        queueNotifyEmail(customerEmail, customerSubject, customerText, { replyTo: resolveAdminReplyEmail() });
+      }
+    }
+  } catch (err) {
+    console.error("[stripe/webhook] handler error:", err && err.message);
+    return res.status(500).send("Webhook handler failed");
+  }
+
+  return res.json({ received: true });
+});
+
 // Slightly higher than default: marketplace sync payloads may include many thread rows.
 app.use(express.json({ limit: "2mb" }));
 
@@ -531,7 +615,6 @@ const ORDER_SERVICE_TYPES = new Set([
 const ORDER_SHIPPING_PREFS = new Set(["pickup", "ship_on_file", "discuss"]);
 const PAYMENT_METHODS = new Set(["paypal", "venmo", "zelle", "cash_app"]);
 const PAYMENT_FEE_METHODS = new Set(["paypal", "venmo"]);
-const SHOP_CHECKOUT_METHODS = new Set(["paypal", "venmo", "cash_app"]);
 const PAYMENT_FEE_BPS = 400;
 const ADMIN_QUOTABLE_STATUSES = new Set(["submitted", "in_progress", "awaiting_client"]);
 
@@ -823,19 +906,20 @@ app.post("/api/contact", async (req, res) => {
   return res.status(202).json({ ok: true });
 });
 
-app.post("/api/shop/checkout", async (req, res) => {
-  if (!createMailTransport()) {
+app.post("/api/shop/create-checkout-session", async (req, res) => {
+  const stripe = getStripeClient();
+  if (!stripe) {
     return res.status(503).json({
-      error: "Checkout email is not configured yet. Please set SMTP settings on the server.",
+      error: "Stripe is not configured yet. Add STRIPE_SECRET_KEY on the server.",
     });
   }
+
   const body = req.body && typeof req.body === "object" ? req.body : {};
   const customer = body.customer && typeof body.customer === "object" ? body.customer : {};
   const name = String(customer.name || "").trim();
   const email = String(customer.email || "").trim();
   const phone = String(customer.phone || "").trim();
   const shippingRegion = String(customer.shippingRegion || "").trim();
-  const paymentMethod = String(body.paymentMethod || "").trim();
   const notes = String(body.notes || "").trim();
   const rawItems = Array.isArray(body.items) ? body.items : [];
 
@@ -844,9 +928,6 @@ app.post("/api/shop/checkout", async (req, res) => {
   }
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: "Enter a valid email address." });
-  }
-  if (!SHOP_CHECKOUT_METHODS.has(paymentMethod)) {
-    return res.status(400).json({ error: "Choose PayPal, Venmo, or Cash App for shop checkout." });
   }
   if (notes.length > 2000) {
     return res.status(400).json({ error: "Notes cannot exceed 2000 characters." });
@@ -876,67 +957,52 @@ app.post("/api/shop/checkout", async (req, res) => {
     return res.status(400).json({ error: "Checkout can include up to 40 line items." });
   }
 
-  const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
-  const subtotalStr = subtotal.toFixed(2);
-  const paymentLabel = paymentMethod.replace("_", " ").toUpperCase();
-  const lines = items.map((it) => {
-    return `- ${it.name} (${it.sku}) x${it.quantity} @ $${it.unitPrice.toFixed(2)} = $${(it.quantity * it.unitPrice).toFixed(2)}`;
-  });
-
-  const subject = `Shop checkout request — ${name} — $${subtotalStr}`;
-  const text = [
-    "New shop checkout request",
-    "",
-    `Customer: ${name}`,
-    `Email: ${email}`,
-    phone ? `Phone: ${phone}` : "",
-    shippingRegion ? `Shipping region: ${shippingRegion}` : "",
-    `Preferred payment method: ${paymentLabel}`,
-    "",
-    "Requested items:",
-    ...lines,
-    "",
-    `Estimated subtotal: $${subtotalStr}`,
-    notes ? "" : "",
-    notes ? "Notes:" : "",
-    notes || "",
-    "",
-    "Policy: Full payment only (no deposits).",
-    emailTemplates.baseUrl() ? `Website: ${emailTemplates.baseUrl()}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-  queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, { replyTo: email });
-
-  const clientSubject = `Steindahl 3D Group — Shop request received ($${subtotalStr})`;
-  const clientText = [
-    `Hi ${name},`,
-    "",
-    "We received your shop purchase request. Our team will confirm availability, shipping, and send final invoice/payment instructions.",
-    "",
-    "Your requested items:",
-    ...lines,
-    "",
-    `Estimated subtotal: $${subtotalStr}`,
-    `Preferred payment method: ${paymentLabel}`,
-    "",
-    "Policy reminder: full payment is required (no deposits).",
-    "",
-    "Reply to this email if you need to edit quantities before final confirmation.",
-  ].join("\n");
-  queueNotifyEmail(email, clientSubject, clientText, { replyTo: resolveAdminReplyEmail() });
-
-  const studio = readStudioPaymentEnv();
-  const links = studio && studio.links && typeof studio.links === "object" ? studio.links : {};
-  return res.status(202).json({
-    ok: true,
-    estimatedSubtotal: subtotalStr,
-    selectedMethod: paymentMethod,
-    paymentOptions: {
-      paypal: links.paypal || null,
-      venmo: links.venmo || null,
-      cash_app: links.cashApp || null,
+  const lineItems = items.map((it) => ({
+    quantity: it.quantity,
+    price_data: {
+      currency: STRIPE_CURRENCY,
+      product_data: {
+        name: it.name,
+        metadata: { sku: it.sku },
+      },
+      unit_amount: Math.round(it.unitPrice * 100),
     },
+  }));
+
+  const baseUrl =
+    emailTemplates.baseUrl() ||
+    String(process.env.PUBLIC_SITE_URL || "").trim() ||
+    `${req.protocol}://${req.get("host")}`;
+  const successUrl = `${baseUrl.replace(/\/+$/, "")}/shop-checkout.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${baseUrl.replace(/\/+$/, "")}/shop-checkout.html?checkout=cancelled`;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: email,
+      line_items: lineItems,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      billing_address_collection: "auto",
+      payment_method_types: ["card"],
+      phone_number_collection: { enabled: true },
+      metadata: {
+        customer_name: name.slice(0, 120),
+        customer_phone: phone.slice(0, 40),
+        shipping_region: shippingRegion.slice(0, 120),
+        notes: notes.slice(0, 500),
+      },
+    });
+    return res.status(201).json({ ok: true, url: session.url, sessionId: session.id });
+  } catch (err) {
+    console.error("[shop/stripe] checkout session failed:", err && err.message);
+    return res.status(500).json({ error: "Could not create Stripe checkout session." });
+  }
+});
+
+app.post("/api/shop/checkout", async (_req, res) => {
+  return res.status(410).json({
+    error: "Legacy checkout endpoint was removed. Use /api/shop/create-checkout-session.",
   });
 });
 

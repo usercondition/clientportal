@@ -1,4 +1,4 @@
-/* Dedicated checkout page behavior (cart rendering + submission + payment links). */
+/* Dedicated checkout page behavior (cart rendering + Stripe session redirect). */
 (function () {
   var CART_KEY = "shop_cart_v1";
   var cartList = document.getElementById("shop-cart-list");
@@ -8,8 +8,6 @@
   var checkoutForm = document.getElementById("shop-checkout-form");
   var checkoutStatus = document.getElementById("shop-checkout-status");
   var checkoutSubmit = document.getElementById("shop-checkout-submit");
-  var paymentNext = document.getElementById("shop-payment-next");
-  var paymentLinks = document.getElementById("shop-payment-links");
   if (!cartList || !cartTotal || !checkoutForm) return;
 
   /** @type {Record<string, { sku: string; name: string; price: number; qty: number }>} */
@@ -75,7 +73,7 @@
   function setSubmitting(on) {
     if (!checkoutSubmit) return;
     checkoutSubmit.disabled = !!on;
-    checkoutSubmit.textContent = on ? "Submitting..." : "Submit purchase request";
+    checkoutSubmit.textContent = on ? "Redirecting..." : "Continue to secure checkout";
   }
 
   function renderCart() {
@@ -139,6 +137,22 @@
     renderCart();
   });
 
+  function updateStatusFromQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      var state = String(params.get("checkout") || "").trim().toLowerCase();
+      if (state === "success") {
+        Object.keys(cart).forEach(function (k) {
+          delete cart[k];
+        });
+        persistCart();
+        setCheckoutStatus("Payment successful. Thank you for your order!", "success");
+      } else if (state === "cancelled") {
+        setCheckoutStatus("Checkout was cancelled. You can try again whenever you are ready.", "error");
+      }
+    } catch (_e) {}
+  }
+
   checkoutForm.addEventListener("submit", async function (e) {
     e.preventDefault();
     var items = cartItems();
@@ -150,7 +164,6 @@
     var fd = new FormData(checkoutForm);
     var name = normalizedText(fd.get("name"));
     var email = normalizedText(fd.get("email"));
-    var paymentMethod = normalizedText(fd.get("paymentMethod"));
     if (name.length < 2) {
       setCheckoutStatus("Please enter your name.", "error");
       return;
@@ -159,17 +172,10 @@
       setCheckoutStatus("Please enter a valid email.", "error");
       return;
     }
-    if (!paymentMethod) {
-      setCheckoutStatus("Please choose a payment method.", "error");
-      return;
-    }
-
     setCheckoutStatus("");
-    if (paymentNext) paymentNext.hidden = true;
-    if (paymentLinks) paymentLinks.innerHTML = "";
     setSubmitting(true);
     try {
-      var resp = await fetch("/api/shop/checkout", {
+      var resp = await fetch("/api/shop/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -179,7 +185,6 @@
             phone: normalizedText(fd.get("phone")),
             shippingRegion: normalizedText(fd.get("shippingRegion")),
           },
-          paymentMethod: paymentMethod,
           notes: normalizedText(fd.get("notes")),
           items: items.map(function (it) {
             return { sku: it.sku, name: it.name, quantity: it.qty, unitPrice: it.price };
@@ -194,37 +199,11 @@
         setCheckoutStatus((data && data.error) || "Could not submit checkout. Please try again.", "error");
         return;
       }
-
-      Object.keys(cart).forEach(function (k) {
-        delete cart[k];
-      });
-      persistCart();
-      renderCart();
-      checkoutForm.reset();
-      setCheckoutStatus("Purchase request submitted. Complete payment below.", "success");
-
-      if (paymentNext && paymentLinks && data && data.paymentOptions) {
-        var options = data.paymentOptions || {};
-        var selected = data.selectedMethod || "";
-        var preferred = options[selected] ? [selected] : [];
-        var ordered = preferred.concat(["paypal", "venmo", "cash_app"].filter(function (m) { return preferred.indexOf(m) < 0; }));
-        var labels = { paypal: "Pay with PayPal", venmo: "Pay with Venmo", cash_app: "Pay with Cash App" };
-        paymentLinks.innerHTML = ordered
-          .filter(function (m) {
-            return options[m] && String(options[m]).trim();
-          })
-          .map(function (m) {
-            return (
-              '<a class="rh-btn rh-btn--ghost" href="' +
-              String(options[m]).replace(/"/g, "&quot;") +
-              '" target="_blank" rel="noopener noreferrer">' +
-              labels[m] +
-              "</a>"
-            );
-          })
-          .join("");
-        paymentNext.hidden = paymentLinks.innerHTML.length === 0;
+      if (!data || !data.url) {
+        setCheckoutStatus("Checkout session was created but no redirect URL was returned.", "error");
+        return;
       }
+      window.location.href = data.url;
     } catch (_err) {
       setCheckoutStatus("Could not reach the server. Please try again shortly.", "error");
     } finally {
@@ -232,5 +211,6 @@
     }
   });
 
+  updateStatusFromQuery();
   renderCart();
 })();
