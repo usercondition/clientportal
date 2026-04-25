@@ -119,6 +119,16 @@
                 Bundles
               </button>
             </div>
+            <p class="rh-shop-results" id="shop-results-count">Showing 0 items</p>
+            <label class="rh-shop-sort">
+              <span class="rh-sr-only">Sort products</span>
+              <select id="shop-sort">
+                <option value="featured" selected>Sort: Featured</option>
+                <option value="price_low">Price: Low to high</option>
+                <option value="price_high">Price: High to low</option>
+                <option value="name_asc">Name: A to Z</option>
+              </select>
+            </label>
             <label class="rh-shop-search">
               <span class="rh-sr-only">Search catalog</span>
               <input
@@ -130,8 +140,9 @@
               />
             </label>
           </div>
-
-          <div class="rh-shop-grid" id="shop-grid" aria-live="polite">
+          <div class="rh-shop-storefront">
+            <div class="rh-shop-storefront__main">
+              <div class="rh-shop-grid" id="shop-grid" aria-live="polite">
             <article class="rh-shop-card" data-cat="fantasy" data-search="stormguard sentinels squad 32mm">
               <div class="rh-shop-card__thumb">
                 <img src="assets/resin-gallery-01.png" alt="Stormguard Sentinels squad pack" width="800" height="800" loading="lazy" decoding="async" />
@@ -257,9 +268,17 @@
                 </button>
               </div>
             </article>
+              </div>
+              <p class="rh-shop-empty" id="shop-empty" hidden>No products match your filters. Try another category or clear search.</p>
+            </div>
+            <aside class="rh-shop-storefront__aside" aria-label="Cart summary">
+              <h3>Your cart</h3>
+              <p><strong id="shop-cart-count-top">0 items</strong></p>
+              <p class="rh-shop-storefront__subtotal" id="shop-cart-subtotal-top">$0.00 subtotal</p>
+              <a class="rh-btn rh-btn--primary" href="#checkout">Go to checkout</a>
+              <p class="rh-shop-storefront__note">Checkout supports PayPal, Venmo, and Cash App.</p>
+            </aside>
           </div>
-
-          <p class="rh-shop-empty" id="shop-empty" hidden>No products match your filters. Try another category or clear search.</p>
         </div>
       </section>
 
@@ -293,7 +312,6 @@
               <select name="paymentMethod" required>
                 <option value="paypal">PayPal</option>
                 <option value="venmo">Venmo</option>
-                <option value="zelle">Zelle</option>
                 <option value="cash_app">Cash App</option>
               </select>
             </label>
@@ -315,6 +333,10 @@
             </p>
             <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit purchase request</button>
             <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
+            <div id="shop-payment-next" class="rh-shop-payment-next" hidden>
+              <p class="rh-shop-payment-next__title">Complete payment</p>
+              <div id="shop-payment-links" class="rh-shop-payment-next__links"></div>
+            </div>
           </form>
         </div>
       </section>

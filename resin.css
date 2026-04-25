@@ -1230,9 +1230,67 @@ body.resin-home .rh-sr-only {
 
 @media (min-width: 860px) {
   body.resin-home .rh-shop-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    grid-template-columns: minmax(0, 1fr) auto minmax(200px, 240px) minmax(220px, 320px);
     align-items: center;
   }
+}
+
+body.resin-home .rh-shop-results {
+  margin: 0;
+  color: var(--rh-muted);
+  font-size: 0.84rem;
+}
+
+body.resin-home .rh-shop-sort select {
+  width: 100%;
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius-sm);
+  padding: 0.62rem 0.72rem;
+  font: inherit;
+  color: var(--rh-text);
+  background: var(--rh-surface);
+}
+
+body.resin-home .rh-shop-storefront {
+  display: grid;
+  gap: var(--rh-step-4);
+}
+
+@media (min-width: 980px) {
+  body.resin-home .rh-shop-storefront {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+    align-items: start;
+  }
+}
+
+body.resin-home .rh-shop-storefront__aside {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow);
+  padding: 0.85rem;
+  position: sticky;
+  top: 5rem;
+}
+
+body.resin-home .rh-shop-storefront__aside h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--rh-display);
+  letter-spacing: -0.02em;
+}
+
+body.resin-home .rh-shop-storefront__aside p {
+  margin: 0 0 0.35rem;
+}
+
+body.resin-home .rh-shop-storefront__subtotal {
+  color: var(--rh-muted);
+  font-size: 0.85rem;
+}
+
+body.resin-home .rh-shop-storefront__note {
+  color: var(--rh-muted);
+  font-size: 0.78rem;
 }
 
 body.resin-home .rh-shop-filter-group {
@@ -1530,6 +1588,23 @@ body.resin-home .rh-shop-checkout__policy {
   margin: 0;
   color: var(--rh-muted);
   font-size: 0.82rem;
+}
+
+body.resin-home .rh-shop-payment-next {
+  border-top: 1px solid color-mix(in srgb, var(--rh-border) 85%, transparent);
+  padding-top: 0.65rem;
+}
+
+body.resin-home .rh-shop-payment-next__title {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-shop-payment-next__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 body.resin-home .rh-shop-ordering__grid {

@@ -531,6 +531,7 @@ const ORDER_SERVICE_TYPES = new Set([
 const ORDER_SHIPPING_PREFS = new Set(["pickup", "ship_on_file", "discuss"]);
 const PAYMENT_METHODS = new Set(["paypal", "venmo", "zelle", "cash_app"]);
 const PAYMENT_FEE_METHODS = new Set(["paypal", "venmo"]);
+const SHOP_CHECKOUT_METHODS = new Set(["paypal", "venmo", "cash_app"]);
 const PAYMENT_FEE_BPS = 400;
 const ADMIN_QUOTABLE_STATUSES = new Set(["submitted", "in_progress", "awaiting_client"]);
 
@@ -844,8 +845,8 @@ app.post("/api/shop/checkout", async (req, res) => {
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: "Enter a valid email address." });
   }
-  if (!PAYMENT_METHODS.has(paymentMethod)) {
-    return res.status(400).json({ error: "Choose a valid payment method." });
+  if (!SHOP_CHECKOUT_METHODS.has(paymentMethod)) {
+    return res.status(400).json({ error: "Choose PayPal, Venmo, or Cash App for shop checkout." });
   }
   if (notes.length > 2000) {
     return res.status(400).json({ error: "Notes cannot exceed 2000 characters." });
@@ -925,7 +926,18 @@ app.post("/api/shop/checkout", async (req, res) => {
   ].join("\n");
   queueNotifyEmail(email, clientSubject, clientText, { replyTo: resolveAdminReplyEmail() });
 
-  return res.status(202).json({ ok: true, estimatedSubtotal: subtotalStr });
+  const studio = readStudioPaymentEnv();
+  const links = studio && studio.links && typeof studio.links === "object" ? studio.links : {};
+  return res.status(202).json({
+    ok: true,
+    estimatedSubtotal: subtotalStr,
+    selectedMethod: paymentMethod,
+    paymentOptions: {
+      paypal: links.paypal || null,
+      venmo: links.venmo || null,
+      cash_app: links.cashApp || null,
+    },
+  });
 });
 
 app.post("/api/client/login", async (req, res) => {
