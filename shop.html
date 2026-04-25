@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-marketing="resin">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script src="theme.js"></script>
+    <meta name="theme-color" content="#faf8ff" />
+    <meta
+      name="description"
+      content="Shop authorized reseller miniatures from Steindahl 3D Group. Browse catalog categories, pricing tiers, and reserve directly."
+    />
+    <title>Shop Minis — Steindahl 3D Group</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="resin.css" />
+  </head>
+  <body class="resin-home rh-shop-page">
+    <a class="skip-link" href="#shop-main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="header-start">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand__mark" aria-hidden="true"></span>
+            <span class="site-brand__text">Steindahl 3D Group</span>
+          </a>
+          <a class="admin-entry admin-entry--header" href="admin.html">Staff</a>
+        </div>
+        <div class="header-actions">
+          <nav id="site-nav" class="site-nav" aria-label="Primary">
+            <ul class="nav-list">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="#catalog">Catalog</a></li>
+              <li><a href="#how-to-order">How to order</a></li>
+              <li><a href="index.html#contact">Custom jobs</a></li>
+            </ul>
+          </nav>
+          <a class="client-portal-entry" href="client-flow.html" aria-label="Open client portal to order or message">
+            <span class="client-portal-entry__full">Client portal</span>
+            <span class="client-portal-entry__short">Portal</span>
+          </a>
+          <button
+            type="button"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="Open menu"
+          >
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="shop-main">
+      <section class="rh-shop-hero rh-section" aria-labelledby="shop-title">
+        <div class="rh-container rh-shop-hero__grid">
+          <div>
+            <p class="rh-hero__kicker">Authorized reseller catalog</p>
+            <h1 id="shop-title" class="rh-hero__title">Buy licensed minis directly from Steindahl 3D Group.</h1>
+            <p class="rh-hero__copy">
+              This page is dedicated to ready-to-order reseller miniatures. Custom jobs still run through the quote flow
+              on the main site and client portal.
+            </p>
+            <div class="rh-hero__actions">
+              <a class="rh-btn rh-btn--primary" href="#catalog">Browse catalog</a>
+              <a class="rh-btn rh-btn--ghost" href="client-flow.html">Reserve in portal</a>
+            </div>
+            <p class="rh-hero__note">
+              New drops and restocks are posted here first. Final invoice includes shipping and any applicable tax.
+            </p>
+          </div>
+          <figure class="rh-hero-visual">
+            <img
+              class="rh-hero-visual__img"
+              src="assets/resin-gallery-02.png"
+              alt="Featured hero miniature available through reseller catalog."
+              width="800"
+              height="800"
+              decoding="async"
+              fetchpriority="high"
+            />
+            <span class="rh-hero-visual__tag">In-stock + preorder mix</span>
+          </figure>
+        </div>
+      </section>
+
+      <section id="catalog" class="rh-shop-catalog rh-section" aria-labelledby="catalog-title">
+        <div class="rh-container">
+          <header class="rh-gallery__head">
+            <p class="rh-kicker">Shop catalog</p>
+            <h2 id="catalog-title" class="rh-h2">Reseller miniatures by category</h2>
+            <p class="rh-lede">Filter by collection and search by name, set, or scale.</p>
+          </header>
+
+          <div class="rh-shop-toolbar">
+            <div class="rh-shop-filter-group" role="tablist" aria-label="Shop categories">
+              <button type="button" class="rh-shop-chip is-active" data-filter="all" role="tab" aria-selected="true">
+                All
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="fantasy" role="tab" aria-selected="false">
+                Fantasy
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="scifi" role="tab" aria-selected="false">
+                Sci-fi
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="terrain" role="tab" aria-selected="false">
+                Terrain
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="bundle" role="tab" aria-selected="false">
+                Bundles
+              </button>
+            </div>
+            <label class="rh-shop-search">
+              <span class="rh-sr-only">Search catalog</span>
+              <input
+                id="shop-search"
+                type="search"
+                placeholder="Search minis, sets, scale..."
+                autocomplete="off"
+                inputmode="search"
+              />
+            </label>
+          </div>
+
+          <div class="rh-shop-grid" id="shop-grid" aria-live="polite">
+            <article class="rh-shop-card" data-cat="fantasy" data-search="stormguard sentinels squad 32mm">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-01.png" alt="Stormguard Sentinels squad pack" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Stormguard Sentinels Squad</h3>
+                <p>5-model fantasy infantry set · 32mm scale · licensed print.</p>
+                <div class="rh-shop-meta"><strong>From $34</strong><span>SKU: FNT-SG-05</span></div>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="fantasy bundle" data-search="dragon vanguard command bundle 75mm">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-02.png" alt="Dragon Vanguard command bundle" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge rh-shop-badge--preorder">Preorder</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Dragon Vanguard Command Bundle</h3>
+                <p>Hero, standard, and support unit combo · limited run release.</p>
+                <div class="rh-shop-meta"><strong>From $58</strong><span>SKU: FNT-DV-CMD</span></div>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="scifi" data-search="void skirmish mechs 28mm hard-surface">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-03.png" alt="Void skirmish mech pair" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Void Skirmish Mech Pair</h3>
+                <p>2 articulated hard-surface mechs · tabletop-ready sizing.</p>
+                <div class="rh-shop-meta"><strong>From $42</strong><span>SKU: SCI-MK2-PAIR</span></div>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="terrain" data-search="modular ruins set tiles walls">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-04.png" alt="Modular ruins wall pack" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Modular Ruins Walls Pack</h3>
+                <p>Interlocking terrain walls with optional detail inserts.</p>
+                <div class="rh-shop-meta"><strong>From $29</strong><span>SKU: TRN-RUIN-WP</span></div>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="scifi bundle" data-search="outpost defenders starter bundle 10 models">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-05.png" alt="Outpost defenders starter bundle" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge rh-shop-badge--low">Low stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Outpost Defenders Starter Bundle</h3>
+                <p>10-model sci-fi bundle with mixed troop and elite sculpts.</p>
+                <div class="rh-shop-meta"><strong>From $64</strong><span>SKU: SCI-ODS-10</span></div>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="terrain" data-search="dungeon tile set cavern resin">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-06.png" alt="Dungeon tile resin set" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Dungeon Tile Encounter Set</h3>
+                <p>Encounter-ready terrain kit for quick modular table builds.</p>
+                <div class="rh-shop-meta"><strong>From $36</strong><span>SKU: TRN-DGE-SET</span></div>
+              </div>
+            </article>
+          </div>
+
+          <p class="rh-shop-empty" id="shop-empty" hidden>No products match your filters. Try another category or clear search.</p>
+        </div>
+      </section>
+
+      <section id="how-to-order" class="rh-shop-ordering rh-section rh-section--tight" aria-labelledby="order-title">
+        <div class="rh-container rh-shop-ordering__grid">
+          <article class="rh-shop-ordering__card">
+            <p class="rh-kicker">How ordering works</p>
+            <h2 id="order-title" class="rh-h2">Simple direct ordering via portal</h2>
+            <ol>
+              <li>Browse the catalog and note item name / SKU.</li>
+              <li>Open the client portal and submit a new request with your item list.</li>
+              <li>We confirm availability, final pricing, and ship window.</li>
+            </ol>
+            <div class="rh-hero__actions">
+              <a class="rh-btn rh-btn--primary" href="client-flow.html">Start order request</a>
+              <a class="rh-btn rh-btn--ghost" href="index.html#contact">Need a custom quote?</a>
+            </div>
+          </article>
+          <aside class="rh-shop-ordering__note">
+            <h3>Catalog notes</h3>
+            <ul>
+              <li>Some items are stocked, others run as short preorders.</li>
+              <li>Painted examples may differ from shipped unpainted resin.</li>
+              <li>Catalog will expand over time with new licensed partners.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <span class="site-brand__mark site-brand__mark--footer" aria-hidden="true"></span>
+          <p>© <span id="year"></span> Steindahl 3D Group</p>
+        </div>
+        <p class="footer-note">Authorized reseller minis + custom resin jobs</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="shop.js"></script>
+  </body>
+</html>

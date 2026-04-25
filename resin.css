@@ -1189,3 +1189,264 @@ body.resin-home #main {
     gap: var(--rh-step-4);
   }
 }
+
+/* ——— Shop page ——— */
+body.resin-home.rh-shop-page .rh-shop-hero__grid {
+  display: grid;
+  gap: clamp(1.2rem, 3.5vw, 2rem);
+  align-items: center;
+}
+
+@media (min-width: 920px) {
+  body.resin-home.rh-shop-page .rh-shop-hero__grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+}
+
+body.resin-home .rh-shop-catalog {
+  border-block: 1px solid var(--rh-border);
+  background:
+    radial-gradient(120% 100% at 100% 0%, color-mix(in srgb, var(--rh-primary) 8%, transparent), transparent 58%),
+    color-mix(in srgb, var(--rh-surface) 40%, var(--rh-bg));
+}
+
+body.resin-home .rh-shop-toolbar {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: var(--rh-step-5);
+}
+
+body.resin-home .rh-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 860px) {
+  body.resin-home .rh-shop-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    align-items: center;
+  }
+}
+
+body.resin-home .rh-shop-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+body.resin-home .rh-shop-chip {
+  border: 1px solid var(--rh-border);
+  background: var(--rh-surface);
+  color: var(--rh-muted);
+  border-radius: 999px;
+  padding: 0.42rem 0.78rem;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+body.resin-home .rh-shop-chip:hover {
+  border-color: color-mix(in srgb, var(--rh-primary) 35%, var(--rh-border));
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-shop-chip.is-active {
+  background: color-mix(in srgb, var(--rh-primary) 14%, var(--rh-surface));
+  color: var(--rh-primary);
+  border-color: color-mix(in srgb, var(--rh-primary) 42%, var(--rh-border));
+}
+
+body.resin-home .rh-shop-search input {
+  width: 100%;
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius-sm);
+  padding: 0.62rem 0.72rem;
+  font: inherit;
+  color: var(--rh-text);
+  background: var(--rh-surface);
+}
+
+body.resin-home .rh-shop-search input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rh-primary) 45%, transparent);
+  outline-offset: 1px;
+}
+
+body.resin-home .rh-shop-grid {
+  display: grid;
+  gap: clamp(0.9rem, 2vw, 1.2rem);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 620px) {
+  body.resin-home .rh-shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 980px) {
+  body.resin-home .rh-shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+body.resin-home .rh-shop-card {
+  margin: 0;
+  border: 1px solid var(--rh-border);
+  border-radius: clamp(12px, 1.9vw, 18px) clamp(14px, 2.2vw, 22px) clamp(12px, 1.8vw, 16px) clamp(10px, 1.6vw, 14px);
+  background: var(--rh-surface);
+  overflow: clip;
+  box-shadow: var(--rh-shadow);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+body.resin-home .rh-shop-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--rh-primary) 26%, var(--rh-border));
+  box-shadow: var(--rh-shadow-md);
+}
+
+body.resin-home .rh-shop-card__thumb {
+  aspect-ratio: 1;
+  position: relative;
+  background: var(--rh-surface-2);
+  overflow: hidden;
+}
+
+body.resin-home .rh-shop-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+body.resin-home .rh-shop-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--rh-primary) 35%, var(--rh-border));
+  background: color-mix(in srgb, var(--rh-primary) 13%, var(--rh-surface));
+  color: var(--rh-primary);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+}
+
+body.resin-home .rh-shop-badge--preorder {
+  color: var(--rh-copper);
+  border-color: color-mix(in srgb, var(--rh-copper) 30%, var(--rh-border));
+  background: color-mix(in srgb, var(--rh-copper) 12%, var(--rh-surface));
+}
+
+body.resin-home .rh-shop-badge--low {
+  color: #b91c1c;
+  border-color: color-mix(in srgb, #b91c1c 30%, var(--rh-border));
+  background: color-mix(in srgb, #b91c1c 10%, var(--rh-surface));
+}
+
+body.resin-home .rh-shop-card__body {
+  padding: 0.78rem 0.82rem 0.9rem;
+}
+
+body.resin-home .rh-shop-card__body h3 {
+  margin: 0 0 0.28rem;
+  font-family: var(--rh-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--rh-text);
+}
+
+body.resin-home .rh-shop-card__body p {
+  margin: 0 0 0.52rem;
+  color: var(--rh-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+body.resin-home .rh-shop-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  font-size: 0.78rem;
+  color: var(--rh-muted);
+}
+
+body.resin-home .rh-shop-meta strong {
+  color: var(--rh-text);
+  font-size: 0.9rem;
+}
+
+body.resin-home .rh-shop-empty {
+  margin: var(--rh-step-4) 0 0;
+  color: var(--rh-muted);
+  font-size: 0.92rem;
+}
+
+body.resin-home .rh-shop-ordering__grid {
+  display: grid;
+  gap: var(--rh-step-4);
+}
+
+@media (min-width: 920px) {
+  body.resin-home .rh-shop-ordering__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 320px);
+    align-items: start;
+  }
+}
+
+body.resin-home .rh-shop-ordering__card,
+body.resin-home .rh-shop-ordering__note {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow);
+}
+
+body.resin-home .rh-shop-ordering__card {
+  padding: var(--rh-step-5);
+}
+
+body.resin-home .rh-shop-ordering__card ol {
+  margin: 0 0 var(--rh-step-4);
+  padding-left: 1.1rem;
+  color: var(--rh-muted);
+}
+
+body.resin-home .rh-shop-ordering__card li + li {
+  margin-top: 0.35rem;
+}
+
+body.resin-home .rh-shop-ordering__note {
+  padding: var(--rh-step-4);
+}
+
+body.resin-home .rh-shop-ordering__note h3 {
+  margin: 0 0 0.6rem;
+  font-family: var(--rh-display);
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+body.resin-home .rh-shop-ordering__note ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--rh-muted);
+}
+
+body.resin-home .rh-shop-ordering__note li + li {
+  margin-top: 0.35rem;
+}

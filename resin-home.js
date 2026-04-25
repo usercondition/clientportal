@@ -100,6 +100,7 @@
   function assistantCtas() {
     return (
       '<div class="rh-assistant__links">' +
+      '<a href="shop.html">Browse shop catalog</a>' +
       '<a href="#contact">Request a quote</a>' +
       '<a href="client-flow.html">Start client portal</a>' +
       '<a href="client-flow.html">Client sign in</a>' +
