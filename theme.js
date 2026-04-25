@@ -2,8 +2,8 @@
   var KEY = "site_theme_mode";
   var root = document.documentElement;
   /** Page chrome — must match styles.css :root / [data-theme="dark"] --bg */
-  var BG_PAGE_LIGHT = "#f2ebd8";
-  var BG_PAGE_DARK = "#323f4f";
+  var BG_PAGE_LIGHT = "#f5f5f4";
+  var BG_PAGE_DARK = "#09090b";
 
   function pageBackground(mode) {
     return mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;
