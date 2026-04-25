@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <script src="theme.js"></script>
-    <meta name="theme-color" content="#faf8ff" />
+    <meta name="theme-color" content="#f2f5f8" />
     <meta
       name="description"
       content="Custom resin 3D printing for tabletop miniatures, vehicles, bits, prototypes, and small-batch jobs. Clear communication and print-first quality."
@@ -31,7 +31,44 @@
             <span class="site-brand__text">Steindahl 3D Group</span>
           </a>
         </div>
-        <nav id="site-nav" class="site-nav site-nav--tree" aria-label="Primary"></nav>
+        <div class="site-sidebar__nav-wrap">
+          <nav id="site-nav" class="site-nav site-nav--tree" aria-label="Primary"></nav>
+        </div>
+        <div class="site-sidebar__dock">
+          <section class="rh-assistant" aria-label="Website assistant">
+            <button
+              type="button"
+              class="rh-assistant__fab"
+              id="rh-assistant-open"
+              aria-expanded="false"
+              aria-controls="rh-assistant-panel"
+            >
+              Chat with us
+            </button>
+            <div class="rh-assistant__panel" id="rh-assistant-panel" hidden>
+              <header class="rh-assistant__head">
+                <h2 class="rh-assistant__title">Quick help assistant</h2>
+                <button type="button" class="rh-assistant__close" id="rh-assistant-close" aria-label="Close assistant">
+                  Close
+                </button>
+              </header>
+              <div class="rh-assistant__thread" id="rh-assistant-thread" role="log" aria-live="polite"></div>
+              <form class="rh-assistant__compose" id="rh-assistant-form" novalidate>
+                <label class="rh-assistant__sr-only" for="rh-assistant-input">Ask a question</label>
+                <textarea
+                  id="rh-assistant-input"
+                  rows="2"
+                  maxlength="700"
+                  placeholder="Ask about quotes, timeline, or getting started..."
+                ></textarea>
+                <div class="rh-assistant__actions">
+                  <button type="submit" class="rh-btn rh-btn--primary">Send</button>
+                </div>
+              </form>
+            </div>
+          </section>
+          <div id="theme-toggle-root"></div>
+        </div>
         <div class="site-sidebar__footer">
           <a class="admin-entry" href="admin.html">Staff</a>
         </div>
@@ -518,39 +555,6 @@
         </footer>
       </div>
     </div>
-
-    <section class="rh-assistant" aria-label="Website assistant">
-      <button
-        type="button"
-        class="rh-assistant__fab"
-        id="rh-assistant-open"
-        aria-expanded="false"
-        aria-controls="rh-assistant-panel"
-      >
-        Chat with us
-      </button>
-      <div class="rh-assistant__panel" id="rh-assistant-panel" hidden>
-        <header class="rh-assistant__head">
-          <h2 class="rh-assistant__title">Quick help assistant</h2>
-          <button type="button" class="rh-assistant__close" id="rh-assistant-close" aria-label="Close assistant">
-            Close
-          </button>
-        </header>
-        <div class="rh-assistant__thread" id="rh-assistant-thread" role="log" aria-live="polite"></div>
-        <form class="rh-assistant__compose" id="rh-assistant-form" novalidate>
-          <label class="rh-assistant__sr-only" for="rh-assistant-input">Ask a question</label>
-          <textarea
-            id="rh-assistant-input"
-            rows="2"
-            maxlength="700"
-            placeholder="Ask about quotes, timeline, or getting started..."
-          ></textarea>
-          <div class="rh-assistant__actions">
-            <button type="submit" class="rh-btn rh-btn--primary">Send</button>
-          </div>
-        </form>
-      </div>
-    </section>
 
     <script src="script.js" defer></script>
     <script src="cart-nav.js" defer></script>

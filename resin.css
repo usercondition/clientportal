@@ -1,22 +1,22 @@
 /**
  * Resin marketing homepage — scoped to body.resin-home only.
- * Violet / indigo theme (matches styles.css).
+ * Cool slate + sky / cyan (aligned with styles.css).
  */
 
 /* Light */
 body.resin-home {
-  --rh-bg: #faf8ff;
+  --rh-bg: #f2f5f8;
   --rh-surface: #ffffff;
-  --rh-surface-2: #ede9fe;
-  --rh-text: #1e1b4b;
+  --rh-surface-2: #e8eef7;
+  --rh-text: #0f172a;
   --rh-muted: #64748b;
-  --rh-primary: #6d28d9;
-  --rh-primary-hover: #5b21b6;
-  --rh-copper: #c2410c;
+  --rh-primary: #0369a1;
+  --rh-primary-hover: #075985;
+  --rh-copper: #b45309;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
-  --rh-border: #e7e2ef;
-  --rh-shadow: 0 2px 14px color-mix(in srgb, #6d28d9 6%, rgba(15, 10, 30, 0.08));
-  --rh-shadow-md: 0 12px 36px color-mix(in srgb, #6d28d9 8%, rgba(15, 10, 30, 0.1));
+  --rh-border: #e2e8f0;
+  --rh-shadow: 0 2px 14px color-mix(in srgb, #0369a1 7%, rgba(15, 23, 42, 0.08));
+  --rh-shadow-md: 0 12px 36px color-mix(in srgb, #0369a1 9%, rgba(15, 23, 42, 0.1));
   --rh-radius: 12px;
   --rh-radius-sm: 8px;
   --rh-max: 1080px;
@@ -33,16 +33,16 @@ body.resin-home {
 
 /* Dark */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #0f0a1e;
-  --rh-surface: #1a1329;
-  --rh-surface-2: #251d3a;
-  --rh-text: #f5f3ff;
-  --rh-muted: #a1a1aa;
-  --rh-primary: #c4b5fd;
-  --rh-primary-hover: #ddd6fe;
-  --rh-copper: #fb923c;
+  --rh-bg: #0b1220;
+  --rh-surface: #111827;
+  --rh-surface-2: #1a2744;
+  --rh-text: #f1f5f9;
+  --rh-muted: #94a3b8;
+  --rh-primary: #38bdf8;
+  --rh-primary-hover: #7dd3fc;
+  --rh-copper: #fbbf24;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
-  --rh-border: #352f4a;
+  --rh-border: #1e293b;
   --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.42);
   --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.52);
 }
@@ -148,13 +148,13 @@ body.resin-home .theme-toggle:hover {
 body.resin-home.marketing-layout {
   background-color: var(--rh-bg);
   background-image:
-    radial-gradient(1200px 520px at 18% -8%, color-mix(in srgb, var(--rh-primary) 14%, transparent), transparent 58%),
-    radial-gradient(900px 420px at 92% 8%, color-mix(in srgb, var(--rh-copper) 10%, transparent), transparent 55%),
+    radial-gradient(1100px 500px at 14% -6%, color-mix(in srgb, var(--rh-primary) 11%, transparent), transparent 56%),
+    radial-gradient(880px 400px at 94% 6%, color-mix(in srgb, var(--rh-copper) 8%, transparent), transparent 52%),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--rh-surface) 55%, var(--rh-bg)) 0%,
-      var(--rh-bg) 38%,
-      color-mix(in srgb, var(--rh-surface-2) 22%, var(--rh-bg)) 100%
+      color-mix(in srgb, var(--rh-surface) 50%, var(--rh-bg)) 0%,
+      var(--rh-bg) 40%,
+      color-mix(in srgb, var(--rh-surface-2) 18%, var(--rh-bg)) 100%
     );
 }
 
@@ -169,6 +169,7 @@ body.resin-home.marketing-layout {
 @media (min-width: 901px) {
   .marketing-shell {
     grid-template-columns: min(17.5rem, 26vw) minmax(0, 1fr);
+    align-items: start;
   }
 }
 
@@ -177,7 +178,7 @@ body.resin-home.marketing-layout {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: color-mix(in srgb, #0f0a1e 52%, transparent);
+  background: color-mix(in srgb, #0f172a 52%, transparent);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease;
@@ -196,11 +197,54 @@ body.resin-home.marketing-layout {
   z-index: 70;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem 1rem 1.25rem;
+  gap: 0.65rem;
+  padding: 1rem 1rem 1.1rem;
   border-right: 1px solid var(--rh-border);
   background: color-mix(in srgb, var(--rh-surface) 88%, var(--rh-bg));
   box-shadow: inset -1px 0 0 color-mix(in srgb, var(--rh-primary) 6%, transparent);
+}
+
+@media (min-width: 901px) {
+  .site-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+.site-sidebar__nav-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+  margin-right: -0.15rem;
+}
+
+.site-sidebar__dock {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed color-mix(in srgb, var(--rh-border) 88%, var(--rh-primary));
+}
+
+#theme-toggle-root {
+  width: 100%;
+  display: block;
+}
+
+body.resin-home .site-sidebar__dock .theme-toggle {
+  min-height: 2.65rem;
+  width: 100%;
+  border-radius: var(--rh-radius-sm);
 }
 
 @media (max-width: 900px) {
@@ -214,10 +258,14 @@ body.resin-home.marketing-layout {
     transform: translateX(-104%);
     transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: var(--rh-shadow-md);
-    overflow: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     overscroll-behavior: contain;
     padding-top: max(1rem, env(safe-area-inset-top, 0px));
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    min-height: unset;
+    max-height: unset;
   }
 
   .marketing-shell.is-sidebar-open .site-sidebar {
@@ -231,9 +279,9 @@ body.resin-home.marketing-layout {
 }
 
 .site-sidebar__footer {
-  margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px dashed color-mix(in srgb, var(--rh-border) 85%, var(--rh-primary));
+  flex: 0 0 auto;
+  padding-top: 0.55rem;
+  border-top: 1px solid color-mix(in srgb, var(--rh-border) 92%, var(--rh-primary));
 }
 
 .marketing-main {
@@ -448,7 +496,7 @@ body.resin-home .site-nav--tree .nav-tree__leaf.is-active .nav-tree__sublink {
 }
 
 html[data-theme="dark"] body.resin-home.marketing-layout .site-sidebar-backdrop {
-  background: color-mix(in srgb, #000 65%, transparent);
+  background: color-mix(in srgb, #020617 70%, transparent);
 }
 
 /* ——— Layout utility ——— */
@@ -1277,6 +1325,35 @@ body.resin-home .rh-assistant__sr-only {
   border: 0;
 }
 
+/* Assistant docked in sidebar (index) */
+body.resin-home .site-sidebar .rh-assistant {
+  position: relative;
+  inset: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 3;
+  width: 100%;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+body.resin-home .site-sidebar .rh-assistant__fab {
+  width: 100%;
+  max-width: none;
+  justify-content: center;
+}
+
+body.resin-home .site-sidebar .rh-assistant__panel {
+  width: 100%;
+  max-width: none;
+}
+
+body.resin-home .site-sidebar .rh-assistant__thread {
+  max-height: min(240px, 38vh);
+}
+
 /* Footer */
 body.resin-home .site-footer {
   border-top-color: var(--rh-border);
@@ -1320,7 +1397,7 @@ body.resin-home main a:focus-visible {
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary {
   color: #fff7ff;
-  border-color: color-mix(in srgb, var(--rh-primary) 55%, #3defff);
+  border-color: color-mix(in srgb, var(--rh-primary) 55%, #22d3ee);
   box-shadow:
     0 0 22px color-mix(in srgb, var(--rh-primary) 35%, transparent),
     var(--rh-shadow);
@@ -1481,6 +1558,19 @@ body.resin-home #main {
   body.resin-home .rh-assistant__thread {
     min-height: 150px;
     max-height: min(36vh, 260px);
+  }
+
+  body.resin-home .site-sidebar .rh-assistant {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  body.resin-home .site-sidebar .rh-assistant__fab {
+    width: 100%;
   }
 }
 

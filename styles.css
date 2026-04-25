@@ -1,21 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
 
-/* Design system — violet / indigo + teal (distinct from prior blue–zinc) */
+/* Design system — cool slate + sky / cyan */
 :root {
-  --palette-accent: #6d28d9;
-  --palette-accent-deep: #5b21b6;
-  --palette-accent-2: #0d9488;
-  --palette-ink: #1e1b4b;
+  --palette-accent: #0369a1;
+  --palette-accent-deep: #075985;
+  --palette-accent-2: #0e7490;
+  --palette-ink: #0f172a;
   --palette-muted: #64748b;
-  --palette-line: #e7e2ef;
+  --palette-line: #e2e8f0;
 
-  --bg: #faf8ff;
+  --bg: #f2f5f8;
   --bg-elevated: #ffffff;
   --text: var(--palette-ink);
   --text-muted: var(--palette-muted);
   --accent: var(--palette-accent);
   --accent-cyan: var(--palette-accent-2);
-  --accent-hot: #c2410c;
+  --accent-hot: #b45309;
   --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
   --border: var(--palette-line);
   --radius: 10px;
@@ -25,7 +25,7 @@
   --shadow: 0 20px 50px color-mix(in srgb, var(--palette-accent) 8%, rgba(15, 10, 30, 0.12));
   --shadow-sm: 0 4px 20px color-mix(in srgb, var(--palette-accent) 6%, rgba(15, 10, 30, 0.08));
   --shadow-neon: 0 12px 40px color-mix(in srgb, var(--accent) 22%, transparent);
-  --scrim: color-mix(in srgb, #1e1b4b 72%, #000 28%);
+  --scrim: color-mix(in srgb, #0f172a 72%, #000 28%);
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.2, 0.64, 1);
   --dur-fast: 0.14s;
@@ -36,40 +36,40 @@
   --space-gutter: clamp(0.875rem, 4.5vw, 1.25rem);
   --page-tint: color-mix(in srgb, var(--accent) 8%, transparent);
   --page-bg-image:
-    radial-gradient(980px 500px at 88% -6%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 50%),
-    radial-gradient(700px 400px at -8% 48%, color-mix(in srgb, var(--accent-cyan) 9%, transparent), transparent 46%),
-    linear-gradient(178deg, #ffffff 0%, var(--bg) 44%, #fdfcff 100%);
+    radial-gradient(960px 480px at 82% -4%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 52%),
+    radial-gradient(640px 380px at -6% 40%, color-mix(in srgb, var(--accent-cyan) 8%, transparent), transparent 48%),
+    linear-gradient(178deg, #ffffff 0%, var(--bg) 48%, #eef2f7 100%);
   --sem-success: #047857;
   --sem-danger: #b91c1c;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --palette-accent: #c4b5fd;
-  --palette-accent-deep: #7c3aed;
-  --palette-accent-2: #2dd4bf;
-  --palette-ink: #f5f3ff;
-  --palette-muted: #a1a1aa;
-  --palette-line: #352f4a;
+  --palette-accent: #38bdf8;
+  --palette-accent-deep: #0ea5e9;
+  --palette-accent-2: #22d3ee;
+  --palette-ink: #e2e8f0;
+  --palette-muted: #94a3b8;
+  --palette-line: #1e293b;
 
-  --bg: #0f0a1e;
-  --bg-elevated: #1a1329;
-  --text: #f5f3ff;
-  --text-muted: #a1a1aa;
-  --accent: #c4b5fd;
-  --accent-cyan: #2dd4bf;
-  --accent-hot: #fb923c;
+  --bg: #0b1220;
+  --bg-elevated: #111827;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-cyan: #22d3ee;
+  --accent-hot: #fbbf24;
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-  --border: #352f4a;
+  --border: #1e293b;
   --shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
   --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.4);
   --shadow-neon: 0 14px 44px color-mix(in srgb, var(--accent) 18%, transparent);
   --scrim: rgba(5, 3, 12, 0.78);
   --page-tint: color-mix(in srgb, var(--accent) 12%, transparent);
   --page-bg-image:
-    radial-gradient(820px 460px at 85% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 54%),
-    radial-gradient(560px 360px at 0% 52%, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent 48%),
-    linear-gradient(188deg, #120b22 0%, var(--bg) 50%, #181028 100%);
+    radial-gradient(820px 440px at 88% -8%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
+    radial-gradient(520px 320px at 0% 48%, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent 50%),
+    linear-gradient(188deg, #070d18 0%, var(--bg) 52%, #0f172a 100%);
   --sem-success: #34d399;
   --sem-danger: #fb7185;
 }
@@ -1296,11 +1296,28 @@ body.is-marketing-nav-open {
   transform: scale(0.97);
 }
 
+.site-sidebar__dock .theme-toggle {
+  position: relative;
+  inset: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: none;
+  z-index: 1;
+}
+
 @media (max-width: 899px) {
   .theme-toggle {
     left: max(var(--space-gutter), env(safe-area-inset-left, 0px));
     right: auto;
     bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .site-sidebar__dock .theme-toggle {
+    left: auto;
+    right: auto;
+    bottom: auto;
   }
 }
 

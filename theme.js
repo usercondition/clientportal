@@ -2,8 +2,8 @@
   var KEY = "site_theme_mode";
   var root = document.documentElement;
   /** Page chrome — must match styles.css :root / [data-theme="dark"] --bg */
-  var BG_PAGE_LIGHT = "#faf8ff";
-  var BG_PAGE_DARK = "#0f0a1e";
+  var BG_PAGE_LIGHT = "#f2f5f8";
+  var BG_PAGE_DARK = "#0b1220";
 
   function pageBackground(mode) {
     return mode === "dark" ? BG_PAGE_DARK : BG_PAGE_LIGHT;
@@ -84,7 +84,8 @@
       saveTheme(next);
       updateToggleState(btn, next);
     });
-    document.body.appendChild(btn);
+    var root = document.getElementById("theme-toggle-root");
+    (root || document.body).appendChild(btn);
   }
 
   function refreshToggleLabel() {
