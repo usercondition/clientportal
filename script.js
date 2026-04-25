@@ -42,25 +42,25 @@
   ];
 
   var menuIcons = {
-    Home: "⌂",
-    Shop: "🛍",
-    Catalog: "📚",
-    Checkout: "💳",
-    "Custom jobs": "🧩",
-    "Featured work": "✨",
-    Services: "🛠",
-    Process: "🧭",
-    Quality: "✅",
-    Contact: "✉",
+    Home: '<svg viewBox="0 0 24 24"><path d="M3.5 10.5 12 3l8.5 7.5"></path><path d="M6 9.8V20h12V9.8"></path></svg>',
+    Shop: '<svg viewBox="0 0 24 24"><path d="M4 8h16l-1.4 11H5.4L4 8Z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>',
+    Catalog: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"></path><path d="M8 7h8M8 11h8M8 15h6"></path></svg>',
+    Checkout: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18M7 14h3"></path></svg>',
+    "Custom jobs": '<svg viewBox="0 0 24 24"><path d="m3 12 4-4 4 4-4 4-4-4Zm10-8h8v8h-8V4Zm0 8h8v8h-8v-8Z"></path></svg>',
+    "Featured work": '<svg viewBox="0 0 24 24"><path d="m12 3 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8L12 3Z"></path></svg>',
+    Services: '<svg viewBox="0 0 24 24"><path d="m14.5 4.5 5 5-10 10H4.5v-5l10-10Z"></path><path d="m13 6 5 5"></path></svg>',
+    Process: '<svg viewBox="0 0 24 24"><path d="M4 6h8l-2.5 3M20 18h-8l2.5-3"></path><path d="M12 9v6"></path></svg>',
+    Quality: '<svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"></path></svg>',
+    Contact: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg>',
   };
 
   function appendLabelWithIcon(el, label) {
-    var iconText = menuIcons[label];
-    if (iconText) {
+    var iconSvg = menuIcons[label];
+    if (iconSvg) {
       var icon = document.createElement("span");
-      icon.className = "nav-tree__icon";
+      icon.className = "nav-tree__icon ui-icon";
       icon.setAttribute("aria-hidden", "true");
-      icon.textContent = iconText;
+      icon.innerHTML = iconSvg;
       el.appendChild(icon);
     }
     var text = document.createElement("span");
