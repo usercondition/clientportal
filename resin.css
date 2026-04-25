@@ -1586,3 +1586,46 @@ body.resin-home .rh-shop-ordering__note ul {
 body.resin-home .rh-shop-ordering__note li + li {
   margin-top: 0.35rem;
 }
+
+/* ——— Licensed merchant pages ——— */
+body.resin-home.rh-merchant-page .rh-merchant-logo-card {
+  border: 1px solid var(--rh-border);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow);
+  padding: var(--rh-step-4);
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+body.resin-home.rh-merchant-page .rh-merchant-logo-card__img {
+  max-width: min(100%, 340px);
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+body.resin-home.rh-merchant-page .rh-merchant-logo-card__fallback {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem;
+  text-align: center;
+  border-radius: var(--rh-radius-sm);
+  border: 1px dashed color-mix(in srgb, var(--rh-primary) 35%, var(--rh-border));
+  color: var(--rh-muted);
+}
+
+body.resin-home.rh-merchant-page .rh-merchant-logo-card__fallback strong {
+  color: var(--rh-text);
+  font-family: var(--rh-display);
+  letter-spacing: -0.02em;
+}
+
+body.resin-home.rh-merchant-page .rh-merchant-logo-card__note {
+  margin: 0;
+  color: var(--rh-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}

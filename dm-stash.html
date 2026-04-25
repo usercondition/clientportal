@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-marketing="resin">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script src="theme.js"></script>
+    <meta name="theme-color" content="#faf8ff" />
+    <meta
+      name="description"
+      content="DM Stash licensed miniatures by Steindahl 3D Group. Browse collection highlights and checkout directly."
+    />
+    <title>DM Stash Collection — Steindahl 3D Group</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="resin.css" />
+  </head>
+  <body class="resin-home rh-shop-page rh-merchant-page">
+    <a class="skip-link" href="#merchant-main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="header-start">
+          <a class="site-brand" href="index.html">
+            <span class="site-brand__mark" aria-hidden="true"></span>
+            <span class="site-brand__text">Steindahl 3D Group</span>
+          </a>
+          <a class="admin-entry admin-entry--header" href="admin.html">Staff</a>
+        </div>
+        <div class="header-actions">
+          <nav id="site-nav" class="site-nav" aria-label="Primary">
+            <ul class="nav-list">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="shop.html">All shop items</a></li>
+              <li><a href="#merchant-catalog">DM Stash catalog</a></li>
+              <li><a href="#merchant-checkout">Checkout</a></li>
+            </ul>
+          </nav>
+          <a class="client-portal-entry" href="client-flow.html" aria-label="Open client portal">
+            <span class="client-portal-entry__full">Client portal</span>
+            <span class="client-portal-entry__short">Portal</span>
+          </a>
+          <button
+            type="button"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="Open menu"
+          >
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+            <span class="nav-toggle-bar" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="merchant-main">
+      <section class="rh-shop-hero rh-section" aria-labelledby="merchant-title">
+        <div class="rh-container rh-shop-hero__grid">
+          <div>
+            <p class="rh-hero__kicker">Licensed merchant spotlight</p>
+            <h1 id="merchant-title" class="rh-hero__title">DM Stash collection — printed and fulfilled by Steindahl 3D Group.</h1>
+            <p class="rh-hero__copy">
+              This page is dedicated to DM Stash releases. Browse the collection and submit checkout directly from this
+              merchant page.
+            </p>
+            <div class="rh-hero__actions">
+              <a class="rh-btn rh-btn--primary" href="#merchant-catalog">Browse DM Stash minis</a>
+              <a class="rh-btn rh-btn--ghost" href="shop.html">Back to all shop items</a>
+            </div>
+            <p class="rh-hero__note">Licensed merchant line — custom jobs still go through quote request flow.</p>
+          </div>
+          <aside class="rh-merchant-logo-card" aria-label="DM Stash brand">
+            <img
+              src="https://drive.google.com/uc?export=view&id=1iF-l7-XpJgo4m5OWq2Rm1S4elro6fhqN"
+              alt="DM Stash logo"
+              class="rh-merchant-logo-card__img"
+              onerror="this.hidden=true;this.nextElementSibling.hidden=false;"
+              loading="eager"
+              decoding="async"
+            />
+            <div class="rh-merchant-logo-card__fallback" hidden>
+              <strong>DM Stash</strong>
+              <span>Logo preview unavailable without public access.</span>
+            </div>
+            <p class="rh-merchant-logo-card__note">Official partner collection</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="merchant-catalog" class="rh-shop-catalog rh-section" aria-labelledby="merchant-catalog-title">
+        <div class="rh-container">
+          <header class="rh-gallery__head">
+            <p class="rh-kicker">DM Stash catalog</p>
+            <h2 id="merchant-catalog-title" class="rh-h2">Featured licensed releases</h2>
+            <p class="rh-lede">Search by set name, role, or SKU.</p>
+          </header>
+
+          <div class="rh-shop-toolbar">
+            <div class="rh-shop-filter-group" role="tablist" aria-label="DM Stash categories">
+              <button type="button" class="rh-shop-chip is-active" data-filter="all" role="tab" aria-selected="true">
+                All
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="heroes" role="tab" aria-selected="false">
+                Heroes
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="monsters" role="tab" aria-selected="false">
+                Monsters
+              </button>
+              <button type="button" class="rh-shop-chip" data-filter="encounters" role="tab" aria-selected="false">
+                Encounters
+              </button>
+            </div>
+            <label class="rh-shop-search">
+              <span class="rh-sr-only">Search DM Stash catalog</span>
+              <input
+                id="shop-search"
+                type="search"
+                placeholder="Search DM Stash minis..."
+                autocomplete="off"
+                inputmode="search"
+              />
+            </label>
+          </div>
+
+          <div class="rh-shop-grid" id="shop-grid" aria-live="polite">
+            <article class="rh-shop-card" data-cat="heroes" data-search="sunforged paladin dm stash hero dms-hr-01">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-02.png" alt="Sunforged Paladin DM Stash hero miniature" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Sunforged Paladin</h3>
+                <p>Character-scale hero sculpt from DM Stash fantasy line.</p>
+                <div class="rh-shop-meta"><strong>From $18</strong><span>SKU: DMS-HR-01</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="DMS-HR-01"
+                  data-name="Sunforged Paladin"
+                  data-price="18"
+                >
+                  Add to cart
+                </button>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="heroes encounters" data-search="shadow court rogues party dm stash dms-en-03">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-01.png" alt="Shadow Court Rogues DM Stash encounter pack" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge">In stock</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Shadow Court Rogues (Pack)</h3>
+                <p>Encounter-ready group with modular weapons and capes.</p>
+                <div class="rh-shop-meta"><strong>From $32</strong><span>SKU: DMS-EN-03</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="DMS-EN-03"
+                  data-name="Shadow Court Rogues Pack"
+                  data-price="32"
+                >
+                  Add to cart
+                </button>
+              </div>
+            </article>
+
+            <article class="rh-shop-card" data-cat="monsters" data-search="void drake dm stash large monster dms-ms-07">
+              <div class="rh-shop-card__thumb">
+                <img src="assets/resin-gallery-03.png" alt="Void Drake DM Stash monster miniature" width="800" height="800" loading="lazy" decoding="async" />
+                <span class="rh-shop-badge rh-shop-badge--preorder">Preorder</span>
+              </div>
+              <div class="rh-shop-card__body">
+                <h3>Void Drake</h3>
+                <p>Large-format monster with alternate head and wing poses.</p>
+                <div class="rh-shop-meta"><strong>From $44</strong><span>SKU: DMS-MS-07</span></div>
+                <button
+                  type="button"
+                  class="rh-btn rh-btn--ghost rh-shop-add"
+                  data-sku="DMS-MS-07"
+                  data-name="Void Drake"
+                  data-price="44"
+                >
+                  Add to cart
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <p class="rh-shop-empty" id="shop-empty" hidden>No DM Stash products match your filters. Try another search.</p>
+        </div>
+      </section>
+
+      <section id="merchant-checkout" class="rh-shop-checkout rh-section rh-section--tight" aria-labelledby="merchant-checkout-title">
+        <div class="rh-container rh-shop-checkout__grid">
+          <article class="rh-shop-checkout__summary">
+            <p class="rh-kicker">Direct checkout</p>
+            <h2 id="merchant-checkout-title" class="rh-h2">Send DM Stash purchase request</h2>
+            <p class="rh-lede">We review stock and send final payment details directly to your email.</p>
+            <div id="shop-cart-list" class="rh-shop-cart-list" aria-live="polite"></div>
+            <p class="rh-shop-cart-total" id="shop-cart-total">Estimated subtotal: $0.00</p>
+          </article>
+
+          <form id="shop-checkout-form" class="rh-shop-checkout__form" novalidate>
+            <label>
+              Full name
+              <input type="text" name="name" required minlength="2" maxlength="120" autocomplete="name" />
+            </label>
+            <label>
+              Email
+              <input type="email" name="email" required autocomplete="email" />
+            </label>
+            <label>
+              Phone (optional)
+              <input type="tel" name="phone" maxlength="40" autocomplete="tel" />
+            </label>
+            <label>
+              Preferred payment method
+              <select name="paymentMethod" required>
+                <option value="paypal">PayPal</option>
+                <option value="venmo">Venmo</option>
+                <option value="zelle">Zelle</option>
+                <option value="cash_app">Cash App</option>
+              </select>
+            </label>
+            <label>
+              Shipping city/state (optional)
+              <input type="text" name="shippingRegion" maxlength="120" placeholder="City, State" />
+            </label>
+            <label>
+              Notes
+              <textarea name="notes" rows="4" maxlength="2000" placeholder="Variants, scale notes, delivery notes"></textarea>
+            </label>
+            <p class="rh-shop-checkout__policy">Full payment only — no deposits or partial payments.</p>
+            <button type="submit" class="rh-btn rh-btn--primary" id="shop-checkout-submit">Submit DM Stash order</button>
+            <p id="shop-checkout-status" class="rh-cta__status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-brand">
+          <span class="site-brand__mark site-brand__mark--footer" aria-hidden="true"></span>
+          <p>© <span id="year"></span> Steindahl 3D Group</p>
+        </div>
+        <p class="footer-note">DM Stash licensed catalog · fulfilled by Steindahl 3D Group</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="shop.js"></script>
+  </body>
+</html>
