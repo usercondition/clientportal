@@ -21,7 +21,7 @@ body.resin-home {
   --rh-radius-sm: 8px;
   --rh-max: 1080px;
   --rh-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --rh-display: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --rh-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   --rh-step-1: 0.25rem;
   --rh-step-2: 0.5rem;
   --rh-step-3: 0.75rem;
@@ -177,10 +177,10 @@ body.resin-home .rh-kicker {
 body.resin-home .rh-h2 {
   margin: 0 0 var(--rh-step-3);
   font-family: var(--rh-display);
-  font-size: clamp(1.35rem, 2.4vw, 1.65rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
   color: var(--rh-text);
 }
 
@@ -194,8 +194,38 @@ body.resin-home .rh-lede {
 
 /* ——— Hero ——— */
 body.resin-home .rh-hero {
+  position: relative;
+  overflow: clip;
   padding: var(--rh-step-6) 0 var(--rh-step-7);
   border-bottom: 1px solid var(--rh-border);
+}
+
+body.resin-home .rh-hero::before {
+  content: "";
+  position: absolute;
+  inset: -18% -35% 35% -25%;
+  background: radial-gradient(
+    ellipse 68% 58% at 72% 22%,
+    color-mix(in srgb, var(--rh-primary) 20%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.resin-home .rh-hero > .rh-container {
+  position: relative;
+  z-index: 1;
+}
+
+body.resin-home .rh-hero > .rh-container::before {
+  content: "";
+  display: block;
+  width: min(100%, 28rem);
+  height: 4px;
+  border-radius: 999px;
+  margin-bottom: var(--rh-step-5);
+  background: linear-gradient(90deg, var(--rh-primary), var(--rh-copper));
 }
 
 body.resin-home .rh-hero__grid {
@@ -223,10 +253,10 @@ body.resin-home .rh-hero__kicker {
 body.resin-home .rh-hero__title {
   margin: 0 0 var(--rh-step-4);
   font-family: var(--rh-display);
-  font-size: clamp(2rem, 4.5vw, 2.85rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  font-size: clamp(2.1rem, 5vw, 3.15rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
   color: var(--rh-text);
 }
 
@@ -253,7 +283,7 @@ body.resin-home .rh-btn {
   font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 600;
-  border-radius: var(--rh-radius-sm);
+  border-radius: 999px;
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
@@ -299,13 +329,34 @@ body.resin-home .rh-hero__note a {
 
 body.resin-home .rh-hero-visual {
   margin: 0;
-  border-radius: var(--rh-radius);
+  border-radius: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px) clamp(12px, 1.5vw, 18px) clamp(14px, 2vw, 22px);
   border: 1px solid var(--rh-border);
   background: var(--rh-surface);
   box-shadow: var(--rh-shadow-md);
   aspect-ratio: 4 / 3;
   overflow: hidden;
   position: relative;
+  transform: rotate(-0.35deg);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.resin-home .rh-hero-visual {
+    transform: none;
+    transition: none;
+  }
+
+  body.resin-home .rh-hero-visual:hover {
+    transform: none;
+    box-shadow: var(--rh-shadow-md);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.resin-home .rh-hero-visual:hover {
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow: 0 20px 48px color-mix(in srgb, var(--rh-primary) 18%, rgba(0, 0, 0, 0.15));
+  }
 }
 
 body.resin-home .rh-hero-visual__img {
@@ -347,7 +398,7 @@ body.resin-home .rh-services__intro {
 
 body.resin-home .rh-gallery__grid {
   display: grid;
-  gap: var(--rh-step-3);
+  gap: clamp(1rem, 2.5vw, 1.5rem);
   grid-template-columns: repeat(2, 1fr);
 }
 
@@ -359,11 +410,35 @@ body.resin-home .rh-gallery__grid {
 
 body.resin-home .rh-gallery__item {
   margin: 0;
-  border-radius: var(--rh-radius);
+  border-radius: clamp(12px, 1.8vw, 18px) clamp(14px, 2vw, 22px) clamp(10px, 1.4vw, 14px) clamp(12px, 1.8vw, 18px);
   border: 1px solid var(--rh-border);
   background: var(--rh-surface);
   overflow: hidden;
   box-shadow: var(--rh-shadow);
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 720px) {
+  body.resin-home .rh-gallery__item:nth-child(3n + 2) {
+    transform: translateY(0.65rem);
+  }
+
+  body.resin-home .rh-gallery__item:nth-child(3n) {
+    transform: translateY(-0.5rem);
+  }
+
+  body.resin-home .rh-gallery__item:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--rh-shadow-md);
+    z-index: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.resin-home .rh-gallery__item {
+    transition: none;
+  }
 }
 
 body.resin-home .rh-gallery__thumb {

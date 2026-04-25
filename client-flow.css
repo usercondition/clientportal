@@ -50,9 +50,9 @@ html:has(.client-flow-body) {
   width: 2.65rem;
   height: 2.65rem;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 12px 8px 14px 10px;
   border: 1px solid var(--border);
-  background: var(--bg-elevated);
+  background: linear-gradient(145deg, var(--bg-elevated), color-mix(in srgb, var(--accent-soft) 40%, var(--bg-elevated)));
   color: var(--accent);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;

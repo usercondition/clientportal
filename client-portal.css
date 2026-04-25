@@ -9,13 +9,16 @@
 
 /* ——— Header ——— */
 .portal-header {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom: none;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 20;
   padding-top: max(0px, env(safe-area-inset-top, 0px));
+  box-shadow:
+    0 1px 0 var(--border),
+    0 12px 40px color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 @media (max-width: 720px) {
@@ -33,10 +36,22 @@
 }
 
 .portal-brand {
+  display: inline-block;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  background: linear-gradient(105deg, var(--text) 0%, var(--text) 52%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: var(--text);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .portal-brand {
+    color: transparent;
+  }
 }
 
 .portal-header-actions {
@@ -101,9 +116,11 @@
 /* ——— Panel (container per section) ——— */
 .portal-panel {
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg, 20px);
-  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
-  box-shadow: var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.22));
+  border-radius: clamp(14px, 2.2vw, 22px) clamp(12px, 1.8vw, 18px) clamp(16px, 2.4vw, 24px) clamp(12px, 1.8vw, 18px);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  box-shadow:
+    var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.12)),
+    0 0 0 1px color-mix(in srgb, var(--accent) 5%, transparent);
   overflow: hidden;
   scroll-margin-top: 4.5rem;
   transition:
@@ -112,7 +129,10 @@
 }
 
 .portal-panel:hover {
-  border-color: color-mix(in srgb, var(--accent) 15%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  box-shadow:
+    var(--shadow-sm, 0 8px 32px rgba(0, 0, 0, 0.14)),
+    0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .portal-panel__header {
@@ -187,12 +207,15 @@
 
 /* Welcome strip */
 .portal-panel--welcome {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--bg-elevated) 94%, var(--accent-soft)) 0%,
-    color-mix(in srgb, var(--bg-elevated) 88%, transparent) 100%
-  );
-  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, var(--accent-cyan) 8%, transparent), transparent 50%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--bg-elevated) 92%, var(--accent-soft)) 0%,
+      color-mix(in srgb, var(--bg-elevated) 88%, transparent) 100%
+    );
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
   animation: portal-rise var(--dur-slow, 0.55s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)) 0.04s both;
 }
 
@@ -232,11 +255,11 @@
 
 .portal-title {
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 4vw, 2rem);
-  font-weight: 600;
+  font-size: clamp(1.55rem, 4.5vw, 2.25rem);
+  font-weight: 800;
   margin: 0 0 0.35rem;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
 .portal-sub {
@@ -247,18 +270,31 @@
   font-size: 0.94rem;
 }
 
-/* Dashboard grid: messages + aside */
+/* Dashboard grid: messages + aside (no transform on grid — keeps fixed chat positioning correct) */
 .portal-dashboard {
   display: grid;
   gap: clamp(1rem, 2vw, 1.25rem);
   align-items: start;
-  animation: portal-rise var(--dur-slow, 0.58s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)) 0.08s both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .portal-dashboard > * {
+    animation: portal-rise-fade var(--dur-slow, 0.5s) var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  }
+
+  .portal-dashboard > *:nth-child(1) {
+    animation-delay: 0.06s;
+  }
+
+  .portal-dashboard > *:nth-child(2) {
+    animation-delay: 0.14s;
+  }
 }
 
 @media (min-width: 900px) {
   .portal-dashboard {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
-    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.08fr) minmax(272px, 360px);
+    gap: 1.35rem;
   }
 }
 
@@ -290,9 +326,9 @@
 
 .portal-h2 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.12rem, 2.2vw, 1.28rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 .portal-h3 {
