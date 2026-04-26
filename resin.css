@@ -561,12 +561,12 @@ body.resin-home .rh-container {
 }
 
 body.resin-home .rh-section {
-  padding-block: clamp(2.1rem, 6.5vw, var(--rh-step-7));
+  padding-block: clamp(1.5rem, 4.5vw, 2.5rem);
   padding-inline: 0;
 }
 
 body.resin-home .rh-section--tight {
-  padding-block: clamp(1.85rem, 5.5vw, var(--rh-step-6));
+  padding-block: clamp(1.25rem, 3.8vw, 2rem);
 }
 
 body.resin-home .rh-kicker {
@@ -581,19 +581,19 @@ body.resin-home .rh-kicker {
 body.resin-home .rh-h2 {
   margin: 0 0 var(--rh-step-3);
   font-family: var(--rh-display);
-  font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
   color: var(--rh-text);
 }
 
 body.resin-home .rh-lede {
   margin: 0;
-  max-width: 52ch;
+  max-width: 46ch;
   color: var(--rh-muted);
-  font-size: 1.02rem;
-  line-height: 1.55;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* ——— Hero ——— */
@@ -642,19 +642,19 @@ body.resin-home .rh-hero__kicker {
 body.resin-home .rh-hero__title {
   margin: 0 0 var(--rh-step-4);
   font-family: var(--rh-display);
-  font-size: clamp(2.1rem, 5vw, 3.15rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.06;
+  font-size: clamp(1.75rem, 3.8vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
   color: var(--rh-text);
 }
 
 body.resin-home .rh-hero__copy {
-  margin: 0 0 var(--rh-step-5);
-  max-width: 48ch;
-  font-size: 1.05rem;
+  margin: 0 0 var(--rh-step-4);
+  max-width: 44ch;
+  font-size: 0.96rem;
   color: var(--rh-muted);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 body.resin-home .rh-hero__actions {
@@ -668,10 +668,10 @@ body.resin-home .rh-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem 1.25rem;
+  padding: 0.58rem 1rem;
   font-family: inherit;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 500;
   border-radius: 999px;
   text-decoration: none;
   border: 1px solid transparent;
@@ -767,7 +767,7 @@ body.resin-home .rh-hero-visual__tag {
 
 /* ——— Gallery ——— */
 body.resin-home .rh-gallery {
-  background: color-mix(in srgb, var(--rh-surface) 35%, var(--rh-bg));
+  background: transparent;
   border-block: 1px solid var(--rh-border);
 }
 
@@ -791,28 +791,20 @@ body.resin-home .rh-gallery__grid {
 
 body.resin-home .rh-gallery__item {
   margin: 0;
-  border-radius: clamp(12px, 1.8vw, 18px) clamp(14px, 2vw, 22px) clamp(10px, 1.4vw, 14px) clamp(12px, 1.8vw, 18px);
+  border-radius: var(--rh-radius);
   border: 1px solid var(--rh-border);
   background: var(--rh-surface);
   overflow: hidden;
   box-shadow: var(--rh-shadow);
   position: relative;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+  transition: border-color 0.16s ease;
 }
 
 @media (prefers-reduced-motion: no-preference) and (min-width: 720px) {
-  body.resin-home .rh-gallery__item:nth-child(3n + 2) {
-    transform: translateY(0.65rem);
-  }
-
-  body.resin-home .rh-gallery__item:nth-child(3n) {
-    transform: translateY(-0.5rem);
-  }
-
   body.resin-home .rh-gallery__item:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: var(--rh-shadow-md);
-    z-index: 1;
+    transform: none;
+    box-shadow: var(--rh-shadow);
+    border-color: color-mix(in srgb, var(--rh-primary) 25%, var(--rh-border));
   }
 }
 
@@ -871,7 +863,7 @@ body.resin-home .rh-services__layout {
 }
 
 body.resin-home .rh-services__rail {
-  border-left: 2px solid var(--rh-primary);
+  border-left: 1px solid var(--rh-border);
   padding-left: var(--rh-step-4);
 }
 
@@ -918,7 +910,7 @@ body.resin-home .rh-services__list button.is-active {
 }
 
 body.resin-home .rh-services__list button.is-active {
-  border-bottom-color: var(--rh-primary);
+  border-bottom-color: var(--rh-border);
 }
 
 body.resin-home .rh-services__panel {
@@ -962,7 +954,7 @@ body.resin-home .rh-services__panels > article.is-active {
 
 /* ——— Process ——— */
 body.resin-home .rh-process {
-  border-bottom: 1px solid var(--rh-border);
+  border-bottom: 0;
 }
 
 body.resin-home .rh-process__intro {
@@ -1086,8 +1078,8 @@ body.resin-home .rh-quality__specs dd {
 
 /* ——— Trust ——— */
 body.resin-home .rh-trust {
-  background: color-mix(in srgb, var(--rh-surface) 40%, var(--rh-bg));
-  border-block: 1px solid var(--rh-border);
+  background: transparent;
+  border-block: 0;
 }
 
 body.resin-home .rh-trust__grid {
