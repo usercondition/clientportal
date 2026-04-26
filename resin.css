@@ -35,17 +35,17 @@ body.resin-home {
 
 /* Dark */
 html[data-theme="dark"] body.resin-home {
-  --rh-bg: #0b1220;
-  --rh-surface: #111827;
-  --rh-surface-2: #1a2744;
-  --rh-text: #f1f5f9;
-  --rh-muted: #94a3b8;
-  --rh-primary: #38bdf8;
+  --rh-bg: #101010;
+  --rh-surface: #171717;
+  --rh-surface-2: #1f1f1f;
+  --rh-text: #f4f4f2;
+  --rh-muted: #b5b0a8;
+  --rh-primary: #f4f4f2;
   --rh-on-primary: #111111;
-  --rh-primary-hover: #7dd3fc;
+  --rh-primary-hover: #d9d5ce;
   --rh-copper: #fbbf24;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
-  --rh-border: #1e293b;
+  --rh-border: #2f2b25;
   --rh-shadow: 0 2px 14px rgba(0, 0, 0, 0.42);
   --rh-shadow-md: 0 14px 44px rgba(0, 0, 0, 0.52);
 }
