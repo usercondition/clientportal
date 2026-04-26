@@ -864,13 +864,13 @@ body.is-marketing-nav-open {
 
 [data-theme="dark"] .btn-primary {
   color: #ffffff;
-  background: var(--palette-accent-deep);
-  border-color: color-mix(in srgb, var(--palette-accent-deep) 75%, #000 25%);
+  background: color-mix(in srgb, var(--accent) 82%, #000 18%);
+  border-color: color-mix(in srgb, var(--accent) 58%, #000 42%);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .btn-primary:hover {
-  background: color-mix(in srgb, var(--palette-accent-deep) 88%, #fff 12%);
+  background: color-mix(in srgb, var(--accent) 72%, #000 28%);
 }
 
 .btn-ghost {

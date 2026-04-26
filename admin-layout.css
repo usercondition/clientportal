@@ -2,6 +2,9 @@
 
 /* Match main website light/dark palette tokens */
 .admin-app {
+  --palette-accent: #171717;
+  --palette-accent-deep: #111111;
+  --palette-accent-2: #171717;
   --bg: #f6f5f2;
   --bg-elevated: #ffffff;
   --text: #151515;
@@ -19,6 +22,9 @@
 }
 
 html[data-theme="dark"] .admin-app {
+  --palette-accent: #f4f4f2;
+  --palette-accent-deep: #d9d5ce;
+  --palette-accent-2: #f4f4f2;
   --bg: #101010;
   --bg-elevated: #171717;
   --text: #f4f4f2;
@@ -35,7 +41,7 @@ html[data-theme="dark"] .admin-app {
     linear-gradient(184deg, #111111 0%, var(--bg) 58%, #181613 100%);
 }
 
-:root {
+.admin-app {
   --admin-sidebar-w: 260px;
   --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 92%, var(--accent) 8%);
   --admin-sidebar-border: color-mix(in srgb, var(--border) 82%, var(--accent) 18%);
@@ -815,7 +821,7 @@ html[data-theme="dark"] .admin-app {
 }
 
 /* --- Main-site parity pass --- */
-:root {
+.admin-app {
   --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg));
   --admin-sidebar-border: color-mix(in srgb, var(--border) 88%, transparent);
   --admin-nav-active: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated));
