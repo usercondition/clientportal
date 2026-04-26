@@ -1612,3 +1612,51 @@ body.portal-body--chat-locked {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* --- Main-site parity pass --- */
+.portal-body {
+  background: var(--bg);
+  background-image: var(--page-bg-image);
+  color: var(--text);
+}
+
+.portal-header {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  box-shadow: none;
+}
+
+.portal-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: none;
+  color: var(--text);
+}
+
+.portal-link-btn {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.portal-panel {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 96%, var(--bg));
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-panel:hover {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.portal-panel--welcome {
+  background: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg));
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+}
+
+.portal-card,
+.portal-order-disclosure {
+  border-radius: 12px;
+}

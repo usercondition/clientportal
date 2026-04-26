@@ -597,3 +597,67 @@ html:has(.client-flow-body) {
     justify-content: center;
   }
 }
+
+/* --- Main-site parity pass --- */
+.client-flow-body {
+  background: var(--bg);
+  background-image: var(--page-bg-image);
+  color: var(--text);
+}
+
+.flow-header {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  box-shadow: none;
+}
+
+.flow-brand {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 90%, var(--bg));
+  color: var(--text);
+}
+
+.flow-brand:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-home {
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+}
+
+.flow-home:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg-elevated));
+  box-shadow: none;
+}
+
+.flow-slide-inner--form-wide {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 96%, var(--bg));
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-welcome-hero {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-form-block {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 95%, var(--bg));
+}
+
+.flow-form-block:hover {
+  transform: none;
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+  box-shadow: none;
+}

@@ -751,3 +751,48 @@
     transition: none;
   }
 }
+
+/* --- Main-site parity pass --- */
+:root {
+  --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg));
+  --admin-sidebar-border: color-mix(in srgb, var(--border) 88%, transparent);
+  --admin-nav-active: color-mix(in srgb, var(--accent) 9%, var(--bg-elevated));
+  --admin-nav-active-border: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.admin-app {
+  background-color: var(--bg);
+  background-image: var(--page-bg-image);
+}
+
+.admin-sidebar {
+  box-shadow: none;
+  border-right: 1px solid var(--admin-sidebar-border);
+}
+
+.admin-sidebar__logo {
+  border-radius: 10px;
+}
+
+.admin-nav-item {
+  border-radius: 10px;
+}
+
+.admin-sidebar__footer-btn {
+  border-radius: 10px;
+}
+
+.admin-page-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.admin-metrics__panel,
+.admin-dash-card,
+.admin-metric {
+  border-radius: 12px;
+}
+
+.admin-dash-card:hover:not(.admin-dash-card--muted) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
