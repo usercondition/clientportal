@@ -170,15 +170,6 @@
               </button>
             </div>
             <p class="rh-shop-results" id="shop-results-count">Showing 0 items</p>
-            <label class="rh-shop-sort">
-              <span class="rh-sr-only">Sort products</span>
-              <select id="shop-sort">
-                <option value="featured" selected>Sort: Featured</option>
-                <option value="price_low">Price: Low to high</option>
-                <option value="price_high">Price: High to low</option>
-                <option value="name_asc">Name: A to Z</option>
-              </select>
-            </label>
             <label class="rh-shop-search">
               <span class="rh-sr-only">Search catalog</span>
               <input
@@ -193,12 +184,18 @@
           <div class="rh-shop-storefront">
             <div class="rh-shop-storefront__main">
               <div class="rh-shop-grid" id="shop-grid" aria-live="polite">
-                <article class="rh-shop-card">
-                  <div class="rh-shop-card__body">
-                    <h3>Catalog moved to live vendor pages</h3>
-                    <p>Sample listings were removed. Browse real, image-based product listings on each vendor page.</p>
-                    <div class="rh-shop-meta"><strong>Live now</strong><span>DM Stash catalog available</span></div>
-                    <a class="rh-btn rh-btn--primary" href="dm-stash.html">Open DM Stash storefront</a>
+                <article class="rh-shop-card rh-shop-card--sampler" data-cat="fantasy scifi terrain bundle" data-search="random sampler vendors">
+                  <div class="rh-shop-card__thumb rh-sampler-carousel" id="sampler-carousel" data-index="0">
+                    <img id="sampler-image" src="assets/dm-stash-logo-gold.png" alt="Vendor sampler preview" width="800" height="800" loading="eager" decoding="async" />
+                    <span class="rh-shop-badge">Random sampler</span>
+                    <button type="button" class="rh-sampler-carousel__control rh-sampler-carousel__control--prev" id="sampler-prev" aria-label="Previous sampler">‹</button>
+                    <button type="button" class="rh-sampler-carousel__control rh-sampler-carousel__control--next" id="sampler-next" aria-label="Next sampler">›</button>
+                  </div>
+                  <div class="rh-shop-card__body rh-sampler-carousel__body">
+                    <h3 id="sampler-title">Featured sampler</h3>
+                    <p id="sampler-description">Rotating highlights pulled from all vendor collections.</p>
+                    <div class="rh-shop-meta"><strong id="sampler-vendor">DM Stash</strong><span id="sampler-position">1 / 6</span></div>
+                    <a class="rh-btn rh-btn--primary" id="sampler-link" href="dm-stash.html">Open vendor page</a>
                   </div>
                 </article>
               </div>

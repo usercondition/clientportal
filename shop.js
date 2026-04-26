@@ -3,7 +3,6 @@
   var CART_KEY = "shop_cart_v1";
   var chips = Array.prototype.slice.call(document.querySelectorAll(".rh-shop-chip"));
   var search = document.getElementById("shop-search");
-  var sort = document.getElementById("shop-sort");
   var grid = document.getElementById("shop-grid");
   var empty = document.getElementById("shop-empty");
   var resultsCount = document.getElementById("shop-results-count");
@@ -23,33 +22,6 @@
   function updateVisible() {
     var q = normalizedText(search && search.value);
     var cards = Array.prototype.slice.call(grid.querySelectorAll(".rh-shop-card"));
-    var mode = normalizedText(sort && sort.value) || "featured";
-    cards.forEach(function (card, i) {
-      if (!card.hasAttribute("data-index")) card.setAttribute("data-index", String(i));
-    });
-    cards.sort(function (a, b) {
-      var ai = Number(a.getAttribute("data-index") || "0");
-      var bi = Number(b.getAttribute("data-index") || "0");
-      if (mode === "price_low") {
-        var ap = Number((a.querySelector(".rh-shop-add") || {}).getAttribute && a.querySelector(".rh-shop-add").getAttribute("data-price")) || 0;
-        var bp = Number((b.querySelector(".rh-shop-add") || {}).getAttribute && b.querySelector(".rh-shop-add").getAttribute("data-price")) || 0;
-        return ap - bp || ai - bi;
-      }
-      if (mode === "price_high") {
-        var ap2 = Number((a.querySelector(".rh-shop-add") || {}).getAttribute && a.querySelector(".rh-shop-add").getAttribute("data-price")) || 0;
-        var bp2 = Number((b.querySelector(".rh-shop-add") || {}).getAttribute && b.querySelector(".rh-shop-add").getAttribute("data-price")) || 0;
-        return bp2 - ap2 || ai - bi;
-      }
-      if (mode === "name_asc") {
-        var an = normalizedText((a.querySelector("h3") || {}).textContent);
-        var bn = normalizedText((b.querySelector("h3") || {}).textContent);
-        return an.localeCompare(bn) || ai - bi;
-      }
-      return ai - bi;
-    });
-    cards.forEach(function (c) {
-      grid.appendChild(c);
-    });
     var visible = 0;
     cards.forEach(function (card) {
       var cat = normalizedText(card.getAttribute("data-cat"));
@@ -167,8 +139,63 @@
   });
 
   if (search) search.addEventListener("input", updateVisible);
-  if (sort) sort.addEventListener("change", updateVisible);
   updateVisible();
   syncCartTop();
   notifyCartChanged();
+})();
+
+(function () {
+  var imageEl = document.getElementById("sampler-image");
+  var titleEl = document.getElementById("sampler-title");
+  var descEl = document.getElementById("sampler-description");
+  var vendorEl = document.getElementById("sampler-vendor");
+  var posEl = document.getElementById("sampler-position");
+  var linkEl = document.getElementById("sampler-link");
+  var prevBtn = document.getElementById("sampler-prev");
+  var nextBtn = document.getElementById("sampler-next");
+  if (!imageEl || !titleEl || !descEl || !vendorEl || !posEl || !linkEl) return;
+
+  var samplers = [
+    { title: "Ahznagol Aberrant Guards", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=11vtmHYX6Y-lSUD6W1PcJzgZboV2zvAjt&sz=w1200", href: "dm-stash.html" },
+    { title: "Grey Tide Featured Set", vendor: "Grey Tide Studio", image: "assets/greytide-logo.png", href: "greytide.html" },
+    { title: "REDMAKERS Featured Set", vendor: "REDMAKERS", image: "assets/redmakers-logo-new.png", href: "redmakers.html" },
+    { title: "Rafail ft. PRiNG Featured Set", vendor: "Rafail ft. PRiNG", image: "assets/rafail-ft-pring-banner.png", href: "rafail-ft-pring.html" },
+    { title: "EPIC Miniatures Featured Set", vendor: "EPIC Miniatures", image: "assets/epic-miniatures-logo.png", href: "epic-miniatures.html" },
+    { title: "Mar-Fil Featured Set", vendor: "Mar-Fil", image: "assets/mar-fil-logo.png", href: "mar-fil.html" },
+  ];
+  for (var i = samplers.length - 1; i > 0; i -= 1) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = samplers[i];
+    samplers[i] = samplers[j];
+    samplers[j] = t;
+  }
+
+  var idx = 0;
+  var timer = null;
+  function render() {
+    var item = samplers[idx];
+    imageEl.src = item.image;
+    imageEl.alt = item.title + " sampler";
+    titleEl.textContent = item.title;
+    descEl.textContent = "Random sampler highlight from " + item.vendor + ".";
+    vendorEl.textContent = item.vendor;
+    posEl.textContent = String(idx + 1) + " / " + String(samplers.length);
+    linkEl.href = item.href;
+    linkEl.textContent = "Open " + item.vendor + " page";
+  }
+  function next(step) {
+    idx = (idx + step + samplers.length) % samplers.length;
+    render();
+  }
+  function restartAuto() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function () {
+      next(1);
+    }, 4500);
+  }
+
+  if (prevBtn) prevBtn.addEventListener("click", function () { next(-1); restartAuto(); });
+  if (nextBtn) nextBtn.addEventListener("click", function () { next(1); restartAuto(); });
+  render();
+  restartAuto();
 })();
