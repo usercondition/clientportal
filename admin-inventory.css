@@ -52,7 +52,7 @@
 .admin-inventory-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 980px;
+  min-width: 860px;
 }
 
 .admin-inventory-table th,
@@ -77,32 +77,6 @@
 
 .admin-inventory-table tr:last-child td {
   border-bottom: 0;
-}
-
-.admin-inventory-thumb-wrap {
-  width: 52px;
-  height: 52px;
-  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
-  border-radius: 6px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--bg) 82%, var(--bg-elevated));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-inventory-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.admin-inventory-thumb--empty {
-  font-size: 0.62rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-muted);
 }
 
 .admin-inventory-price {

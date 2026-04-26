@@ -5,7 +5,7 @@
   var feedbackEl = document.getElementById("inventory-feedback");
   if (!rowsEl) return;
 
-  /** @type {Array<{sku:string,name:string,vendor:string,image?:string,basePrice:number,price:number,overridePrice:number|null}>} */
+  /** @type {Array<{sku:string,name:string,vendor:string,basePrice:number,price:number,overridePrice:number|null}>} */
   var allItems = [];
   var visibleItems = [];
 
@@ -24,7 +24,7 @@
 
   function render() {
     if (!visibleItems.length) {
-      rowsEl.innerHTML = '<tr><td colspan="8">No items match this search.</td></tr>';
+      rowsEl.innerHTML = '<tr><td colspan="7">No items match this search.</td></tr>';
       if (countEl) countEl.textContent = "0 items";
       return;
     }
@@ -34,11 +34,6 @@
           '<tr data-sku="' +
           it.sku +
           '">' +
-          '<td><div class="admin-inventory-thumb-wrap">' +
-          (it.image
-            ? '<img class="admin-inventory-thumb" src="' + it.image + '" alt="' + it.name + ' thumbnail" loading="lazy" decoding="async" />'
-            : '<span class="admin-inventory-thumb admin-inventory-thumb--empty" aria-hidden="true">N/A</span>') +
-          "</div></td>" +
           "<td><strong>" +
           it.sku +
           "</strong></td>" +
@@ -96,7 +91,7 @@
         applyFilter();
       })
       .catch(function (err) {
-        rowsEl.innerHTML = '<tr><td colspan="8">Could not load inventory.</td></tr>';
+        rowsEl.innerHTML = '<tr><td colspan="7">Could not load inventory.</td></tr>';
         showFeedback(err && err.message ? err.message : "Could not load inventory.", true);
       });
   }
