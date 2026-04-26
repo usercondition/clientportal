@@ -26,16 +26,16 @@
         "home-request-a-quote.html",
       ],
       children: [
-        { label: "Recent Prints Off The Bench", href: "home-recent-prints.html", match: ["home-recent-prints.html"] },
-        { label: "What We Take On", href: "home-what-we-take-on.html", match: ["home-what-we-take-on.html"] },
-        { label: "From Files To Finished Prints", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
-        { label: "What Good Means Here", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
+        { label: "Recent Prints", href: "home-recent-prints.html", match: ["home-recent-prints.html"] },
+        { label: "Services", href: "home-what-we-take-on.html", match: ["home-what-we-take-on.html"] },
+        { label: "Process", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
+        { label: "Standards", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
         {
-          label: "Clear Communication, Reliable Output",
+          label: "Reliability",
           href: "home-clear-communication-reliable-output.html",
           match: ["home-clear-communication-reliable-output.html"],
         },
-        { label: "Request A Quote", href: "home-request-a-quote.html", match: ["home-request-a-quote.html"] },
+        { label: "Quote", href: "home-request-a-quote.html", match: ["home-request-a-quote.html"] },
       ],
     },
     {
@@ -72,6 +72,10 @@
 
   var menuIcons = {
     Home: '<svg viewBox="0 0 24 24"><path d="M3.5 10.5 12 3l8.5 7.5"></path><path d="M6 9.8V20h12V9.8"></path></svg>',
+    "Recent Prints": '<svg viewBox="0 0 24 24"><path d="m12 3 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8L12 3Z"></path></svg>',
+    Standards: '<svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"></path></svg>',
+    Reliability: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>',
+    Quote: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg>',
     Shop: '<svg viewBox="0 0 24 24"><path d="M4 8h16l-1.4 11H5.4L4 8Z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>',
     Catalog: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"></path><path d="M8 7h8M8 11h8M8 15h6"></path></svg>',
     Checkout: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18M7 14h3"></path></svg>',
