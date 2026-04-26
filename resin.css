@@ -1876,6 +1876,63 @@ body.resin-home .rh-shop-card__thumb img {
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: zoom-in;
+}
+
+body.resin-home .rh-image-modal[hidden] {
+  display: none !important;
+}
+
+body.resin-home .rh-image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+}
+
+body.resin-home .rh-image-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, #000 72%, transparent);
+  cursor: zoom-out;
+}
+
+body.resin-home .rh-image-modal__figure {
+  position: relative;
+  margin: 0;
+  width: min(94vw, 1100px);
+  max-height: 90vh;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 70%, var(--rh-surface));
+  background: #0b0b0b;
+}
+
+body.resin-home .rh-image-modal__img {
+  width: 100%;
+  height: auto;
+  max-height: 90vh;
+  object-fit: contain;
+  display: block;
+}
+
+body.resin-home .rh-image-modal__close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  border: 1px solid var(--rh-border);
+  background: color-mix(in srgb, var(--rh-surface) 88%, transparent);
+  color: var(--rh-text);
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 body.resin-home .rh-shop-card--sampler {

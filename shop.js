@@ -152,6 +152,50 @@
       });
   }
 
+  var imageModal = null;
+  var imageModalImg = null;
+  var imageModalClose = null;
+
+  function ensureImageModal() {
+    if (imageModal) return;
+    var wrap = document.createElement("div");
+    wrap.className = "rh-image-modal";
+    wrap.setAttribute("hidden", "hidden");
+    wrap.innerHTML =
+      '<button type="button" class="rh-image-modal__backdrop" aria-label="Close image preview"></button>' +
+      '<figure class="rh-image-modal__figure"><img class="rh-image-modal__img" src="" alt="Listing preview" /></figure>' +
+      '<button type="button" class="rh-image-modal__close" aria-label="Close image preview">Close</button>';
+    document.body.appendChild(wrap);
+    imageModal = wrap;
+    imageModalImg = wrap.querySelector(".rh-image-modal__img");
+    imageModalClose = wrap.querySelector(".rh-image-modal__close");
+    var backdrop = wrap.querySelector(".rh-image-modal__backdrop");
+    if (backdrop) backdrop.addEventListener("click", closeImageModal);
+    if (imageModalClose) imageModalClose.addEventListener("click", closeImageModal);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && imageModal && !imageModal.hasAttribute("hidden")) {
+        closeImageModal();
+      }
+    });
+  }
+
+  function openImageModal(src, alt) {
+    if (!src) return;
+    ensureImageModal();
+    if (!imageModal || !imageModalImg) return;
+    imageModalImg.src = src;
+    imageModalImg.alt = alt ? String(alt) : "Listing preview";
+    imageModal.removeAttribute("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeImageModal() {
+    if (!imageModal || !imageModalImg) return;
+    imageModal.setAttribute("hidden", "hidden");
+    imageModalImg.src = "";
+    document.body.style.overflow = "";
+  }
+
   chips.forEach(function (chip) {
     chip.addEventListener("click", function () {
       var next = normalizedText(chip.getAttribute("data-filter")) || "all";
@@ -183,6 +227,14 @@
       syncCartTop();
       notifyCartChanged();
     });
+  });
+
+  grid.addEventListener("click", function (e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+    var img = target.closest(".rh-shop-card__thumb img");
+    if (!img) return;
+    openImageModal(img.getAttribute("src"), img.getAttribute("alt"));
   });
 
   if (search) search.addEventListener("input", updateVisible);
