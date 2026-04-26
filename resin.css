@@ -2245,6 +2245,10 @@ body.resin-home.rh-merchant-page .rh-merchant-logo-card__fallback {
   color: var(--rh-muted);
 }
 
+body.resin-home.rh-merchant-page .rh-merchant-logo-card__fallback[hidden] {
+  display: none !important;
+}
+
 body.resin-home.rh-merchant-page .rh-merchant-logo-card__fallback strong {
   color: var(--rh-text);
   font-family: var(--rh-display);
