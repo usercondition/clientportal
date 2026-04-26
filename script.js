@@ -21,9 +21,9 @@
     {
       label: "Shop",
       href: "shop.html",
-      match: ["shop.html", "dm-stash.html", "greytide.html", "shop-checkout.html"],
+      match: ["shop.html", "dm-stash.html", "greytide.html", "redmakers.html", "rafail-ft-pring.html", "epic-miniatures.html", "shop-checkout.html"],
       children: [
-        { label: "Catalog", href: "shop.html#catalog", match: ["shop.html", "dm-stash.html", "greytide.html"] },
+        { label: "Catalog", href: "shop.html#catalog", match: ["shop.html", "dm-stash.html", "greytide.html", "redmakers.html", "rafail-ft-pring.html", "epic-miniatures.html"] },
         { label: "Checkout", href: "shop-checkout.html", match: ["shop-checkout.html"] },
       ],
     },
