@@ -1674,7 +1674,7 @@ body.resin-home .rh-vendor-index__logo-wrap {
   place-items: center;
   width: clamp(102px, 10.5vw, 132px);
   aspect-ratio: 1 / 1;
-  padding: 0.65rem;
+  padding: 0;
   border: 1px solid var(--rh-border);
   border-radius: 999px;
   overflow: hidden;
@@ -1709,7 +1709,8 @@ body.resin-home .rh-vendor-index__logo {
   max-height: 100%;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
 }
 
 @media (min-width: 980px) {
@@ -2185,7 +2186,7 @@ body.resin-home.rh-merchant-page .rh-merchant-logo-card__logo-wrap {
   width: clamp(180px, 34vw, 244px);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
-  padding: 0.95rem;
+  padding: 0;
   border: 1px solid var(--rh-border);
   border-radius: 999px;
   overflow: hidden;
@@ -2202,7 +2203,8 @@ body.resin-home.rh-merchant-page .rh-merchant-logo-card__img {
   max-height: 100%;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   display: block;
   margin: 0 auto;
 }
