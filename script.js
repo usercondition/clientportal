@@ -12,9 +12,6 @@
   if (!nav) return;
 
   var page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  var onIndex = page === "" || page === "index.html";
-  var hash = String(location.hash || "").toLowerCase();
-
   var menu = [
     {
       label: "Home",
@@ -54,14 +51,12 @@
       label: "Custom Jobs",
       href: "home-what-we-take-on.html",
       match: [
-        "home-recent-prints.html",
         "home-what-we-take-on.html",
         "home-files-to-finished-prints.html",
         "home-what-good-means-here.html",
         "home-clear-communication-reliable-output.html",
       ],
       children: [
-        { label: "Featured Work", href: "home-recent-prints.html", match: ["home-recent-prints.html"] },
         { label: "Services", href: "home-what-we-take-on.html", match: ["home-what-we-take-on.html"] },
         { label: "Process", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
         { label: "Quality", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
@@ -105,13 +100,11 @@
 
   function itemIsActive(item) {
     var fileMatch = Array.isArray(item.match) && item.match.indexOf(page) >= 0;
-    var hashMatch = onIndex && Array.isArray(item.sectionMatch) && item.sectionMatch.indexOf(hash) >= 0;
-    if (fileMatch || hashMatch) return true;
+    if (fileMatch) return true;
     if (!Array.isArray(item.children)) return false;
     return item.children.some(function (c) {
       var cf = Array.isArray(c.match) && c.match.indexOf(page) >= 0;
-      var ch = onIndex && Array.isArray(c.sectionMatch) && c.sectionMatch.indexOf(hash) >= 0;
-      return cf || ch;
+      return cf;
     });
   }
 

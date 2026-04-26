@@ -15,8 +15,8 @@ body.resin-home {
   --rh-copper: #b45309;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
   --rh-border: #e2e8f0;
-  --rh-shadow: 0 2px 14px color-mix(in srgb, #0369a1 7%, rgba(15, 23, 42, 0.08));
-  --rh-shadow-md: 0 12px 36px color-mix(in srgb, #0369a1 9%, rgba(15, 23, 42, 0.1));
+  --rh-shadow: 0 2px 10px color-mix(in srgb, #0369a1 5%, rgba(15, 23, 42, 0.06));
+  --rh-shadow-md: 0 8px 20px color-mix(in srgb, #0369a1 7%, rgba(15, 23, 42, 0.08));
   --rh-radius: 12px;
   --rh-radius-sm: 8px;
   --rh-max: 1080px;
@@ -160,15 +160,7 @@ body.resin-home .theme-toggle:hover {
 /* ——— Marketing shell: left index tree + main column ——— */
 body.resin-home.marketing-layout {
   background-color: var(--rh-bg);
-  background-image:
-    radial-gradient(1100px 500px at 14% -6%, color-mix(in srgb, var(--rh-primary) 11%, transparent), transparent 56%),
-    radial-gradient(880px 400px at 94% 6%, color-mix(in srgb, var(--rh-copper) 8%, transparent), transparent 52%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--rh-surface) 50%, var(--rh-bg)) 0%,
-      var(--rh-bg) 40%,
-      color-mix(in srgb, var(--rh-surface-2) 18%, var(--rh-bg)) 100%
-    );
+  background-image: none;
 }
 
 .marketing-shell {
@@ -607,22 +599,13 @@ body.resin-home .rh-lede {
 /* ——— Hero ——— */
 body.resin-home .rh-hero {
   position: relative;
-  overflow: clip;
+  overflow: hidden;
   padding: var(--rh-step-6) 0 var(--rh-step-7);
   border-bottom: 1px solid var(--rh-border);
 }
 
 body.resin-home .rh-hero::before {
-  content: "";
-  position: absolute;
-  inset: -18% -35% 35% -25%;
-  background: radial-gradient(
-    ellipse 68% 58% at 72% 22%,
-    color-mix(in srgb, var(--rh-primary) 20%, transparent),
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 0;
+  content: none;
 }
 
 body.resin-home .rh-hero > .rh-container {
@@ -631,13 +614,7 @@ body.resin-home .rh-hero > .rh-container {
 }
 
 body.resin-home .rh-hero > .rh-container::before {
-  content: "";
-  display: block;
-  width: min(100%, 28rem);
-  height: 4px;
-  border-radius: 999px;
-  margin-bottom: var(--rh-step-5);
-  background: linear-gradient(90deg, var(--rh-primary), var(--rh-copper));
+  content: none;
 }
 
 body.resin-home .rh-hero__grid {
@@ -699,18 +676,13 @@ body.resin-home .rh-btn {
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
 body.resin-home .rh-btn--primary {
   background: var(--rh-primary);
   color: #fff;
-  border-color: color-mix(in srgb, var(--rh-primary) 85%, #000);
-  box-shadow: var(--rh-shadow);
+  border-color: var(--rh-primary);
 }
 
 body.resin-home .rh-btn--primary:hover {
@@ -741,15 +713,15 @@ body.resin-home .rh-hero__note a {
 
 body.resin-home .rh-hero-visual {
   margin: 0;
-  border-radius: clamp(14px, 2vw, 20px) clamp(18px, 2.5vw, 28px) clamp(12px, 1.5vw, 18px) clamp(14px, 2vw, 22px);
+  border-radius: var(--rh-radius);
   border: 1px solid var(--rh-border);
   background: var(--rh-surface);
-  box-shadow: var(--rh-shadow-md);
+  box-shadow: var(--rh-shadow);
   aspect-ratio: 4 / 3;
   overflow: hidden;
   position: relative;
-  transform: rotate(-0.35deg);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  transform: none;
+  transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -765,10 +737,7 @@ body.resin-home .rh-hero-visual {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  body.resin-home .rh-hero-visual:hover {
-    transform: rotate(0deg) translateY(-4px);
-    box-shadow: 0 20px 48px color-mix(in srgb, var(--rh-primary) 18%, rgba(0, 0, 0, 0.15));
-  }
+  body.resin-home .rh-hero-visual:hover { transform: none; box-shadow: var(--rh-shadow); }
 }
 
 body.resin-home .rh-hero-visual__img {
@@ -1898,17 +1867,17 @@ body.resin-home .rh-shop-grid {
 body.resin-home .rh-shop-card {
   margin: 0;
   border: 1px solid var(--rh-border);
-  border-radius: clamp(12px, 1.9vw, 18px) clamp(14px, 2.2vw, 22px) clamp(12px, 1.8vw, 16px) clamp(10px, 1.6vw, 14px);
+  border-radius: var(--rh-radius);
   background: var(--rh-surface);
-  overflow: clip;
+  overflow: hidden;
   box-shadow: var(--rh-shadow);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
 body.resin-home .rh-shop-card:hover {
-  transform: translateY(-4px);
+  transform: none;
   border-color: color-mix(in srgb, var(--rh-primary) 26%, var(--rh-border));
-  box-shadow: var(--rh-shadow-md);
+  box-shadow: var(--rh-shadow);
 }
 
 body.resin-home .rh-shop-card__thumb {
