@@ -196,6 +196,25 @@
     document.body.style.overflow = "";
   }
 
+  function toLargePreviewSrc(src) {
+    var value = String(src || "").trim();
+    if (!value) return "";
+    if (/[?&]sz=w\d+/i.test(value)) {
+      return value.replace(/([?&]sz=)w\d+/i, "$1w1200");
+    }
+    return value;
+  }
+
+  function syncThumbSelection(card, selectedImg) {
+    if (!card) return;
+    var thumbs = Array.prototype.slice.call(card.querySelectorAll(".rh-shop-card__thumb-subgallery img"));
+    thumbs.forEach(function (thumb) {
+      var isActive = thumb === selectedImg;
+      thumb.classList.toggle("is-active", isActive);
+      thumb.setAttribute("aria-current", isActive ? "true" : "false");
+    });
+  }
+
   chips.forEach(function (chip) {
     chip.addEventListener("click", function () {
       var next = normalizedText(chip.getAttribute("data-filter")) || "all";
@@ -232,6 +251,19 @@
   grid.addEventListener("click", function (e) {
     var target = e.target;
     if (!target || !target.closest) return;
+    var subThumb = target.closest(".rh-shop-card__thumb-subgallery img");
+    if (subThumb) {
+      var card = subThumb.closest(".rh-shop-card");
+      var lead = card ? card.querySelector(".rh-shop-card__thumb img") : null;
+      if (lead) {
+        var nextSrc = toLargePreviewSrc(subThumb.getAttribute("src"));
+        if (nextSrc) lead.setAttribute("src", nextSrc);
+        var nextAlt = subThumb.getAttribute("alt");
+        if (nextAlt) lead.setAttribute("alt", nextAlt);
+      }
+      syncThumbSelection(card, subThumb);
+      return;
+    }
     var img = target.closest(".rh-shop-card__thumb img");
     if (!img) return;
     openImageModal(img.getAttribute("src"), img.getAttribute("alt"));

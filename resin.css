@@ -2930,7 +2930,12 @@ body.resin-home .rh-shop-card__thumb-subgallery img {
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--rh-border) 78%, transparent);
   background: color-mix(in srgb, var(--rh-surface-2) 55%, var(--rh-surface));
-  cursor: zoom-in;
+  cursor: pointer;
+}
+
+body.resin-home .rh-shop-card__thumb-subgallery img.is-active {
+  border-color: color-mix(in srgb, var(--rh-primary) 42%, var(--rh-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rh-primary) 20%, transparent);
 }
 
 body.resin-home .rh-vendor-tile {

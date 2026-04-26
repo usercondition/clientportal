@@ -6,6 +6,9 @@ html:has(.client-flow-body) {
 
 /* Match main website light/dark palette tokens */
 .client-flow-body {
+  --palette-accent: #171717;
+  --palette-accent-deep: #111111;
+  --palette-accent-2: #171717;
   --bg: #f6f5f2;
   --bg-elevated: #ffffff;
   --text: #151515;
@@ -23,6 +26,9 @@ html:has(.client-flow-body) {
 }
 
 html[data-theme="dark"] .client-flow-body {
+  --palette-accent: #f4f4f2;
+  --palette-accent-deep: #d9d5ce;
+  --palette-accent-2: #f4f4f2;
   --bg: #101010;
   --bg-elevated: #171717;
   --text: #f4f4f2;
