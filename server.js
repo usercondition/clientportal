@@ -546,6 +546,114 @@ function parseIsoTimestamp(input) {
   return new Date(ms).toISOString();
 }
 
+const SHOP_PRODUCT_SOURCE_FILES = [
+  "dm-stash.html",
+  "greytide.html",
+  "redmakers.html",
+  "rafail-ft-pring.html",
+  "epic-miniatures.html",
+  "mar-fil.html",
+];
+const SHOP_VENDOR_LABELS = {
+  "dm-stash": "DM Stash",
+  greytide: "Grey Tide Studio",
+  redmakers: "REDMAKERS",
+  "rafail-ft-pring": "Rafail ft. PRiNG",
+  "epic-miniatures": "EPIC Miniatures",
+  "mar-fil": "Mar-Fil",
+};
+const SHOP_PRICE_OVERRIDE_PATH = path.join(__dirname, "data", "shop-price-overrides.json");
+
+function normalizeSku(raw) {
+  return String(raw || "")
+    .trim()
+    .toUpperCase()
+    .slice(0, 64);
+}
+
+function safeReadJsonFile(absPath) {
+  try {
+    if (!fs.existsSync(absPath)) return {};
+    const txt = fs.readFileSync(absPath, "utf8");
+    const parsed = JSON.parse(txt);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (_e) {
+    return {};
+  }
+}
+
+function loadShopPriceOverrides() {
+  const raw = safeReadJsonFile(SHOP_PRICE_OVERRIDE_PATH);
+  const out = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const sku = normalizeSku(k);
+    const price = Number(v);
+    if (!sku || !Number.isFinite(price) || price < 0 || price > 100000) continue;
+    out[sku] = Math.round(price * 100) / 100;
+  }
+  return out;
+}
+
+function saveShopPriceOverrides(overrides) {
+  const dir = path.dirname(SHOP_PRICE_OVERRIDE_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(SHOP_PRICE_OVERRIDE_PATH, JSON.stringify(overrides, null, 2), "utf8");
+}
+
+function parseShopItemsFromHtml(fileName) {
+  const abs = path.join(__dirname, fileName);
+  if (!fs.existsSync(abs)) return [];
+  const html = fs.readFileSync(abs, "utf8");
+  const vendor = path.basename(fileName, ".html");
+  const vendorLabel = SHOP_VENDOR_LABELS[vendor] || vendor;
+  const rows = [];
+  const cardRegex = /<article class="rh-shop-card"([^>]*)>([\s\S]*?)<\/article>/g;
+  const attrValue = (src, attr) => {
+    const m = src.match(new RegExp(`${attr}="([^"]+)"`, "i"));
+    return m ? String(m[1]).trim() : "";
+  };
+  let match;
+  while ((match = cardRegex.exec(html))) {
+    const attrs = String(match[1] || "");
+    const body = String(match[2] || "");
+    const btnMatch = body.match(
+      /<button[^>]*class="[^"]*rh-shop-add[^"]*"[^>]*data-sku="([^"]+)"[^>]*data-name="([^"]+)"[^>]*data-price="([^"]+)"/i
+    );
+    if (!btnMatch) continue;
+    const sku = normalizeSku(btnMatch[1]);
+    const name = String(btnMatch[2] || "").trim().slice(0, 220);
+    const basePrice = Number(btnMatch[3] || 0);
+    if (!sku || !name || !Number.isFinite(basePrice) || basePrice < 0) continue;
+    const cat = attrValue(attrs, "data-cat").toLowerCase();
+    const searchText = attrValue(attrs, "data-search");
+    const imgMatch = body.match(/<img[^>]*src="([^"]+)"/i);
+    const image = imgMatch ? String(imgMatch[1]).trim() : "";
+    rows.push({
+      sku,
+      name,
+      basePrice: Math.round(basePrice * 100) / 100,
+      sourceFile: fileName,
+      vendor,
+      vendorLabel,
+      category: cat || "general",
+      searchText,
+      image,
+    });
+  }
+  return rows;
+}
+
+function getShopInventoryItems() {
+  const merged = new Map();
+  for (const fileName of SHOP_PRODUCT_SOURCE_FILES) {
+    const rows = parseShopItemsFromHtml(fileName);
+    for (const row of rows) {
+      if (!merged.has(row.sku)) merged.set(row.sku, row);
+    }
+  }
+  return Array.from(merged.values()).sort((a, b) => a.sku.localeCompare(b.sku));
+}
+
 function isMarketplaceSyncAuthorized(req) {
   if (!MARKETPLACE_SYNC_TOKEN) return false;
   const auth = String(req.headers.authorization || "");
@@ -904,6 +1012,53 @@ app.post("/api/contact", async (req, res) => {
   queueNotifyEmail(resolveAdminNotifyEmail(), subject, text, { replyTo: email });
 
   return res.status(202).json({ ok: true });
+});
+
+app.get("/api/shop/price-overrides", async (_req, res) => {
+  const overrides = loadShopPriceOverrides();
+  return res.json({ ok: true, overrides });
+});
+
+app.get("/api/admin/shop-items", async (_req, res) => {
+  try {
+    const overrides = loadShopPriceOverrides();
+    const items = getShopInventoryItems().map((item) => {
+      const overridePrice = Object.prototype.hasOwnProperty.call(overrides, item.sku) ? overrides[item.sku] : null;
+      return {
+        ...item,
+        price: overridePrice == null ? item.basePrice : overridePrice,
+        overridePrice,
+      };
+    });
+    return res.json({ ok: true, count: items.length, items });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/shop-items] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load shop inventory." });
+  }
+});
+
+app.patch("/api/admin/shop-items/:sku", async (req, res) => {
+  const sku = normalizeSku(req.params && req.params.sku);
+  if (!sku) return res.status(400).json({ error: "Invalid SKU." });
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const hasPrice = Object.prototype.hasOwnProperty.call(body, "price");
+  if (!hasPrice) return res.status(400).json({ error: "Send { price } in the request body." });
+  const rawPrice = body.price;
+  const clearOverride = rawPrice == null || String(rawPrice).trim() === "";
+  const overrides = loadShopPriceOverrides();
+  if (clearOverride) {
+    delete overrides[sku];
+    saveShopPriceOverrides(overrides);
+    return res.json({ ok: true, sku, cleared: true });
+  }
+  const price = Number(rawPrice);
+  if (!Number.isFinite(price) || price < 0 || price > 100000) {
+    return res.status(400).json({ error: "Price must be a number between 0 and 100000." });
+  }
+  overrides[sku] = Math.round(price * 100) / 100;
+  saveShopPriceOverrides(overrides);
+  return res.json({ ok: true, sku, price: overrides[sku] });
 });
 
 app.post("/api/shop/create-checkout-session", async (req, res) => {

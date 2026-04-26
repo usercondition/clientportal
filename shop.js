@@ -42,6 +42,16 @@
     return "$" + Number(v || 0).toFixed(2);
   }
 
+  function applyCardPrice(btn, price) {
+    if (!btn) return;
+    var clean = Number.isFinite(price) ? Math.max(0, price) : 0;
+    btn.setAttribute("data-price", String(clean));
+    var card = btn.closest ? btn.closest(".rh-shop-card") : null;
+    if (!card) return;
+    var priceEl = card.querySelector(".rh-shop-meta strong");
+    if (priceEl) priceEl.textContent = formatMoney(clean);
+  }
+
   function cartItems() {
     return Object.keys(cart)
       .map(function (k) {
@@ -105,6 +115,43 @@
     if (cartSubtotalTop) cartSubtotalTop.textContent = formatMoney(subtotal) + " subtotal";
   }
 
+  function syncCartPricesFromButtons() {
+    addButtons.forEach(function (btn) {
+      var sku = normalizedText(btn.getAttribute("data-sku")).toUpperCase();
+      if (!sku || !cart[sku]) return;
+      var livePrice = Number(btn.getAttribute("data-price") || 0);
+      if (Number.isFinite(livePrice) && livePrice >= 0) {
+        cart[sku].price = Math.round(livePrice * 100) / 100;
+      }
+    });
+  }
+
+  function applyPriceOverrides() {
+    fetch("/api/shop/price-overrides", { headers: { Accept: "application/json" } })
+      .then(function (r) {
+        if (!r.ok) throw new Error("Failed to load shop pricing.");
+        return r.json();
+      })
+      .then(function (payload) {
+        var overrides = payload && payload.overrides && typeof payload.overrides === "object" ? payload.overrides : {};
+        addButtons.forEach(function (btn) {
+          var sku = normalizedText(btn.getAttribute("data-sku")).toUpperCase();
+          if (!sku) return;
+          if (!Object.prototype.hasOwnProperty.call(overrides, sku)) return;
+          var nextPrice = Number(overrides[sku]);
+          if (!Number.isFinite(nextPrice) || nextPrice < 0) return;
+          applyCardPrice(btn, Math.round(nextPrice * 100) / 100);
+        });
+        syncCartPricesFromButtons();
+        saveCart();
+        syncCartTop();
+        notifyCartChanged();
+      })
+      .catch(function () {
+        /* keep base card prices if overrides endpoint is unavailable */
+      });
+  }
+
   chips.forEach(function (chip) {
     chip.addEventListener("click", function () {
       var next = normalizedText(chip.getAttribute("data-filter")) || "all";
@@ -139,6 +186,7 @@
   });
 
   if (search) search.addEventListener("input", updateVisible);
+  applyPriceOverrides();
   updateVisible();
   syncCartTop();
   notifyCartChanged();

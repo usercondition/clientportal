@@ -1688,14 +1688,6 @@ body.resin-home .rh-vendor-tile:hover .rh-vendor-index__logo-wrap {
     inset 0 0 0 1px color-mix(in srgb, var(--rh-primary) 20%, transparent);
 }
 
-body.resin-home .rh-vendor-index__logo-wrap--all {
-  font-family: var(--rh-display);
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  font-weight: 800;
-  color: color-mix(in srgb, var(--rh-primary) 82%, var(--rh-text));
-}
-
 body.resin-home .rh-vendor-index__logo {
   display: block;
   max-width: 100%;
