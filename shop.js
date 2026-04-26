@@ -128,13 +128,33 @@
   function updateStaticVisible() {
     var q = normalizedText(search && search.value);
     var cards = Array.prototype.slice.call(grid.querySelectorAll(".rh-shop-card"));
+    var file = String((location && location.pathname) || "")
+      .split("/")
+      .pop()
+      .toLowerCase();
+    var expectedSkuPrefix = file === "greytide.html"
+      ? "GTS-"
+      : file === "dm-stash.html"
+        ? "DMS-"
+        : file === "redmakers.html"
+          ? "RM-"
+          : file === "rafail-ft-pring.html"
+            ? "RFP-"
+            : file === "epic-miniatures.html"
+              ? "EM-"
+              : file === "mar-fil.html"
+                ? "MF-"
+                : "";
     var visible = 0;
     cards.forEach(function (card) {
       var cat = normalizedText(card.getAttribute("data-cat"));
       var hay = normalizedText(card.getAttribute("data-search"));
       var catOk = currentFilter === "all" || cat.split(/\s+/).indexOf(currentFilter) >= 0;
       var qOk = !q || hay.indexOf(q) >= 0;
-      var show = catOk && qOk;
+      var btn = card.querySelector(".rh-shop-add");
+      var sku = btn ? String(btn.getAttribute("data-sku") || "").toUpperCase() : "";
+      var skuOk = !expectedSkuPrefix || sku.indexOf(expectedSkuPrefix) === 0;
+      var show = catOk && qOk && skuOk;
       card.hidden = !show;
       if (show) visible += 1;
     });
