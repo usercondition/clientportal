@@ -117,6 +117,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Global anchor safety for sticky headers across non-marketing pages. */
+[id] {
+  scroll-margin-top: clamp(4.5rem, 9vw, 6rem);
+}
+
+/* Avoid edge clipping for responsive media embeds/site imagery. */
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;

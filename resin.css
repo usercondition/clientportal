@@ -29,6 +29,7 @@ body.resin-home {
   --rh-step-5: 1.5rem;
   --rh-step-6: 2.25rem;
   --rh-step-7: 3.25rem;
+  --rh-sticky-offset: clamp(4.25rem, 8vw, 5.5rem);
 }
 
 /* Dark */
@@ -303,6 +304,23 @@ body.resin-home .site-sidebar__dock .theme-toggle {
   flex-direction: column;
   min-width: 0;
   background: color-mix(in srgb, var(--rh-bg) 92%, transparent);
+}
+
+/* Global layout safety so anchored sections are never hidden under sticky topbar. */
+body.resin-home.marketing-layout [id] {
+  scroll-margin-top: calc(var(--rh-sticky-offset) + 0.75rem);
+}
+
+/* Keep first visible section comfortably below sticky chrome on all marketing pages. */
+body.resin-home.marketing-layout main > .rh-section:first-of-type {
+  padding-top: max(0.75rem, var(--rh-step-4));
+}
+
+/* Prevent media from overflowing or clipping against page edges. */
+body.resin-home img,
+body.resin-home video,
+body.resin-home iframe {
+  max-width: 100%;
 }
 
 body.resin-home.marketing-layout .marketing-main > .site-footer {
