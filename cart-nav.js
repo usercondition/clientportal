@@ -3,7 +3,16 @@
   var CART_KEY = "shop_cart_v1";
   var meta = document.getElementById("site-cart-nav-meta");
   var link = document.getElementById("site-cart-nav");
+  var label = link ? link.querySelector(".site-cart-nav__label") : null;
+  var countEl = link ? link.querySelector(".site-cart-nav__count") : null;
   if (!meta && !link) return;
+
+  if (label && !countEl) {
+    countEl = document.createElement("span");
+    countEl.className = "site-cart-nav__count";
+    countEl.textContent = "0";
+    label.appendChild(countEl);
+  }
 
   function formatMoney(v) {
     return "$" + Number(v || 0).toFixed(2);
@@ -36,11 +45,21 @@
       qty += it.qty;
       sub += it.qty * it.price;
     });
+    var hasItems = qty > 0;
     if (meta) {
-      meta.textContent = qty ? qty + (qty === 1 ? " item" : " items") + " · " + formatMoney(sub) : "Empty · " + formatMoney(0);
+      meta.textContent = hasItems ? "Full cart" : "Empty cart";
+    }
+    if (countEl) {
+      countEl.textContent = String(qty);
+      countEl.classList.toggle("is-empty", !hasItems);
     }
     if (link) {
-      link.setAttribute("aria-label", qty ? "Cart, " + qty + " items, " + formatMoney(sub) : "Cart, empty");
+      link.classList.toggle("is-full", hasItems);
+      link.classList.toggle("is-empty", !hasItems);
+      link.setAttribute(
+        "aria-label",
+        hasItems ? "Cart full, " + qty + " items, " + formatMoney(sub) : "Cart empty, 0 items"
+      );
     }
   }
 

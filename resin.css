@@ -402,6 +402,29 @@ body.resin-home.marketing-layout .site-footer .footer-inner {
   color: var(--rh-muted);
 }
 
+.site-cart-nav__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.28rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--rh-primary) 26%, var(--rh-border));
+  background: color-mix(in srgb, var(--rh-primary) 14%, var(--rh-surface));
+  color: var(--rh-text);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.site-cart-nav__count.is-empty {
+  background: color-mix(in srgb, var(--rh-border) 56%, var(--rh-surface));
+  border-color: var(--rh-border);
+  color: var(--rh-muted);
+}
+
 .site-cart-nav__meta {
   font-size: 0.84rem;
   font-weight: 600;
@@ -410,6 +433,14 @@ body.resin-home.marketing-layout .site-footer .footer-inner {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+.site-cart-nav.is-full .site-cart-nav__meta {
+  color: var(--rh-text);
+}
+
+.site-cart-nav.is-empty .site-cart-nav__meta {
+  color: var(--rh-muted);
 }
 
 body.resin-home.marketing-layout .site-topbar .nav-toggle {
