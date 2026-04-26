@@ -157,11 +157,11 @@
 
   var samplers = [
     { title: "Ahznagol Aberrant Guards", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=11vtmHYX6Y-lSUD6W1PcJzgZboV2zvAjt&sz=w1200", href: "dm-stash.html" },
-    { title: "Grey Tide Featured Set", vendor: "Grey Tide Studio", image: "assets/greytide-logo.png", href: "greytide.html" },
-    { title: "REDMAKERS Featured Set", vendor: "REDMAKERS", image: "assets/redmakers-logo-new.png", href: "redmakers.html" },
-    { title: "Rafail ft. PRiNG Featured Set", vendor: "Rafail ft. PRiNG", image: "assets/rafail-ft-pring-banner.png", href: "rafail-ft-pring.html" },
-    { title: "EPIC Miniatures Featured Set", vendor: "EPIC Miniatures", image: "assets/epic-miniatures-logo.png", href: "epic-miniatures.html" },
-    { title: "Mar-Fil Featured Set", vendor: "Mar-Fil", image: "assets/mar-fil-logo.png", href: "mar-fil.html" },
+    { title: "Ardolinth", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=1KDs0svxx7BUOCh6Shq4tnkJWGUzuYu8X&sz=w1200", href: "dm-stash.html" },
+    { title: "Ariana Grey", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=1j2649g8dpCQWoGcKJPvKuLfu8o4QrbTu&sz=w1200", href: "dm-stash.html" },
+    { title: "Bao Long Eastern Orc Battlemaster", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=1n-eQssde_0K2wZ4OUSTJY6Ow5zo_ayxx&sz=w1200", href: "dm-stash.html" },
+    { title: "Brandyn Broadoak Baldurian Enforcer", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=1EVBnzOFFrw3Ns2TdLcEPmmsGhmztR9K4&sz=w1200", href: "dm-stash.html" },
+    { title: "Skorn Skullsplitter Knight of the Seventh Reverie", vendor: "DM Stash", image: "https://drive.google.com/thumbnail?id=1hfECsD5J_BfjyKJCsQdkdJDwpBv9jAwg&sz=w1200", href: "dm-stash.html" },
   ];
   for (var i = samplers.length - 1; i > 0; i -= 1) {
     var j = Math.floor(Math.random() * (i + 1));

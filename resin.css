@@ -1895,23 +1895,26 @@ body.resin-home .rh-shop-card__thumb img {
 
 body.resin-home .rh-shop-card--sampler {
   grid-column: 1 / -1;
+  max-width: 700px;
+  width: 100%;
+  margin-inline: auto;
 }
 
 body.resin-home .rh-sampler-carousel {
-  min-height: clamp(240px, 34vw, 380px);
+  min-height: clamp(170px, 24vw, 250px);
 }
 
 body.resin-home .rh-sampler-carousel__control {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border: 1px solid color-mix(in srgb, var(--rh-primary) 45%, var(--rh-border));
   border-radius: 999px;
   background: color-mix(in srgb, var(--rh-surface) 88%, transparent);
   color: var(--rh-primary);
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   line-height: 1;
   cursor: pointer;
 }
