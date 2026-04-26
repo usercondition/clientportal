@@ -15,6 +15,7 @@
   --text-muted: var(--palette-muted);
   --accent: var(--palette-accent);
   --accent-cyan: var(--palette-accent-2);
+  --accent-contrast: #ffffff;
   --accent-hot: #b45309;
   --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
   --border: var(--palette-line);
@@ -58,6 +59,7 @@
   --text-muted: #b5b0a8;
   --accent: #f4f4f2;
   --accent-cyan: #f4f4f2;
+  --accent-contrast: #111111;
   --accent-hot: #fbbf24;
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
   --border: #2f2b25;
@@ -136,7 +138,7 @@ iframe {
   z-index: 100;
   padding: 0.5rem 1rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   font-weight: 600;
   border-radius: var(--radius);
 }
@@ -852,7 +854,7 @@ body.is-marketing-nav-open {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   border-color: color-mix(in srgb, var(--accent) 85%, #000);
   box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 12%, transparent);
 }
@@ -863,7 +865,7 @@ body.is-marketing-nav-open {
 }
 
 [data-theme="dark"] .btn-primary {
-  color: #111111;
+  color: var(--accent-contrast);
   background: color-mix(in srgb, var(--accent) 82%, #000 18%);
   border-color: color-mix(in srgb, var(--accent) 58%, #000 42%);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 8px rgba(0, 0, 0, 0.4);

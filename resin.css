@@ -11,6 +11,7 @@ body.resin-home {
   --rh-text: #0f172a;
   --rh-muted: #64748b;
   --rh-primary: #0369a1;
+  --rh-on-primary: #ffffff;
   --rh-primary-hover: #075985;
   --rh-copper: #b45309;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 18%, transparent);
@@ -40,6 +41,7 @@ html[data-theme="dark"] body.resin-home {
   --rh-text: #f1f5f9;
   --rh-muted: #94a3b8;
   --rh-primary: #38bdf8;
+  --rh-on-primary: #111111;
   --rh-primary-hover: #7dd3fc;
   --rh-copper: #fbbf24;
   --rh-copper-soft: color-mix(in srgb, var(--rh-copper) 20%, transparent);
@@ -68,7 +70,7 @@ html[data-theme="dark"] body.resin-home {
 
 body.resin-home .skip-link {
   background: var(--rh-primary);
-  color: #fff;
+  color: var(--rh-on-primary);
 }
 
 body.resin-home .site-brand {
@@ -702,7 +704,7 @@ body.resin-home .rh-btn {
 
 body.resin-home .rh-btn--primary {
   background: var(--rh-primary);
-  color: #fff;
+  color: var(--rh-on-primary);
   border-color: var(--rh-primary);
 }
 
@@ -1024,7 +1026,7 @@ body.resin-home .rh-step__num {
   place-items: center;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--rh-on-primary);
   background: var(--rh-primary);
 }
 
@@ -1242,7 +1244,7 @@ body.resin-home .rh-assistant {
 body.resin-home .rh-assistant__fab {
   border: 1px solid color-mix(in srgb, var(--rh-primary) 45%, var(--rh-border));
   background: var(--rh-primary);
-  color: #fff;
+  color: var(--rh-on-primary);
   border-radius: 999px;
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
@@ -1441,7 +1443,7 @@ body.resin-home main a:focus-visible {
 }
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary {
-  color: #fff7ff;
+  color: var(--rh-on-primary);
   border-color: color-mix(in srgb, var(--rh-primary) 55%, #ffffff);
   box-shadow:
     0 0 22px color-mix(in srgb, var(--rh-primary) 35%, transparent),
@@ -1449,7 +1451,7 @@ html[data-theme="dark"] body.resin-home .rh-btn--primary {
 }
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary:hover {
-  color: #fff7ff;
+  color: var(--rh-on-primary);
 }
 
 body.resin-home .skip-link:focus {

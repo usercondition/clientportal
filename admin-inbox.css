@@ -290,7 +290,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   line-height: 1.25;
-  color: #fff;
+  color: var(--accent-contrast, #111111);
   background: var(--accent);
   border-radius: 999px;
   text-align: center;
