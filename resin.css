@@ -429,21 +429,7 @@ body.resin-home.marketing-layout .site-footer .footer-inner {
 }
 
 .site-cart-nav__meta {
-  font-size: 0.73rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.site-cart-nav.is-full .site-cart-nav__meta {
-  color: var(--rh-text);
-}
-
-.site-cart-nav.is-empty .site-cart-nav__meta {
-  color: var(--rh-muted);
+  display: none;
 }
 
 body.resin-home.marketing-layout .site-topbar .nav-toggle {

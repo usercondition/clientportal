@@ -6,6 +6,7 @@
   var label = link ? link.querySelector(".site-cart-nav__label") : null;
   var countEl = link ? link.querySelector(".site-cart-nav__count") : null;
   if (!meta && !link) return;
+  if (meta) meta.hidden = true;
 
   if (label && !countEl) {
     countEl = document.createElement("span");
@@ -46,9 +47,6 @@
       sub += it.qty * it.price;
     });
     var hasItems = qty > 0;
-    if (meta) {
-      meta.textContent = hasItems ? "Full cart" : "Empty cart";
-    }
     if (countEl) {
       countEl.textContent = String(qty);
       countEl.classList.toggle("is-empty", !hasItems);
