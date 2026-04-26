@@ -1,5 +1,40 @@
 /* Client portal — dashboard layout, panels, messaging */
 
+/* Match main website light/dark palette tokens */
+.portal-body {
+  --bg: #f6f5f2;
+  --bg-elevated: #ffffff;
+  --text: #151515;
+  --text-muted: #66625b;
+  --accent: #171717;
+  --accent-cyan: #171717;
+  --accent-hot: #b45309;
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --border: #d8d3ca;
+  --shadow: 0 14px 30px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.05);
+  --page-bg-image:
+    radial-gradient(860px 420px at 86% -8%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 58%),
+    linear-gradient(184deg, #ffffff 0%, var(--bg) 58%, #f1efe9 100%);
+}
+
+html[data-theme="dark"] .portal-body {
+  --bg: #101010;
+  --bg-elevated: #171717;
+  --text: #f4f4f2;
+  --text-muted: #b5b0a8;
+  --accent: #f4f4f2;
+  --accent-cyan: #f4f4f2;
+  --accent-hot: #fbbf24;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --border: #2f2b25;
+  --shadow: 0 16px 34px rgba(0, 0, 0, 0.42);
+  --shadow-sm: 0 10px 24px rgba(0, 0, 0, 0.35);
+  --page-bg-image:
+    radial-gradient(760px 400px at 88% -8%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 58%),
+    linear-gradient(184deg, #111111 0%, var(--bg) 58%, #181613 100%);
+}
+
 .portal-body {
   min-height: 100vh;
   min-height: 100dvh;
