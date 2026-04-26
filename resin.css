@@ -2992,3 +2992,182 @@ body.resin-home .rh-vendor-tile:focus-visible .rh-vendor-index__logo-wrap {
     filter: none;
   }
 }
+
+/* --- Homepage luxury-minimal rewrite pass --- */
+body.resin-home:not(.rh-shop-page) .rh-home-hero {
+  padding-bottom: clamp(2rem, 5vw, 3.4rem);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-hero__title {
+  max-width: 17ch;
+  font-size: clamp(2.2rem, 4.8vw, 3.5rem);
+  letter-spacing: -0.03em;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-hero__copy {
+  max-width: 53ch;
+  font-size: 1.02rem;
+  color: color-mix(in srgb, var(--rh-muted) 84%, var(--rh-text));
+}
+
+body.resin-home:not(.rh-shop-page) .rh-hero-visual {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 86%, transparent);
+  box-shadow:
+    0 2px 8px color-mix(in srgb, #000 8%, transparent),
+    0 20px 34px color-mix(in srgb, #000 10%, transparent);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-hero-visual__tag {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 70%, transparent);
+  background: color-mix(in srgb, var(--rh-surface) 92%, transparent);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof {
+  padding-top: 0;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.05rem);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 820px) {
+  body.resin-home:not(.rh-shop-page) .rh-proof__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof__item {
+  border: 1px solid color-mix(in srgb, var(--rh-border) 82%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--rh-surface) 96%, var(--rh-bg));
+  padding: clamp(0.92rem, 1.6vw, 1.15rem);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof__label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rh-muted);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof__value {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.1rem, 2.3vw, 1.4rem);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--rh-text);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-proof__copy {
+  margin: 0.35rem 0 0;
+  color: var(--rh-muted);
+  font-size: 0.9rem;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot .rh-services__intro,
+body.resin-home:not(.rh-shop-page) .rh-gallery__head,
+body.resin-home:not(.rh-shop-page) .rh-process__intro {
+  max-width: 64ch;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.85rem, 2vw, 1.2rem);
+}
+
+@media (min-width: 980px) {
+  body.resin-home:not(.rh-shop-page) .rh-services-snapshot__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot__card {
+  border: 1px solid color-mix(in srgb, var(--rh-border) 82%, transparent);
+  border-radius: 12px;
+  background: var(--rh-surface);
+  padding: clamp(1rem, 2vw, 1.35rem);
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot__card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot__card p {
+  margin: 0;
+  color: var(--rh-muted);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot__card .rh-btn {
+  margin-top: 0.4rem;
+  justify-self: start;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-gallery__grid {
+  gap: clamp(0.75rem, 1.8vw, 1.05rem);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-gallery__cap {
+  display: grid;
+  gap: 0.18rem;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-gallery__cap strong {
+  letter-spacing: -0.01em;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-process__steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.8rem, 2vw, 1rem);
+}
+
+@media (min-width: 980px) {
+  body.resin-home:not(.rh-shop-page) .rh-process__steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.resin-home:not(.rh-shop-page) .rh-step {
+  min-height: 100%;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-quality__card p {
+  margin-bottom: 0;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-cta__wrap {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 82%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rh-surface) 96%, #fff 4%) 0%,
+      var(--rh-surface) 100%
+    );
+}
+
+@media (max-width: 760px) {
+  body.resin-home:not(.rh-shop-page) .rh-hero__title {
+    max-width: 14ch;
+    font-size: clamp(1.85rem, 8vw, 2.45rem);
+  }
+
+  body.resin-home:not(.rh-shop-page) .rh-proof__item,
+  body.resin-home:not(.rh-shop-page) .rh-services-snapshot__card {
+    border-radius: 10px;
+  }
+}
