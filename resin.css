@@ -1798,26 +1798,6 @@ body.resin-home .rh-shop-filter-group {
   gap: 0.45rem;
 }
 
-body.resin-home .rh-shop-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-body.resin-home .rh-shop-select select {
-  border: 1px solid var(--rh-border);
-  background: var(--rh-surface);
-  color: var(--rh-muted);
-  border-radius: 999px;
-  padding: 0.42rem 0.78rem;
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  min-width: 9.25rem;
-}
-
 body.resin-home .rh-shop-chip {
   border: 1px solid var(--rh-border);
   background: var(--rh-surface);

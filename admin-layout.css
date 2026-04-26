@@ -8,35 +8,6 @@
   --admin-nav-active-border: color-mix(in srgb, var(--accent) 42%, var(--border));
 }
 
-/* Design Milk-inspired admin pass: calmer monochrome surfaces + restrained accents. */
-body.admin-app {
-  --accent: #231f20;
-  --accent-cyan: #b9a88f;
-  --accent-hot: #6e5f4b;
-  --bg: #f5f3ef;
-  --bg-elevated: #fcfbf8;
-  --text: #171515;
-  --text-muted: #6d645a;
-  --border: #dcd5ca;
-  --radius: 6px;
-  --radius-lg: 8px;
-  --shadow: none;
-  --shadow-sm: none;
-  --page-bg-image: none;
-  --font-display: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-html[data-theme="dark"] body.admin-app {
-  --accent: #efe9dc;
-  --accent-cyan: #d3c1a8;
-  --accent-hot: #b8a07f;
-  --bg: #11100f;
-  --bg-elevated: #171513;
-  --text: #f2ece2;
-  --text-muted: #b7a896;
-  --border: #312b23;
-}
-
 .admin-app {
   display: grid;
   grid-template-columns: var(--admin-sidebar-w) minmax(0, 1fr);
@@ -172,7 +143,7 @@ html[data-theme="dark"] body.admin-app {
   padding: 1rem 0.75rem;
   padding-top: max(1rem, env(safe-area-inset-top, 0px));
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  box-shadow: inset 2px 0 0 0 var(--accent);
+  box-shadow: inset 4px 0 0 0 var(--accent);
 }
 
 .admin-sidebar__brand {
@@ -240,10 +211,8 @@ html[data-theme="dark"] body.admin-app {
   background: transparent;
   color: var(--text);
   text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.9rem;
+  font-weight: 500;
   line-height: 1.25;
   transition:
     background var(--dur-med) var(--ease-fluid),
@@ -259,7 +228,7 @@ html[data-theme="dark"] body.admin-app {
 .admin-nav-item[aria-current="page"] {
   background: var(--admin-nav-active);
   border-color: var(--admin-nav-active-border);
-  color: var(--accent);
+  color: var(--text);
 }
 
 .admin-nav-item__icon {
@@ -422,7 +391,7 @@ html[data-theme="dark"] body.admin-app {
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg));
   padding: 1rem 1rem 1.1rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-metrics__group {
@@ -581,7 +550,7 @@ html[data-theme="dark"] body.admin-app {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
   text-decoration: none;
   color: inherit;
   transition:
@@ -593,8 +562,8 @@ html[data-theme="dark"] body.admin-app {
 
 .admin-dash-card:hover:not(.admin-dash-card--muted) {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  transform: none;
-  box-shadow: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 .admin-dash-card--muted {
