@@ -1,41 +1,23 @@
-/* Shop catalog behavior (filters/search/sort + persistent cart). */
+/* Shop catalog behavior: mixed vendor feed, filters, and cart. */
 (function () {
   var CART_KEY = "shop_cart_v1";
-  var chips = Array.prototype.slice.call(document.querySelectorAll(".rh-shop-chip"));
-  var search = document.getElementById("shop-search");
   var grid = document.getElementById("shop-grid");
   var empty = document.getElementById("shop-empty");
   var resultsCount = document.getElementById("shop-results-count");
-  var addButtons = Array.prototype.slice.call(document.querySelectorAll(".rh-shop-add"));
+  var search = document.getElementById("shop-search");
+  var vendorFilter = document.getElementById("shop-filter-vendor");
+  var categoryFilter = document.getElementById("shop-filter-category");
   var cartCountTop = document.getElementById("shop-cart-count-top");
   var cartSubtotalTop = document.getElementById("shop-cart-subtotal-top");
-  if (!chips.length || !grid) return;
+  if (!grid) return;
 
-  var currentFilter = "all";
+  /** @type {Array<{sku:string,name:string,price:number,category:string,vendor:string,vendorLabel:string,image:string,searchText:string}>} */
+  var allItems = [];
   /** @type {Record<string, { sku: string; name: string; price: number; qty: number }>} */
   var cart = loadCart();
 
   function normalizedText(v) {
     return String(v || "").toLowerCase().trim();
-  }
-
-  function updateVisible() {
-    var q = normalizedText(search && search.value);
-    var cards = Array.prototype.slice.call(grid.querySelectorAll(".rh-shop-card"));
-    var visible = 0;
-    cards.forEach(function (card) {
-      var cat = normalizedText(card.getAttribute("data-cat"));
-      var hay = normalizedText(card.getAttribute("data-search"));
-      var catOk = currentFilter === "all" || cat.split(/\s+/).indexOf(currentFilter) >= 0;
-      var qOk = !q || hay.indexOf(q) >= 0;
-      var show = catOk && qOk;
-      card.hidden = !show;
-      if (show) visible += 1;
-    });
-    if (empty) empty.hidden = visible !== 0;
-    if (resultsCount) {
-      resultsCount.textContent = "Showing " + visible + (visible === 1 ? " item" : " items");
-    }
   }
 
   function formatMoney(v) {
@@ -105,41 +87,166 @@
     if (cartSubtotalTop) cartSubtotalTop.textContent = formatMoney(subtotal) + " subtotal";
   }
 
-  chips.forEach(function (chip) {
-    chip.addEventListener("click", function () {
-      var next = normalizedText(chip.getAttribute("data-filter")) || "all";
-      currentFilter = next;
-      chips.forEach(function (el) {
-        var active = el === chip;
-        el.classList.toggle("is-active", active);
-        el.setAttribute("aria-selected", active ? "true" : "false");
+  function optionMarkup(value, label) {
+    return '<option value="' + value + '">' + label + "</option>";
+  }
+
+  function populateFilters(items) {
+    if (vendorFilter) {
+      var vendors = Array.from(
+        new Set(
+          items.map(function (item) {
+            return item.vendor;
+          })
+        )
+      )
+        .filter(Boolean)
+        .sort();
+      var vendorLabels = {};
+      items.forEach(function (item) {
+        if (item.vendor && item.vendorLabel && !vendorLabels[item.vendor]) vendorLabels[item.vendor] = item.vendorLabel;
       });
-      updateVisible();
+      vendorFilter.innerHTML = optionMarkup("all", "All vendors");
+      vendors.forEach(function (v) {
+        vendorFilter.insertAdjacentHTML("beforeend", optionMarkup(v, vendorLabels[v] || v));
+      });
+    }
+    if (categoryFilter) {
+      var cats = Array.from(
+        new Set(
+          items.map(function (item) {
+            return item.category;
+          })
+        )
+      )
+        .filter(Boolean)
+        .sort();
+      categoryFilter.innerHTML = optionMarkup("all", "All categories");
+      cats.forEach(function (c) {
+        categoryFilter.insertAdjacentHTML("beforeend", optionMarkup(c, c));
+      });
+    }
+  }
+
+  function visibleItems() {
+    var q = normalizedText(search && search.value);
+    var vendor = normalizedText(vendorFilter && vendorFilter.value) || "all";
+    var category = normalizedText(categoryFilter && categoryFilter.value) || "all";
+    return allItems.filter(function (item) {
+      if (vendor !== "all" && normalizedText(item.vendor) !== vendor) return false;
+      if (category !== "all" && normalizedText(item.category) !== category) return false;
+      if (!q) return true;
+      var hay = normalizedText(
+        (item.searchText || "") + " " + item.name + " " + item.sku + " " + (item.vendorLabel || item.vendor || "")
+      );
+      return hay.indexOf(q) >= 0;
     });
+  }
+
+  function cardMarkup(item) {
+    var img = item.image
+      ? '<img src="' + item.image + '" alt="' + item.name + ' miniature" width="800" height="800" loading="lazy" decoding="async" />'
+      : "";
+    return (
+      '<article class="rh-shop-card" data-cat="' +
+      item.category +
+      '" data-search="' +
+      (item.searchText || "") +
+      '">' +
+      '<div class="rh-shop-card__thumb">' +
+      img +
+      '<span class="rh-shop-badge">In stock</span>' +
+      "</div>" +
+      '<div class="rh-shop-card__body">' +
+      "<h3>" +
+      item.name +
+      "</h3>" +
+      "<p>" +
+      (item.vendorLabel || item.vendor) +
+      " licensed release. High-detail resin print fulfilled by Steindahl 3D Group." +
+      "</p>" +
+      '<div class="rh-shop-meta"><strong>' +
+      formatMoney(item.price) +
+      "</strong><span>SKU: " +
+      item.sku +
+      "</span></div>" +
+      '<button type="button" class="rh-btn rh-btn--ghost rh-shop-add" data-sku="' +
+      item.sku +
+      '" data-name="' +
+      item.name +
+      '" data-price="' +
+      item.price +
+      '">Add to cart</button>' +
+      "</div>" +
+      "</article>"
+    );
+  }
+
+  function render() {
+    var items = visibleItems();
+    if (resultsCount) {
+      resultsCount.textContent = "Showing " + items.length + (items.length === 1 ? " item" : " items");
+    }
+    if (empty) empty.hidden = items.length !== 0;
+    if (!items.length) {
+      grid.innerHTML = "";
+      return;
+    }
+    grid.innerHTML = items
+      .map(function (item) {
+        return cardMarkup(item);
+      })
+      .join("");
+  }
+
+  function loadMixListings() {
+    fetch("/api/shop/mix-listings", { headers: { Accept: "application/json" } })
+      .then(function (r) {
+        if (!r.ok) throw new Error("Could not load mixed vendor listings.");
+        return r.json();
+      })
+      .then(function (payload) {
+        allItems = Array.isArray(payload.items) ? payload.items : [];
+        populateFilters(allItems);
+        render();
+      })
+      .catch(function () {
+        if (resultsCount) resultsCount.textContent = "Showing 0 items";
+        if (empty) {
+          empty.hidden = false;
+          empty.textContent = "Could not load listings right now. Please try again in a moment.";
+        }
+      });
+  }
+
+  grid.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest(".rh-shop-add");
+    if (!btn) return;
+    var sku = normalizedText(btn.getAttribute("data-sku")).toUpperCase();
+    if (!sku) return;
+    var price = Number(btn.getAttribute("data-price") || 0);
+    if (!cart[sku]) {
+      cart[sku] = {
+        sku: sku,
+        name: String(btn.getAttribute("data-name") || "Mini item").trim(),
+        price: Number.isFinite(price) && price > 0 ? price : 0,
+        qty: 0,
+      };
+    }
+    cart[sku].price = Number.isFinite(price) && price >= 0 ? Math.round(price * 100) / 100 : cart[sku].price;
+    cart[sku].qty += 1;
+    saveCart();
+    syncCartTop();
+    notifyCartChanged();
   });
 
-  addButtons.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var sku = normalizedText(btn.getAttribute("data-sku")).toUpperCase();
-      if (!sku) return;
-      var price = Number(btn.getAttribute("data-price") || 0);
-      if (!cart[sku]) {
-        cart[sku] = {
-          sku: sku,
-          name: String(btn.getAttribute("data-name") || "Mini item").trim(),
-          price: Number.isFinite(price) && price > 0 ? price : 0,
-          qty: 0,
-        };
-      }
-      cart[sku].qty += 1;
-      saveCart();
-      syncCartTop();
-      notifyCartChanged();
-    });
-  });
+  if (search) search.addEventListener("input", render);
+  if (vendorFilter) vendorFilter.addEventListener("change", render);
+  if (categoryFilter) categoryFilter.addEventListener("change", render);
 
-  if (search) search.addEventListener("input", updateVisible);
-  updateVisible();
+  loadMixListings();
   syncCartTop();
   notifyCartChanged();
 })();

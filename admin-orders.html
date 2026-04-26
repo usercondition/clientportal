@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,7 @@
     <script src="theme.js"></script>
     <meta name="theme-color" content="#0f0a1e" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Orders — Admin</title>
+    <title>Orders â€” Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -103,6 +103,14 @@
           </svg>
           Customers
         </a>
+        <a class="admin-nav-item" href="admin-inventory.html">
+          <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 6h18" />
+            <path d="M7 12h10" />
+            <path d="M10 18h4" />
+          </svg>
+          Inventory
+        </a>
         <p class="admin-sidebar__section-label">Coming soon</p>
         <span class="admin-nav-item admin-nav-item--disabled" title="Not connected yet">
           <svg class="admin-nav-item__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -138,7 +146,7 @@
         <div class="admin-inbox-page-head__titles">
           <h1 class="admin-inbox-page-head__h">Orders</h1>
           <p class="admin-inbox-page-head__sub">
-            Portal requests appear here as soon as clients submit them. The list refreshes automatically — open an order to read the full request, update status, or cancel.
+            Portal requests appear here as soon as clients submit them. The list refreshes automatically â€” open an order to read the full request, update status, or cancel.
           </p>
         </div>
       </header>
@@ -156,42 +164,42 @@
             <div class="admin-metrics__grid admin-metrics__grid--orders">
               <article class="admin-metric">
                 <h3 class="admin-metric__label">New requests</h3>
-                <p class="admin-metric__value" id="metric-o-new">—</p>
+                <p class="admin-metric__value" id="metric-o-new">â€”</p>
                 <p class="admin-metric__hint">Status: submitted</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">In progress</h3>
-                <p class="admin-metric__value" id="metric-o-inprog">—</p>
+                <p class="admin-metric__value" id="metric-o-inprog">â€”</p>
                 <p class="admin-metric__hint">Actively worked</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">Awaiting client</h3>
-                <p class="admin-metric__value" id="metric-o-await">—</p>
+                <p class="admin-metric__value" id="metric-o-await">â€”</p>
                 <p class="admin-metric__hint">Needs client input</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">Open pipeline</h3>
-                <p class="admin-metric__value" id="metric-o-open">—</p>
+                <p class="admin-metric__value" id="metric-o-open">â€”</p>
                 <p class="admin-metric__hint">Not fulfilled / cancelled</p>
               </article>
               <article class="admin-metric admin-metric--lead">
                 <h3 class="admin-metric__label">Pipeline value</h3>
-                <p class="admin-metric__value" id="metric-o-pipeline">—</p>
+                <p class="admin-metric__value" id="metric-o-pipeline">â€”</p>
                 <p class="admin-metric__hint">Open orders total</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">Fulfilled (MTD)</h3>
-                <p class="admin-metric__value" id="metric-o-fulfilled">—</p>
+                <p class="admin-metric__value" id="metric-o-fulfilled">â€”</p>
                 <p class="admin-metric__hint">Completed this month</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">Cancelled (MTD)</h3>
-                <p class="admin-metric__value" id="metric-o-cancelled">—</p>
+                <p class="admin-metric__value" id="metric-o-cancelled">â€”</p>
                 <p class="admin-metric__hint">This month</p>
               </article>
               <article class="admin-metric">
                 <h3 class="admin-metric__label">New (7 days)</h3>
-                <p class="admin-metric__value" id="metric-o-7d">—</p>
+                <p class="admin-metric__value" id="metric-o-7d">â€”</p>
                 <p class="admin-metric__hint">Orders created</p>
               </article>
             </div>
@@ -219,13 +227,13 @@
                     </svg>
                   </div>
                   <p class="admin-empty-state__title">Select an order</p>
-                  <p class="admin-empty-state__text">Choose a row on the left to read the client’s full submission, timeline, and update status.</p>
+                  <p class="admin-empty-state__text">Choose a row on the left to read the clientâ€™s full submission, timeline, and update status.</p>
                 </div>
 
                 <div id="admin-orders-detail" class="admin-chat-workspace" hidden>
                   <header class="admin-orders-detail-head">
-                    <p class="admin-orders-detail-num" id="admin-orders-detail-num">—</p>
-                    <h2 class="admin-orders-detail-title" id="admin-orders-detail-title">—</h2>
+                    <p class="admin-orders-detail-num" id="admin-orders-detail-num">â€”</p>
+                    <h2 class="admin-orders-detail-title" id="admin-orders-detail-title">â€”</h2>
                     <p class="admin-orders-detail-client" id="admin-orders-detail-client"></p>
                   </header>
                   <div class="admin-orders-detail-body">
@@ -268,10 +276,10 @@
                     <div class="admin-orders-actions">
                       <label for="admin-orders-status">Order status</label>
                       <select id="admin-orders-status" aria-label="Order status">
-                        <optgroup label="Pipeline — resin &amp; custom work">
+                        <optgroup label="Pipeline â€” resin &amp; custom work">
                           <option value="submitted">New request (intake)</option>
                           <option value="in_progress">In production (shop)</option>
-                          <option value="awaiting_client">Quote sent — awaiting client</option>
+                          <option value="awaiting_client">Quote sent â€” awaiting client</option>
                         </optgroup>
                         <optgroup label="Other">
                           <option value="draft">Draft (internal only)</option>
@@ -313,3 +321,5 @@
     </script>
   </body>
 </html>
+
+

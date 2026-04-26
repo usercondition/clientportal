@@ -119,7 +119,7 @@
           </section>
 
           <section class="rh-vendor-index" aria-label="Catalog vendors">
-            <a class="rh-vendor-tile rh-vendor-tile--all" href="#catalog" aria-label="All Vendors Mix">
+            <a class="rh-vendor-tile rh-vendor-tile--all" href="#catalog-mix" aria-label="All Vendors Mix">
               <span class="rh-vendor-index__logo-wrap rh-vendor-index__logo-wrap--all" aria-hidden="true">ALL</span>
               <span class="rh-vendor-index__name">All Vendors Mix</span>
             </a>
@@ -161,20 +161,20 @@
             </a>
           </section>
 
-          <div class="rh-shop-toolbar">
-            <div class="rh-shop-filter-group" role="tablist" aria-label="Shop categories">
-              <button type="button" class="rh-shop-chip is-active" data-filter="all" role="tab" aria-selected="true">
-                All
-              </button>
-              <button type="button" class="rh-shop-chip" data-filter="fantasy" role="tab" aria-selected="false">
-                Fantasy
-              </button>
-              <button type="button" class="rh-shop-chip" data-filter="scifi" role="tab" aria-selected="false">
-                Sci-fi
-              </button>
-              <button type="button" class="rh-shop-chip" data-filter="terrain" role="tab" aria-selected="false">
-                Terrain
-              </button>
+          <div class="rh-shop-toolbar" id="catalog-mix">
+            <div class="rh-shop-filter-row" aria-label="Shop filters">
+              <label class="rh-shop-select">
+                <span class="rh-sr-only">Filter by vendor</span>
+                <select id="shop-filter-vendor">
+                  <option value="all">All vendors</option>
+                </select>
+              </label>
+              <label class="rh-shop-select">
+                <span class="rh-sr-only">Filter by category</span>
+                <select id="shop-filter-category">
+                  <option value="all">All categories</option>
+                </select>
+              </label>
             </div>
             <p class="rh-shop-results" id="shop-results-count">Showing 0 items</p>
             <label class="rh-shop-search">
@@ -190,7 +190,8 @@
           </div>
           <div class="rh-shop-storefront">
             <div class="rh-shop-storefront__main">
-              <p class="rh-lede">Use the vendor links above to browse live listings. This page now acts as a clean gateway to each collection.</p>
+              <div class="rh-shop-grid" id="shop-grid" aria-live="polite"></div>
+              <p class="rh-shop-empty" id="shop-empty" hidden>No listings match your current filters.</p>
             </div>
           </div>
         </div>
