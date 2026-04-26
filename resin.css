@@ -1442,7 +1442,7 @@ body.resin-home main a:focus-visible {
 
 html[data-theme="dark"] body.resin-home .rh-btn--primary {
   color: #fff7ff;
-  border-color: color-mix(in srgb, var(--rh-primary) 55%, #22d3ee);
+  border-color: color-mix(in srgb, var(--rh-primary) 55%, #ffffff);
   box-shadow:
     0 0 22px color-mix(in srgb, var(--rh-primary) 35%, transparent),
     var(--rh-shadow);

@@ -45,22 +45,22 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --palette-accent: #38bdf8;
-  --palette-accent-deep: #0ea5e9;
-  --palette-accent-2: #22d3ee;
-  --palette-ink: #e2e8f0;
-  --palette-muted: #94a3b8;
-  --palette-line: #1e293b;
+  --palette-accent: #f4f4f2;
+  --palette-accent-deep: #d9d5ce;
+  --palette-accent-2: #f4f4f2;
+  --palette-ink: #f4f4f2;
+  --palette-muted: #b5b0a8;
+  --palette-line: #2f2b25;
 
-  --bg: #0b1220;
-  --bg-elevated: #111827;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --accent: #38bdf8;
-  --accent-cyan: #22d3ee;
+  --bg: #101010;
+  --bg-elevated: #171717;
+  --text: #f4f4f2;
+  --text-muted: #b5b0a8;
+  --accent: #f4f4f2;
+  --accent-cyan: #f4f4f2;
   --accent-hot: #fbbf24;
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-  --border: #1e293b;
+  --border: #2f2b25;
   --shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
   --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.4);
   --shadow-neon: 0 14px 44px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -68,8 +68,8 @@
   --page-tint: color-mix(in srgb, var(--accent) 12%, transparent);
   --page-bg-image:
     radial-gradient(820px 440px at 88% -8%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
-    radial-gradient(520px 320px at 0% 48%, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent 50%),
-    linear-gradient(188deg, #070d18 0%, var(--bg) 52%, #0f172a 100%);
+    radial-gradient(520px 320px at 0% 48%, color-mix(in srgb, var(--accent-cyan) 8%, transparent), transparent 50%),
+    linear-gradient(188deg, #111111 0%, var(--bg) 52%, #181613 100%);
   --sem-success: #34d399;
   --sem-danger: #fb7185;
 }
@@ -863,7 +863,7 @@ body.is-marketing-nav-open {
 }
 
 [data-theme="dark"] .btn-primary {
-  color: #ffffff;
+  color: #111111;
   background: color-mix(in srgb, var(--accent) 82%, #000 18%);
   border-color: color-mix(in srgb, var(--accent) 58%, #000 42%);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 8px rgba(0, 0, 0, 0.4);
