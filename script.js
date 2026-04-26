@@ -13,7 +13,6 @@
 
   var page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   var onIndex = page === "" || page === "index.html";
-  var baseIndex = onIndex ? "" : "index.html";
   var hash = String(location.hash || "").toLowerCase();
 
   var menu = [
@@ -53,16 +52,27 @@
     },
     {
       label: "Custom Jobs",
-      href: baseIndex + "#services",
-      sectionMatch: ["#gallery", "#services", "#process", "#quality"],
+      href: "home-what-we-take-on.html",
+      match: [
+        "home-recent-prints.html",
+        "home-what-we-take-on.html",
+        "home-files-to-finished-prints.html",
+        "home-what-good-means-here.html",
+        "home-clear-communication-reliable-output.html",
+      ],
       children: [
-        { label: "Featured Work", href: baseIndex + "#gallery", sectionMatch: ["#gallery"] },
-        { label: "Services", href: baseIndex + "#services", sectionMatch: ["#services"] },
-        { label: "Process", href: baseIndex + "#process", sectionMatch: ["#process"] },
-        { label: "Quality", href: baseIndex + "#quality", sectionMatch: ["#quality"] },
+        { label: "Featured Work", href: "home-recent-prints.html", match: ["home-recent-prints.html"] },
+        { label: "Services", href: "home-what-we-take-on.html", match: ["home-what-we-take-on.html"] },
+        { label: "Process", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
+        { label: "Quality", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
+        {
+          label: "Clear Communication, Reliable Output",
+          href: "home-clear-communication-reliable-output.html",
+          match: ["home-clear-communication-reliable-output.html"],
+        },
       ],
     },
-    { label: "Contact", href: baseIndex + "#contact", sectionMatch: ["#contact"] },
+    { label: "Contact", href: "home-request-a-quote.html", match: ["home-request-a-quote.html"] },
   ];
 
   var menuIcons = {
