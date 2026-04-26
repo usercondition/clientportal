@@ -17,7 +17,31 @@
   var hash = String(location.hash || "").toLowerCase();
 
   var menu = [
-    { label: "Home", href: "index.html", match: ["index.html"] },
+    {
+      label: "Home",
+      href: "index.html",
+      match: [
+        "index.html",
+        "home-recent-prints.html",
+        "home-what-we-take-on.html",
+        "home-files-to-finished-prints.html",
+        "home-what-good-means-here.html",
+        "home-clear-communication-reliable-output.html",
+        "home-request-a-quote.html",
+      ],
+      children: [
+        { label: "Recent Prints Off The Bench", href: "home-recent-prints.html", match: ["home-recent-prints.html"] },
+        { label: "What We Take On", href: "home-what-we-take-on.html", match: ["home-what-we-take-on.html"] },
+        { label: "From Files To Finished Prints", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
+        { label: "What Good Means Here", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
+        {
+          label: "Clear Communication, Reliable Output",
+          href: "home-clear-communication-reliable-output.html",
+          match: ["home-clear-communication-reliable-output.html"],
+        },
+        { label: "Request A Quote", href: "home-request-a-quote.html", match: ["home-request-a-quote.html"] },
+      ],
+    },
     {
       label: "Shop",
       href: "shop.html",

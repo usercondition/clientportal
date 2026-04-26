@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-marketing="resin">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script src="theme.js"></script>
+    <meta name="theme-color" content="#f2f5f8" />
+    <meta name="description" content="Request a quote from Steindahl 3D Group." />
+    <title>Request A Quote — Steindahl 3D Group</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="resin.css" />
+  </head>
+  <body class="resin-home marketing-layout">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="marketing-shell">
+      <div class="site-sidebar-backdrop" tabindex="-1" aria-hidden="true"></div>
+      <aside id="site-sidebar" class="site-sidebar" aria-label="Site"><div class="site-sidebar__brand"><a class="site-brand" href="index.html"><span class="site-brand__mark" aria-hidden="true"></span><span class="site-brand__text">Steindahl 3D Group</span></a></div><div class="site-sidebar__nav-wrap"><nav id="site-nav" class="site-nav site-nav--tree" aria-label="Primary"></nav></div><div class="site-sidebar__dock"><div id="theme-toggle-root"></div></div><div class="site-sidebar__footer"><a class="admin-entry" href="admin.html"><span>Staff</span></a></div></aside>
+      <div class="marketing-main">
+        <header class="site-topbar"><button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-sidebar" aria-label="Open menu"><span class="nav-toggle-bar" aria-hidden="true"></span><span class="nav-toggle-bar" aria-hidden="true"></span></button><span class="site-topbar__crumb" aria-hidden="true">Home</span></header>
+        <main id="main">
+          <section class="rh-cta rh-section rh-section--tight" aria-labelledby="contact-title">
+            <div class="rh-container">
+              <div class="rh-cta__wrap">
+                <div>
+                  <p class="rh-kicker">Contact</p>
+                  <h1 id="contact-title" class="rh-h2">Request A Quote</h1>
+                  <p class="rh-lede">Quote request only on this page so clients focus on submitting project details cleanly.</p>
+                </div>
+                <form id="rh-quote-form" class="rh-cta__form" action="/api/contact" method="post" novalidate>
+                  <label for="q-name">Name</label>
+                  <input id="q-name" name="name" type="text" autocomplete="name" required maxlength="120" />
+                  <label for="q-email">Email</label>
+                  <input id="q-email" name="email" type="email" autocomplete="email" required maxlength="120" />
+                  <label for="q-scope">Project summary</label>
+                  <textarea id="q-scope" name="scope" required maxlength="4000" placeholder="Scale, models or parts, quantity, deadline..."></textarea>
+                  <div class="rh-cta__actions"><button type="submit" class="rh-btn rh-btn--primary">Send request</button><a class="rh-btn rh-btn--ghost" href="client-flow.html">Use portal instead</a></div>
+                  <p id="rh-quote-status" class="rh-cta__status" role="status" aria-live="polite"></p>
+                </form>
+              </div>
+            </div>
+          </section>
+        </main>
+        <footer class="site-footer"><div class="container footer-inner"><div class="footer-brand"><span class="site-brand__mark site-brand__mark--footer" aria-hidden="true"></span><p>© <span id="year"></span> Steindahl 3D Group</p></div></div></footer>
+      </div>
+    </div>
+    <script src="script.js" defer></script>
+    <script src="resin-home.js" defer></script>
+  </body>
+</html>
