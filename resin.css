@@ -111,6 +111,7 @@ body.resin-home .client-portal-entry__full {
 }
 
 body.resin-home .client-portal-entry__short {
+  display: none;
   align-items: center;
   gap: 0.34rem;
 }
@@ -3280,6 +3281,14 @@ body.resin-home:not(.rh-shop-page) .rh-cta > .rh-container {
   .client-portal-entry {
     min-height: 2.1rem;
     padding-inline: 0.62rem;
+  }
+
+  body.resin-home .client-portal-entry__full {
+    display: none;
+  }
+
+  body.resin-home .client-portal-entry__short {
+    display: inline-flex;
   }
 
   body.resin-home .rh-hero__actions {
