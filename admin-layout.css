@@ -787,6 +787,33 @@ html[data-theme="dark"] .admin-app {
   }
 }
 
+@media (max-width: 640px) {
+  .admin-page-header {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .admin-page-title {
+    font-size: 1.02rem;
+  }
+
+  .admin-page-subtitle {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .admin-metrics__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dash-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel {
+    border-radius: 10px;
+  }
+}
+
 /* --- Main-site parity pass --- */
 :root {
   --admin-sidebar-bg: color-mix(in srgb, var(--bg-elevated) 94%, var(--bg));

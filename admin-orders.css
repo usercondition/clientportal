@@ -417,3 +417,34 @@
     height: 100%;
   }
 }
+
+@media (max-width: 640px) {
+  .admin-orders-detail-head,
+  .admin-orders-detail-body {
+    padding-inline: 0.75rem;
+  }
+
+  .admin-orders-quote__head {
+    display: none;
+  }
+
+  .admin-orders-quote__row,
+  .admin-orders-quote__row--readonly {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+    align-items: start;
+  }
+
+  .admin-orders-quote__row > * {
+    min-width: 0;
+  }
+
+  .admin-orders-actions {
+    align-items: stretch;
+  }
+
+  .admin-orders-actions select,
+  .admin-orders-actions .admin-btn {
+    width: 100%;
+  }
+}

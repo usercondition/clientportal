@@ -3254,3 +3254,58 @@ body.resin-home:not(.rh-shop-page) .rh-cta > .rh-container {
   border-top: 1px solid color-mix(in srgb, var(--rh-border) 65%, transparent);
   padding-top: clamp(1.1rem, 2.4vw, 1.5rem);
 }
+
+/* --- Mobile stability pass --- */
+@media (max-width: 640px) {
+  .site-topbar {
+    gap: 0.45rem;
+    padding-inline: 0.6rem;
+  }
+
+  .site-topbar__crumb {
+    display: none;
+  }
+
+  .site-topbar__actions {
+    gap: 0.35rem;
+    margin-left: auto;
+  }
+
+  .site-cart-nav {
+    padding: 0.28rem 0.45rem;
+    max-width: none;
+    flex: 0 0 auto;
+  }
+
+  .client-portal-entry {
+    min-height: 2.1rem;
+    padding-inline: 0.62rem;
+  }
+
+  body.resin-home .rh-hero__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.resin-home .rh-hero__actions .rh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.resin-home .rh-shop-toolbar {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  body.resin-home .rh-shop-filter-group {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.resin-home .rh-shop-search {
+    width: 100%;
+  }
+}
