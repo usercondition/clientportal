@@ -2842,3 +2842,153 @@ body.resin-home .site-footer {
 body.resin-home .footer-note {
   color: var(--rh-muted);
 }
+
+/* --- Kaf-inspired storefront card refresh (public storefront only) --- */
+body.resin-home .rh-shop-grid {
+  gap: clamp(1rem, 2.2vw, 1.4rem);
+}
+
+body.resin-home .rh-shop-card {
+  border: 1px solid color-mix(in srgb, var(--rh-border) 85%, transparent);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rh-surface) 96%, #fff 4%) 0%,
+      var(--rh-surface) 100%
+    );
+  box-shadow:
+    0 1px 2px color-mix(in srgb, #000 7%, transparent),
+    0 14px 30px color-mix(in srgb, #000 8%, transparent);
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 220ms ease,
+    background-color 220ms ease;
+  will-change: transform;
+}
+
+body.resin-home .rh-shop-card:hover,
+body.resin-home .rh-shop-card:focus-within {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--rh-primary) 28%, var(--rh-border));
+  box-shadow:
+    0 2px 5px color-mix(in srgb, #000 10%, transparent),
+    0 22px 40px color-mix(in srgb, #000 16%, transparent);
+}
+
+body.resin-home .rh-shop-card__thumb {
+  aspect-ratio: 1 / 1;
+  border-bottom: 1px solid color-mix(in srgb, var(--rh-border) 70%, transparent);
+}
+
+body.resin-home .rh-shop-card__thumb img {
+  transition: transform 340ms cubic-bezier(0.22, 0.61, 0.36, 1), filter 220ms ease;
+  transform-origin: center;
+}
+
+body.resin-home .rh-shop-card:hover .rh-shop-card__thumb img,
+body.resin-home .rh-shop-card:focus-within .rh-shop-card__thumb img {
+  transform: scale(1.045);
+  filter: saturate(1.03) contrast(1.02);
+}
+
+body.resin-home .rh-shop-card__body {
+  display: grid;
+  gap: 0.74rem;
+  padding: 0.92rem 0.94rem 1rem;
+}
+
+body.resin-home .rh-shop-card__body h3 {
+  margin-bottom: 0.34rem;
+}
+
+body.resin-home .rh-shop-card__body p {
+  line-height: 1.52;
+}
+
+body.resin-home .rh-shop-meta {
+  padding-top: 0.12rem;
+}
+
+body.resin-home .rh-shop-add {
+  margin-top: 0.68rem;
+}
+
+body.resin-home .rh-vendor-tile {
+  border-radius: 14px;
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 220ms ease;
+}
+
+body.resin-home .rh-vendor-tile:hover,
+body.resin-home .rh-vendor-tile:focus-visible {
+  transform: translateY(-4px);
+}
+
+body.resin-home .rh-vendor-index__logo-wrap {
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 82%, transparent);
+  background:
+    radial-gradient(
+      circle at 28% 20%,
+      color-mix(in srgb, var(--rh-primary) 12%, transparent),
+      transparent 62%
+    ),
+    color-mix(in srgb, var(--rh-surface-2) 55%, var(--rh-surface));
+  box-shadow:
+    0 1px 2px color-mix(in srgb, #000 7%, transparent),
+    0 12px 24px color-mix(in srgb, #000 8%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--rh-surface) 68%, transparent);
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 220ms ease;
+}
+
+body.resin-home .rh-vendor-tile:hover .rh-vendor-index__logo-wrap,
+body.resin-home .rh-vendor-tile:focus-visible .rh-vendor-index__logo-wrap {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--rh-primary) 30%, var(--rh-border));
+  box-shadow:
+    0 2px 6px color-mix(in srgb, #000 11%, transparent),
+    0 18px 34px color-mix(in srgb, #000 14%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--rh-surface) 58%, transparent);
+}
+
+@media (max-width: 640px) {
+  body.resin-home .rh-shop-card {
+    border-radius: 12px;
+  }
+
+  body.resin-home .rh-shop-card:hover,
+  body.resin-home .rh-shop-card:focus-within {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.resin-home .rh-shop-card,
+  body.resin-home .rh-shop-card__thumb img,
+  body.resin-home .rh-vendor-tile,
+  body.resin-home .rh-vendor-index__logo-wrap {
+    transition: none;
+  }
+
+  body.resin-home .rh-shop-card:hover,
+  body.resin-home .rh-shop-card:focus-within,
+  body.resin-home .rh-vendor-tile:hover,
+  body.resin-home .rh-vendor-tile:focus-visible,
+  body.resin-home .rh-vendor-tile:hover .rh-vendor-index__logo-wrap,
+  body.resin-home .rh-vendor-tile:focus-visible .rh-vendor-index__logo-wrap {
+    transform: none;
+  }
+
+  body.resin-home .rh-shop-card:hover .rh-shop-card__thumb img,
+  body.resin-home .rh-shop-card:focus-within .rh-shop-card__thumb img {
+    transform: none;
+    filter: none;
+  }
+}
