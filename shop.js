@@ -215,6 +215,19 @@
     });
   }
 
+  function swapCardPreviewFromThumb(subThumb) {
+    if (!subThumb) return;
+    var card = subThumb.closest ? subThumb.closest(".rh-shop-card") : null;
+    var lead = card ? card.querySelector(".rh-shop-card__thumb img") : null;
+    if (lead) {
+      var nextSrc = toLargePreviewSrc(subThumb.getAttribute("src"));
+      if (nextSrc) lead.setAttribute("src", nextSrc);
+      var nextAlt = subThumb.getAttribute("alt");
+      if (nextAlt) lead.setAttribute("alt", nextAlt);
+    }
+    syncThumbSelection(card, subThumb);
+  }
+
   chips.forEach(function (chip) {
     chip.addEventListener("click", function () {
       var next = normalizedText(chip.getAttribute("data-filter")) || "all";
@@ -253,15 +266,7 @@
     if (!target || !target.closest) return;
     var subThumb = target.closest(".rh-shop-card__thumb-subgallery img");
     if (subThumb) {
-      var card = subThumb.closest(".rh-shop-card");
-      var lead = card ? card.querySelector(".rh-shop-card__thumb img") : null;
-      if (lead) {
-        var nextSrc = toLargePreviewSrc(subThumb.getAttribute("src"));
-        if (nextSrc) lead.setAttribute("src", nextSrc);
-        var nextAlt = subThumb.getAttribute("alt");
-        if (nextAlt) lead.setAttribute("alt", nextAlt);
-      }
-      syncThumbSelection(card, subThumb);
+      swapCardPreviewFromThumb(subThumb);
       return;
     }
     var img = target.closest(".rh-shop-card__thumb img");
@@ -270,6 +275,23 @@
   });
 
   if (search) search.addEventListener("input", updateVisible);
+  Array.prototype.slice.call(grid.querySelectorAll(".rh-shop-card__thumb-subgallery img")).forEach(function (thumb, idx) {
+    if (!thumb.hasAttribute("tabindex")) thumb.setAttribute("tabindex", "0");
+    thumb.setAttribute("role", "button");
+    var card = thumb.closest ? thumb.closest(".rh-shop-card") : null;
+    if (idx === 0 || (card && !card.querySelector(".rh-shop-card__thumb-subgallery img.is-active"))) {
+      syncThumbSelection(card, thumb);
+    }
+    thumb.addEventListener("click", function (e) {
+      e.preventDefault();
+      swapCardPreviewFromThumb(thumb);
+    });
+    thumb.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      swapCardPreviewFromThumb(thumb);
+    });
+  });
   applyPriceOverrides();
   updateVisible();
   syncCartTop();
