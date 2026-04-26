@@ -3171,3 +3171,43 @@ body.resin-home:not(.rh-shop-page) .rh-cta__wrap {
     border-radius: 10px;
   }
 }
+
+/* --- Homepage layout decoupling pass (remove divider-tied sections) --- */
+body.resin-home:not(.rh-shop-page) .rh-hero {
+  border-bottom: 0;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-gallery,
+body.resin-home:not(.rh-shop-page) .rh-services,
+body.resin-home:not(.rh-shop-page) .rh-process,
+body.resin-home:not(.rh-shop-page) .rh-quality,
+body.resin-home:not(.rh-shop-page) .rh-trust,
+body.resin-home:not(.rh-shop-page) .rh-cta {
+  border-block: 0;
+  background: transparent;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-section {
+  padding-block: clamp(1.75rem, 5vw, 3.15rem);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-section--tight {
+  padding-block: clamp(1.25rem, 3.6vw, 2.1rem);
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot,
+body.resin-home:not(.rh-shop-page) .rh-gallery,
+body.resin-home:not(.rh-shop-page) .rh-process,
+body.resin-home:not(.rh-shop-page) .rh-quality,
+body.resin-home:not(.rh-shop-page) .rh-cta {
+  position: relative;
+}
+
+body.resin-home:not(.rh-shop-page) .rh-services-snapshot > .rh-container,
+body.resin-home:not(.rh-shop-page) .rh-gallery > .rh-container,
+body.resin-home:not(.rh-shop-page) .rh-process > .rh-container,
+body.resin-home:not(.rh-shop-page) .rh-quality > .rh-container,
+body.resin-home:not(.rh-shop-page) .rh-cta > .rh-container {
+  border-top: 1px solid color-mix(in srgb, var(--rh-border) 65%, transparent);
+  padding-top: clamp(1.1rem, 2.4vw, 1.5rem);
+}
