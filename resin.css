@@ -2915,6 +2915,24 @@ body.resin-home .rh-shop-add {
   margin-top: 0.68rem;
 }
 
+body.resin-home .rh-shop-card__thumb-subgallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 0.38rem;
+  margin-top: 0.2rem;
+}
+
+body.resin-home .rh-shop-card__thumb-subgallery img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--rh-border) 78%, transparent);
+  background: color-mix(in srgb, var(--rh-surface-2) 55%, var(--rh-surface));
+  cursor: zoom-in;
+}
+
 body.resin-home .rh-vendor-tile {
   border-radius: 14px;
   transition:
