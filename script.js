@@ -61,7 +61,7 @@
         { label: "Process", href: "home-files-to-finished-prints.html", match: ["home-files-to-finished-prints.html"] },
         { label: "Quality", href: "home-what-good-means-here.html", match: ["home-what-good-means-here.html"] },
         {
-          label: "Clear Communication, Reliable Output",
+          label: "Trust",
           href: "home-clear-communication-reliable-output.html",
           match: ["home-clear-communication-reliable-output.html"],
         },
@@ -75,6 +75,7 @@
     "Recent Prints": '<svg viewBox="0 0 24 24"><path d="m12 3 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8L12 3Z"></path></svg>',
     Standards: '<svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"></path></svg>',
     Reliability: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>',
+    Trust: '<svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.1 2.7 7.8 7 9 4.3-1.2 7-4.9 7-9V6l-7-3Z"></path><path d="m9 12 2 2 4-4"></path></svg>',
     Quote: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg>',
     Shop: '<svg viewBox="0 0 24 24"><path d="M4 8h16l-1.4 11H5.4L4 8Z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>',
     Catalog: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"></path><path d="M8 7h8M8 11h8M8 15h6"></path></svg>',
