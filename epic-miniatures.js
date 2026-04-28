@@ -54,6 +54,19 @@
       swapFromThumb(thumb);
     });
 
+    // Desktop reliability: some browsers/cards may not dispatch click consistently.
+    thumb.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      swapFromThumb(thumb);
+    });
+
+    thumb.addEventListener("mousedown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      swapFromThumb(thumb);
+    });
+
     thumb.addEventListener("keydown", function (e) {
       if (e.key !== "Enter" && e.key !== " ") return;
       e.preventDefault();
