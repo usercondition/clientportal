@@ -1,6 +1,8 @@
 /* Shop catalog behavior (filters/search/sort + persistent cart). */
 (function () {
   var CART_KEY = "shop_cart_v1";
+
+  function initShopPage() {
   var chips = Array.prototype.slice.call(document.querySelectorAll(".rh-shop-chip"));
   var search = document.getElementById("shop-search");
   var grid = document.getElementById("shop-grid");
@@ -9,7 +11,8 @@
   var addButtons = Array.prototype.slice.call(document.querySelectorAll(".rh-shop-add"));
   var cartCountTop = document.getElementById("shop-cart-count-top");
   var cartSubtotalTop = document.getElementById("shop-cart-subtotal-top");
-  if (!chips.length || !grid) return;
+  if (!grid) return;
+  if (!chips.length) return;
 
   var currentFilter = "all";
   /** @type {Record<string, { sku: string; name: string; price: number; qty: number }>} */
@@ -243,6 +246,7 @@
 
   addButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
+      if (btn.disabled) return;
       var sku = normalizedText(btn.getAttribute("data-sku")).toUpperCase();
       if (!sku) return;
       var price = Number(btn.getAttribute("data-price") || 0);
@@ -296,4 +300,19 @@
   updateVisible();
   syncCartTop();
   notifyCartChanged();
+  }
+
+  function scheduleShopInit() {
+    if (!document.getElementById("shop-grid")) return;
+    initShopPage();
+  }
+
+  if (document.body.getAttribute("data-shop-vendor")) {
+    document.addEventListener("shop-catalog-ready", scheduleShopInit);
+    if (document.body.getAttribute("data-shop-catalog-ready")) scheduleShopInit();
+  } else if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scheduleShopInit);
+  } else {
+    scheduleShopInit();
+  }
 })();

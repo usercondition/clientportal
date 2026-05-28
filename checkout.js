@@ -12,6 +12,8 @@
 
   /** @type {Record<string, { sku: string; name: string; price: number; qty: number }>} */
   var cart = loadCart();
+  var shippingQuote = null;
+  var quoteTimer = null;
 
   function normalizedText(v) {
     return String(v || "").trim();
@@ -56,6 +58,12 @@
       });
   }
 
+  function cartSubtotal() {
+    return cartItems().reduce(function (sum, it) {
+      return sum + it.price * it.qty;
+    }, 0);
+  }
+
   function persistCart() {
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(cartItems()));
@@ -82,6 +90,58 @@
     checkoutSubmit.textContent = on ? "Redirecting..." : "Continue to secure checkout";
   }
 
+  function updateTotalLine() {
+    var subtotal = cartSubtotal();
+    if (!cartItems().length) {
+      cartTotal.textContent = "Estimated subtotal: $0.00";
+      return;
+    }
+    if (shippingQuote) {
+      var shipLine = shippingQuote.shipping > 0 ? " · Shipping " + formatMoney(shippingQuote.shipping) : " · Free shipping";
+      var freeHint =
+        !shippingQuote.freeShippingApplied && shippingQuote.freeShippingMin > 0
+          ? " (free over " + formatMoney(shippingQuote.freeShippingMin) + ")"
+          : "";
+      cartTotal.textContent =
+        "Subtotal " +
+        formatMoney(shippingQuote.subtotal) +
+        shipLine +
+        freeHint +
+        " · Total " +
+        formatMoney(shippingQuote.total);
+    } else {
+      cartTotal.textContent = "Estimated subtotal: " + formatMoney(subtotal);
+    }
+  }
+
+  function refreshShippingQuote() {
+    var subtotal = cartSubtotal();
+    if (!cartItems().length) {
+      shippingQuote = null;
+      updateTotalLine();
+      return;
+    }
+    fetch("/api/shop/shipping-quote?subtotal=" + encodeURIComponent(String(subtotal)), {
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (data && data.ok) shippingQuote = data;
+        updateTotalLine();
+      })
+      .catch(function () {
+        shippingQuote = null;
+        updateTotalLine();
+      });
+  }
+
+  function scheduleShippingQuote() {
+    if (quoteTimer) clearTimeout(quoteTimer);
+    quoteTimer = setTimeout(refreshShippingQuote, 120);
+  }
+
   function renderCart() {
     var items = cartItems();
     if (!items.length) {
@@ -89,6 +149,7 @@
       cartTotal.textContent = "Estimated subtotal: $0.00";
       if (cartCountTop) cartCountTop.textContent = "0 items";
       if (cartSubtotalTop) cartSubtotalTop.textContent = "$0.00 subtotal";
+      shippingQuote = null;
       notifyCartChanged();
       return;
     }
@@ -125,9 +186,9 @@
         );
       })
       .join("");
-    cartTotal.textContent = "Estimated subtotal: " + formatMoney(subtotal);
     if (cartCountTop) cartCountTop.textContent = qty + (qty === 1 ? " item" : " items");
     if (cartSubtotalTop) cartSubtotalTop.textContent = formatMoney(subtotal) + " subtotal";
+    scheduleShippingQuote();
     notifyCartChanged();
   }
 
@@ -218,6 +279,11 @@
     } finally {
       setSubmitting(false);
     }
+  });
+
+  document.addEventListener("shop-cart-changed", function () {
+    cart = loadCart();
+    scheduleShippingQuote();
   });
 
   updateStatusFromQuery();

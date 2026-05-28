@@ -76,7 +76,7 @@
       <header class="admin-page-header">
         <h1 class="admin-page-header__h">Inventory</h1>
         <p class="admin-page-header__lede">
-          View all listed items in one place, preview large thumbnails, and manually update prices by SKU.
+          Manage catalog prices, stock, and visibility. Data is stored in Postgres when the database is connected.
         </p>
       </header>
 
@@ -87,6 +87,7 @@
             <input id="inventory-search" type="search" placeholder="Search by SKU, name, or vendor..." autocomplete="off" />
           </label>
           <p class="admin-inventory-count" id="inventory-count">Loading items…</p>
+          <button type="button" class="admin-inventory-btn" id="inventory-reseed">Re-import from HTML</button>
         </section>
 
         <p class="admin-metrics__banner" id="inventory-feedback" hidden role="status"></p>
@@ -101,13 +102,15 @@
                 <th scope="col">Vendor</th>
                 <th scope="col">Base</th>
                 <th scope="col">Live</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Active</th>
                 <th scope="col">Edit price</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody id="inventory-rows">
               <tr>
-                <td colspan="8">Loading inventory…</td>
+                <td colspan="10">Loading inventory…</td>
               </tr>
             </tbody>
           </table>

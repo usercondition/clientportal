@@ -1853,6 +1853,26 @@ body.resin-home .rh-shop-search input:focus-visible {
   outline-offset: 1px;
 }
 
+body.resin-home .rh-shop-loading {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--rh-muted);
+}
+
+body.resin-home .rh-shop-loading--error {
+  color: var(--sem-danger, #b42318);
+}
+
+body.resin-home .rh-shop-badge--sold {
+  background: color-mix(in srgb, var(--sem-danger, #b42318) 88%, #000);
+}
+
+body.resin-home .rh-shop-badge--low {
+  background: color-mix(in srgb, var(--accent-hot, #b45309) 88%, #000);
+}
+
 body.resin-home .rh-shop-grid {
   display: grid;
   gap: clamp(0.9rem, 2vw, 1.2rem);

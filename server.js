@@ -380,7 +380,10 @@ const {
   applySchemaCompat,
   applyMarketplaceSyncSchema,
   applyOrderQuoteFlowSchema,
+  applyShopProductsSchema,
+  applyShopOrdersSchema,
 } = require("./lib/apply-initial-schema");
+const shopCatalog = require("./lib/shop-catalog");
 
 // CORS + preflight for marketplace API routes (POST + Authorization from scripts / tools).
 app.use((req, res, next) => {
@@ -458,6 +461,45 @@ app.post("/api/shop/stripe/webhook", express.raw({ type: "application/json" }), 
           "Thank you for your order.",
         ].join("\n");
         queueNotifyEmail(customerEmail, customerSubject, customerText, { replyTo: resolveAdminReplyEmail() });
+      }
+
+      if (DATABASE_URL) {
+        try {
+          const meta = session.metadata && typeof session.metadata === "object" ? session.metadata : {};
+          let parsedItems = [];
+          try {
+            parsedItems = JSON.parse(String(meta.items_json || "[]"));
+          } catch (_e) {}
+          const subtotalCents = Math.round(Number(meta.subtotal_cents || 0));
+          const shippingCents = Math.round(Number(meta.shipping_cents || 0));
+          const totalCents = Math.round(Number(session.amount_total || 0));
+          await shopCatalog.insertShopOrder(pool, {
+            stripeSessionId: session.id,
+            customerEmail,
+            customerName,
+            currency: session.currency || STRIPE_CURRENCY,
+            subtotalCents,
+            shippingCents,
+            totalCents,
+            lineItems: parsedItems,
+            notes: String(meta.notes || "").slice(0, 2000),
+          });
+          if (Array.isArray(parsedItems) && parsedItems.length) {
+            for (const it of parsedItems) {
+              const sku = shopCatalog.normalizeSku(it && (it.sku || it.s));
+              const qty = Math.floor(Number(it && (it.quantity != null ? it.quantity : it.q)));
+              if (!sku || qty < 1) continue;
+              await pool.query(
+                `update shop_products
+                 set stock_qty = greatest(0, stock_qty - $2), updated_at = now()
+                 where sku = $1 and stock_qty is not null`,
+                [sku, qty]
+              );
+            }
+          }
+        } catch (orderErr) {
+          console.error("[stripe/webhook] shop_orders persist failed:", orderErr && orderErr.message);
+        }
       }
     }
   } catch (err) {
@@ -546,31 +588,6 @@ function parseIsoTimestamp(input) {
   return new Date(ms).toISOString();
 }
 
-const SHOP_PRODUCT_SOURCE_FILES = [
-  "dm-stash.html",
-  "greytide.html",
-  "redmakers.html",
-  "rafail-ft-pring.html",
-  "epic-miniatures.html",
-  "mar-fil.html",
-];
-const SHOP_VENDOR_LABELS = {
-  "dm-stash": "DM Stash",
-  greytide: "Grey Tide Studio",
-  redmakers: "REDMAKERS",
-  "rafail-ft-pring": "Rafail ft. PRiNG",
-  "epic-miniatures": "EPIC Miniatures",
-  "mar-fil": "Mar-Fil",
-};
-const SHOP_PRICE_OVERRIDE_PATH = path.join(__dirname, "data", "shop-price-overrides.json");
-
-function normalizeSku(raw) {
-  return String(raw || "")
-    .trim()
-    .toUpperCase()
-    .slice(0, 64);
-}
-
 function safeReadJsonFile(absPath) {
   try {
     if (!fs.existsSync(absPath)) return {};
@@ -582,76 +599,14 @@ function safeReadJsonFile(absPath) {
   }
 }
 
-function loadShopPriceOverrides() {
-  const raw = safeReadJsonFile(SHOP_PRICE_OVERRIDE_PATH);
-  const out = {};
-  for (const [k, v] of Object.entries(raw)) {
-    const sku = normalizeSku(k);
-    const price = Number(v);
-    if (!sku || !Number.isFinite(price) || price < 0 || price > 100000) continue;
-    out[sku] = Math.round(price * 100) / 100;
+async function shopCatalogReady() {
+  if (!DATABASE_URL) return false;
+  try {
+    const n = await shopCatalog.countShopProducts(pool);
+    return n > 0;
+  } catch (_e) {
+    return false;
   }
-  return out;
-}
-
-function saveShopPriceOverrides(overrides) {
-  const dir = path.dirname(SHOP_PRICE_OVERRIDE_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(SHOP_PRICE_OVERRIDE_PATH, JSON.stringify(overrides, null, 2), "utf8");
-}
-
-function parseShopItemsFromHtml(fileName) {
-  const abs = path.join(__dirname, fileName);
-  if (!fs.existsSync(abs)) return [];
-  const html = fs.readFileSync(abs, "utf8");
-  const vendor = path.basename(fileName, ".html");
-  const vendorLabel = SHOP_VENDOR_LABELS[vendor] || vendor;
-  const rows = [];
-  const cardRegex = /<article class="rh-shop-card"([^>]*)>([\s\S]*?)<\/article>/g;
-  const attrValue = (src, attr) => {
-    const m = src.match(new RegExp(`${attr}="([^"]+)"`, "i"));
-    return m ? String(m[1]).trim() : "";
-  };
-  let match;
-  while ((match = cardRegex.exec(html))) {
-    const attrs = String(match[1] || "");
-    const body = String(match[2] || "");
-    const btnMatch = body.match(
-      /<button[^>]*class="[^"]*rh-shop-add[^"]*"[^>]*data-sku="([^"]+)"[^>]*data-name="([^"]+)"[^>]*data-price="([^"]+)"/i
-    );
-    if (!btnMatch) continue;
-    const sku = normalizeSku(btnMatch[1]);
-    const name = String(btnMatch[2] || "").trim().slice(0, 220);
-    const basePrice = Number(btnMatch[3] || 0);
-    if (!sku || !name || !Number.isFinite(basePrice) || basePrice < 0) continue;
-    const cat = attrValue(attrs, "data-cat").toLowerCase();
-    const searchText = attrValue(attrs, "data-search");
-    const imgMatch = body.match(/<img[^>]*src="([^"]+)"/i);
-    const image = imgMatch ? String(imgMatch[1]).trim() : "";
-    rows.push({
-      sku,
-      name,
-      basePrice: Math.round(basePrice * 100) / 100,
-      sourceFile: fileName,
-      vendor,
-      vendorLabel,
-      category: cat || "general",
-      searchText,
-      image,
-    });
-  }
-  return rows;
-}
-
-function getShopInventoryItems() {
-  const merged = new Map();
-  for (const fileName of SHOP_PRODUCT_SOURCE_FILES) {
-    const rows = parseShopItemsFromHtml(fileName);
-    for (const row of rows) {
-      if (!merged.has(row.sku)) merged.set(row.sku, row);
-    }
-  }
-  return Array.from(merged.values()).sort((a, b) => a.sku.localeCompare(b.sku));
 }
 
 function isMarketplaceSyncAuthorized(req) {
@@ -939,6 +894,11 @@ app.get("/api/health", async (_req, res) => {
     tokenConfigured: Boolean(MARKETPLACE_SYNC_TOKEN),
     tablesPresent: null,
   };
+  const shop = {
+    tablesPresent: null,
+    productCount: null,
+    catalogSource: null,
+  };
   if (!DATABASE_URL) {
     return res.status(200).json({
       ok: true,
@@ -946,6 +906,7 @@ app.get("/api/health", async (_req, res) => {
       smtp: smtpConfigured ? "configured" : "missing",
       hint: "Set DATABASE_URL on the Web service (reference from Postgres).",
       marketplace,
+      shop,
     });
   }
   try {
@@ -954,12 +915,21 @@ app.get("/api/health", async (_req, res) => {
       const reg = await pool.query("select to_regclass('public.marketplace_threads') as t");
       marketplace.tablesPresent = Boolean(reg.rows[0] && reg.rows[0].t);
     }
+    const shopReg = await pool.query("select to_regclass('public.shop_products') as t");
+    shop.tablesPresent = Boolean(shopReg.rows[0] && shopReg.rows[0].t);
+    if (shop.tablesPresent) {
+      shop.productCount = await shopCatalog.countShopProducts(pool);
+      shop.catalogSource = shop.productCount > 0 ? "postgres" : "html_fallback";
+    } else {
+      shop.catalogSource = "html_fallback";
+    }
     return res.status(200).json({
       ok: true,
       database: "connected",
       env: DATABASE_SOURCE_KEY,
       smtp: smtpConfigured ? "configured" : "missing",
       marketplace,
+      shop,
     });
   } catch (e) {
     const err = /** @type {{ message?: string; code?: string }} */ (e);
@@ -1014,23 +984,94 @@ app.post("/api/contact", async (req, res) => {
   return res.status(202).json({ ok: true });
 });
 
+app.get("/api/shop/products", async (req, res) => {
+  const vendor = String(req.query.vendor || "").trim().toLowerCase();
+  const category = String(req.query.category || "").trim().toLowerCase();
+  const q = String(req.query.q || "").trim();
+  try {
+    if (await shopCatalogReady()) {
+      const products = await shopCatalog.listShopProducts(pool, {
+        vendor: vendor || undefined,
+        category: category || undefined,
+        q: q || undefined,
+        activeOnly: true,
+      });
+      return res.json({ ok: true, source: "postgres", count: products.length, products });
+    }
+    const legacy = shopCatalog.getAllParsedShopItems().filter((item) => {
+      if (vendor && item.vendor !== vendor) return false;
+      if (category && category !== "all" && item.category !== category) return false;
+      if (q) {
+        const hay = (item.sku + " " + item.name + " " + item.searchText).toLowerCase();
+        if (hay.indexOf(q.toLowerCase()) < 0) return false;
+      }
+      return true;
+    });
+    const overrides = shopCatalog.getLegacyPriceOverridesMap();
+    const products = legacy.map((item) => {
+      const price =
+        Object.prototype.hasOwnProperty.call(overrides, item.sku) ? overrides[item.sku] : item.basePrice;
+      return {
+        sku: item.sku,
+        name: item.name,
+        description: item.description || "",
+        vendor: item.vendor,
+        vendorLabel: item.vendorLabel,
+        category: item.category,
+        searchText: item.searchText,
+        price,
+        basePrice: item.basePrice,
+        image: item.image,
+        gallery: item.gallery || [],
+        stockQty: null,
+        inStock: true,
+        active: true,
+      };
+    });
+    return res.json({ ok: true, source: "html", count: products.length, products });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[shop/products] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load shop products." });
+  }
+});
+
+app.get("/api/shop/shipping-quote", async (req, res) => {
+  const subtotal = Number(req.query.subtotal || 0);
+  if (!Number.isFinite(subtotal) || subtotal < 0 || subtotal > 100000) {
+    return res.status(400).json({ error: "Invalid subtotal." });
+  }
+  return res.json({ ok: true, ...shopCatalog.shippingQuoteFromSubtotalDollars(subtotal) });
+});
+
 app.get("/api/shop/price-overrides", async (_req, res) => {
-  const overrides = loadShopPriceOverrides();
-  return res.json({ ok: true, overrides });
+  try {
+    if (await shopCatalogReady()) {
+      const { rows } = await pool.query(
+        `select sku, price_cents, base_price_cents from shop_products where price_cents <> base_price_cents`
+      );
+      const overrides = {};
+      for (const row of rows) {
+        overrides[row.sku] = Math.round(Number(row.price_cents) || 0) / 100;
+      }
+      return res.json({ ok: true, source: "postgres", overrides });
+    }
+    return res.json({ ok: true, source: "json", overrides: shopCatalog.getLegacyPriceOverridesMap() });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[shop/price-overrides] failed:", err.message);
+    return res.status(500).json({ error: "Failed to load price overrides." });
+  }
 });
 
 app.get("/api/admin/shop-items", async (_req, res) => {
   try {
-    const overrides = loadShopPriceOverrides();
-    const items = getShopInventoryItems().map((item) => {
-      const overridePrice = Object.prototype.hasOwnProperty.call(overrides, item.sku) ? overrides[item.sku] : null;
-      return {
-        ...item,
-        price: overridePrice == null ? item.basePrice : overridePrice,
-        overridePrice,
-      };
-    });
-    return res.json({ ok: true, count: items.length, items });
+    if (await shopCatalogReady()) {
+      const items = await shopCatalog.listShopProductsForAdmin(pool);
+      return res.json({ ok: true, source: "postgres", count: items.length, items });
+    }
+    const items = shopCatalog.getLegacyShopInventoryItems();
+    return res.json({ ok: true, source: "html", count: items.length, items });
   } catch (e) {
     const err = /** @type {{ message?: string }} */ (e);
     console.error("[admin/shop-items] failed:", err.message);
@@ -1038,27 +1079,83 @@ app.get("/api/admin/shop-items", async (_req, res) => {
   }
 });
 
+app.post("/api/admin/shop/reseed", async (req, res) => {
+  if (!DATABASE_URL) {
+    return res.status(503).json({ error: "DATABASE_URL is not configured." });
+  }
+  const force = String(req.query.force || "").toLowerCase() === "true";
+  try {
+    const result = await shopCatalog.seedShopProductsFromHtml(pool, { force });
+    const count = await shopCatalog.countShopProducts(pool);
+    return res.json({ ok: true, ...result, total: count });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    console.error("[admin/shop/reseed] failed:", err.message);
+    return res.status(500).json({ error: "Failed to seed shop catalog from HTML." });
+  }
+});
+
 app.patch("/api/admin/shop-items/:sku", async (req, res) => {
-  const sku = normalizeSku(req.params && req.params.sku);
+  const sku = shopCatalog.normalizeSku(req.params && req.params.sku);
   if (!sku) return res.status(400).json({ error: "Invalid SKU." });
   const body = req.body && typeof req.body === "object" ? req.body : {};
   const hasPrice = Object.prototype.hasOwnProperty.call(body, "price");
-  if (!hasPrice) return res.status(400).json({ error: "Send { price } in the request body." });
-  const rawPrice = body.price;
-  const clearOverride = rawPrice == null || String(rawPrice).trim() === "";
-  const overrides = loadShopPriceOverrides();
-  if (clearOverride) {
-    delete overrides[sku];
-    saveShopPriceOverrides(overrides);
-    return res.json({ ok: true, sku, cleared: true });
+  const hasStock = Object.prototype.hasOwnProperty.call(body, "stockQty");
+  const hasActive = Object.prototype.hasOwnProperty.call(body, "active");
+  if (!hasPrice && !hasStock && !hasActive) {
+    return res.status(400).json({ error: "Send { price }, { stockQty }, and/or { active } in the body." });
   }
-  const price = Number(rawPrice);
-  if (!Number.isFinite(price) || price < 0 || price > 100000) {
-    return res.status(400).json({ error: "Price must be a number between 0 and 100000." });
+
+  try {
+    if (await shopCatalogReady()) {
+      const patch = {};
+      if (hasPrice) patch.price = body.price;
+      if (hasStock) patch.stockQty = body.stockQty;
+      if (hasActive) patch.active = body.active;
+      const product = await shopCatalog.updateShopProductFields(pool, sku, patch);
+      return res.json({
+        ok: true,
+        sku,
+        price: product.price,
+        stockQty: product.stockQty,
+        active: product.active,
+      });
+    }
+
+    if (!hasPrice) {
+      return res.status(503).json({ error: "Postgres catalog required to update stock or active status." });
+    }
+    const rawPrice = body.price;
+    const clearOverride = rawPrice == null || String(rawPrice).trim() === "";
+    const overrides = shopCatalog.getLegacyPriceOverridesMap();
+    if (clearOverride) {
+      delete overrides[sku];
+    } else {
+      const price = Number(rawPrice);
+      if (!Number.isFinite(price) || price < 0 || price > 100000) {
+        return res.status(400).json({ error: "Price must be a number between 0 and 100000." });
+      }
+      overrides[sku] = Math.round(price * 100) / 100;
+    }
+    const dir = path.dirname(shopCatalog.SHOP_PRICE_OVERRIDE_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      shopCatalog.SHOP_PRICE_OVERRIDE_PATH,
+      JSON.stringify(overrides, null, 2),
+      "utf8"
+    );
+    return res.json({
+      ok: true,
+      sku,
+      cleared: clearOverride,
+      price: clearOverride ? undefined : overrides[sku],
+    });
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    const msg = err.message || "Failed to update shop item.";
+    const status = /not found/i.test(msg) ? 404 : 400;
+    return res.status(status).json({ error: msg });
   }
-  overrides[sku] = Math.round(price * 100) / 100;
-  saveShopPriceOverrides(overrides);
-  return res.json({ ok: true, sku, price: overrides[sku] });
 });
 
 app.post("/api/shop/create-checkout-session", async (req, res) => {
@@ -1089,28 +1186,40 @@ app.post("/api/shop/create-checkout-session", async (req, res) => {
   }
 
   /** @type {Array<{ sku: string; name: string; quantity: number; unitPrice: number }>} */
-  const items = [];
-  for (const it of rawItems) {
-    const row = it && typeof it === "object" ? it : {};
-    const sku = String(row.sku || "").trim().toUpperCase().slice(0, 48);
-    const itemName = String(row.name || "").trim().slice(0, 180);
-    const quantity = Math.floor(Number(row.quantity || 0));
-    const unitPrice = Number(row.unitPrice || 0);
-    if (!sku || !itemName || !Number.isFinite(unitPrice) || unitPrice < 0 || quantity < 1) continue;
-    if (quantity > 250 || unitPrice > 10000) continue;
-    items.push({
-      sku,
-      name: itemName,
-      quantity,
-      unitPrice: Math.round(unitPrice * 100) / 100,
-    });
+  let items = [];
+  try {
+    if (await shopCatalogReady()) {
+      items = await shopCatalog.resolveCheckoutLineItems(pool, rawItems);
+    } else {
+      for (const it of rawItems) {
+        const row = it && typeof it === "object" ? it : {};
+        const sku = shopCatalog.normalizeSku(row.sku);
+        const itemName = String(row.name || "").trim().slice(0, 180);
+        const quantity = Math.floor(Number(row.quantity || 0));
+        const unitPrice = Number(row.unitPrice || 0);
+        if (!sku || !itemName || !Number.isFinite(unitPrice) || unitPrice < 0 || quantity < 1) continue;
+        if (quantity > 250 || unitPrice > 10000) continue;
+        items.push({
+          sku,
+          name: itemName,
+          quantity,
+          unitPrice: Math.round(unitPrice * 100) / 100,
+        });
+      }
+      if (!items.length) {
+        return res.status(400).json({ error: "Add at least one valid item to checkout." });
+      }
+      if (items.length > 40) {
+        return res.status(400).json({ error: "Checkout can include up to 40 line items." });
+      }
+    }
+  } catch (e) {
+    const err = /** @type {{ message?: string }} */ (e);
+    return res.status(400).json({ error: err.message || "Invalid checkout items." });
   }
-  if (!items.length) {
-    return res.status(400).json({ error: "Add at least one valid item to checkout." });
-  }
-  if (items.length > 40) {
-    return res.status(400).json({ error: "Checkout can include up to 40 line items." });
-  }
+
+  const subtotalCents = items.reduce((sum, it) => sum + Math.round(it.unitPrice * 100) * it.quantity, 0);
+  const shippingCents = shopCatalog.computeShopShippingCents(subtotalCents);
 
   const lineItems = items.map((it) => ({
     quantity: it.quantity,
@@ -1123,6 +1232,16 @@ app.post("/api/shop/create-checkout-session", async (req, res) => {
       unit_amount: Math.round(it.unitPrice * 100),
     },
   }));
+  if (shippingCents > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: STRIPE_CURRENCY,
+        product_data: { name: "Shipping (US)", metadata: { sku: "SHIPPING" } },
+        unit_amount: shippingCents,
+      },
+    });
+  }
 
   const baseUrl =
     emailTemplates.baseUrl() ||
@@ -1146,6 +1265,11 @@ app.post("/api/shop/create-checkout-session", async (req, res) => {
         customer_phone: phone.slice(0, 40),
         shipping_region: shippingRegion.slice(0, 120),
         notes: notes.slice(0, 500),
+        subtotal_cents: String(subtotalCents),
+        shipping_cents: String(shippingCents),
+        items_json: JSON.stringify(
+          items.map((it) => ({ sku: it.sku, q: it.quantity, p: it.unitPrice, n: it.name.slice(0, 40) }))
+        ).slice(0, 480),
       },
     });
     return res.status(201).json({ ok: true, url: session.url, sessionId: session.id });
@@ -3169,7 +3293,24 @@ async function start() {
       if (quoteFlow.ran) {
         console.log(`[db] Applied order quote flow migration (${quoteFlow.statements} statements).`);
       }
-      console.log("[db] Schema step complete (bootstrap + compat + marketplace + quote flow).");
+      const shopSchema = await applyShopProductsSchema(pool);
+      if (shopSchema.ran) {
+        console.log(`[db] Applied shop products migration (${shopSchema.statements} statements).`);
+      }
+      const shopOrdersSchema = await applyShopOrdersSchema(pool);
+      if (shopOrdersSchema.ran) {
+        console.log(`[db] Applied shop orders migration (${shopOrdersSchema.statements} statements).`);
+      }
+      try {
+        const seed = await shopCatalog.seedShopProductsFromHtml(pool, { force: false });
+        if (seed.seeded) {
+          console.log(`[shop] Seeded ${seed.count} products from HTML into Postgres.`);
+        }
+      } catch (seedErr) {
+        const err = /** @type {{ message?: string }} */ (seedErr);
+        console.warn("[shop] Auto-seed skipped:", err.message);
+      }
+      console.log("[db] Schema step complete (bootstrap + compat + marketplace + quote flow + shop).");
     } catch (e) {
       console.error("[db] Auto-schema failed (run npm run db:migrate manually):", e && e.message);
     }
