@@ -11,6 +11,10 @@ The app (`server.js`) uses PostgreSQL via **`DATABASE_URL`**. This folder holds 
   - Idempotent `ADD COLUMN IF NOT EXISTS` patches for databases that already had tables but an older column set (the server applies this on every startup after bootstrap)
 - `database/migrations/003_marketplace_sync.sql`
   - Tables `marketplace_threads` and `marketplace_messages` for the optional marketplace sync API (applied on every startup after compat, same idempotent pattern)
+- `database/migrations/005_shop_products.sql`
+  - Table `shop_products` for the licensed mini storefront (Postgres catalog; Stripe checkout uses server-side prices)
+- `database/migrations/006_shop_orders.sql`
+  - Table `shop_orders` for paid Stripe checkout sessions (webhook persistence + stock decrement)
 - `database/seed.sql`
   - Optional local demo seed data
 - `docker-compose.db.yml`
@@ -36,7 +40,7 @@ PowerShell:
 $env:DATABASE_URL="postgresql://clientportal:clientportal_dev_password@localhost:5432/clientportal"
 ```
 
-3) Apply migration (runs `001_init.sql`, `002_compat.sql`, and `003_marketplace_sync.sql`)
+3) Apply migration (runs `001_init.sql` through `006_shop_orders.sql`)
 
 ```bash
 npm run db:migrate
@@ -44,7 +48,15 @@ npm run db:migrate
 
 (or: run each file under `database/migrations/` in order with `psql`)
 
-4) (Optional) Seed
+4) (Optional) Seed shop catalog from vendor HTML pages
+
+```bash
+npm run db:seed-shop
+```
+
+Re-import after editing HTML listings: `npm run db:seed-shop -- --force`
+
+5) (Optional) Seed portal demo data
 
 ```bash
 psql "$DATABASE_URL" -f database/seed.sql
